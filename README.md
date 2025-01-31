@@ -37,6 +37,7 @@ Extrude building footprints from GeoJSON to 3D geometries:
 ```bash
 python B2GM_LM_op_extrude.py goyang_footprint_sample.geojson output_folder LoD1_mapping_example.json
 ```
+<img src="https://github.com/mac999/ISO19166-B2GM/blob/main/doc/fig2.JPG"></img>
 
 ## 📌 Configuration
 The `LoD1_mapping_example.json` file defines the mapping rules:
