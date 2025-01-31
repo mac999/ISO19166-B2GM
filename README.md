@@ -8,6 +8,9 @@ This project is an ongoing development effort to implement **ISO TC211 TS 19166*
 - **Coordinate System Transformation:** Convert geographic coordinates (WGS84) to projected UTM coordinates.
 - **Visualization Support:** Utilize PyVista and PyDeck for 3D rendering of transformed data.
 
+## 🛠 Development Status
+This project is **under continuous development**, and features will be incrementally improved over time. Contributions and discussions on BIM-GIS interoperability and ISO 19166 implementations are welcome!
+
 ## 📂 Project Structure
 ```
 B2GM_project/
@@ -53,11 +56,8 @@ The `LoD1_mapping_example.json` file defines the mapping rules:
 }
 ```
 
-## 🛠 Development Status
-This project is **under continuous development**, and features will be incrementally improved over time. Contributions and discussions on BIM-GIS interoperability and ISO 19166 implementations are welcome!
-
 ## 📜 License
-This project follows an open-source license. See `LICENSE` for details.
+This project follows an open-source license. See `MIT` for details.
 
 ## 📧 Contact
 Developed by **Taewook Kang**
