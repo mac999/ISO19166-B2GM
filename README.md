@@ -56,6 +56,11 @@ The `LoD1_mapping_example.json` file defines the mapping rules:
 }
 ```
 
+## Reference
+In detail, please refer to below documents. 
+- [Development of a Conceptual Mapping Standard to Link Building and Geospatial Information](https://www.mdpi.com/2220-9964/7/5/162)
+- [ISO/TS 19166:2021](https://www.iso.org/standard/78899.html)
+
 ## 📜 License
 This project follows an open-source license. See `MIT` for details.
 
