@@ -1,0 +1,15 @@
+{
+    "CRS": "EPSG:4326",
+    "geometry": [
+        {
+            "input": "GY_BLDG_sampling.geojson",
+            "base_offset": [0.0, 0.0, 0.0],
+            "ground_storey": "GRO_FLO_CO",
+            "underground_storey": "UND_FLO_CO",
+            "storey_height": 3.0,
+            "output": "./output_all"
+        }
+    ]
+}
+
+
