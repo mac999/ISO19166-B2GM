@@ -221,7 +221,6 @@ def mapping(mapping_file, show_flag=False):
 				p.add_mesh(mesh, smooth_shading=False, color=c)
 				
 		p.show_axes()
-		# background color is black
 		p.background_color = 'black'
 
 		p.reset_camera()
@@ -229,4 +228,4 @@ def mapping(mapping_file, show_flag=False):
 
 
 if __name__ == '__main__':
-	mapping('lod_all_mapping.json')
+	mapping('LoD1_mapping_example.json')

@@ -2,7 +2,7 @@
     "CRS": "EPSG:4326",
     "geometry": [
         {
-            "input": "GY_BLDG_sampling.geojson",
+            "input": "goyang_footprint_sample.geojson",
             "base_offset": [0.0, 0.0, 0.0],
             "ground_storey": "GRO_FLO_CO",
             "underground_storey": "UND_FLO_CO",
