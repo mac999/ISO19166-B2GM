@@ -3,7 +3,7 @@
 This project is an ongoing development effort to implement **ISO TC211 TS 19166**, focusing on mapping **Building Information Modeling (BIM) files to GIS formats**. The core functionality allows for extracting, transforming, and exporting BIM elements into GIS-compatible representations, facilitating interoperability between BIM and GIS ecosystems.
 
 ## 🚀 Features
-- **BIM to GIS Mapping:** Convert **IFC** files into **CityGML** or other GIS formats.
+- **BIM to GIS Mapping:** Convert **BIM** like IFC, geojson files into **GIS** like CityGML, json or other GIS formats.
 - **LoD Extrusion:** Extrude 2D building footprints to **3D geometries** using LoD (Level of Detail) specifications.
 - **Coordinate System Transformation:** Convert geographic coordinates (WGS84) to projected UTM coordinates.
 - **Visualization Support:** Utilize PyVista and PyDeck for 3D rendering of transformed data.
