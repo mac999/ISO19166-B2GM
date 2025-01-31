@@ -1,6 +1,7 @@
 # ISO 19166 - B2GM BIM to GIS Mapping
 
-This project is an ongoing development effort to implement **ISO TC211 TS 19166**, focusing on mapping **Building Information Modeling (BIM) files to GIS formats**. The core functionality allows for extracting, transforming, and exporting BIM elements into GIS-compatible representations, facilitating interoperability between BIM and GIS ecosystems.
+This project is an ongoing development effort to implement **ISO TC211 TS 19166**, focusing on mapping **Building Information Modeling (BIM) files to GIS formats**. The core functionality allows for extracting, transforming, and exporting BIM elements into GIS-compatible representations, facilitating interoperability between BIM and GIS ecosystems.</br>
+<img src="https://github.com/mac999/ISO19166-B2GM/blob/main/doc/fig1.JPG"></img>
 
 ## 🚀 Features
 - **BIM to GIS Mapping:** Convert **BIM** like IFC, geojson files into **GIS** like CityGML, json or other GIS formats.
