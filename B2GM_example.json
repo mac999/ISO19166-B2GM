@@ -1,0 +1,51 @@
+{
+	"BIM_GIS_mapping.pipeline": [
+	  {
+		"type": "PD",
+		"name": "perspective defintion",
+		"description": "Define required dataset from source.",
+		"output": "intermediate.ifc",
+		"data_view": [
+			{"class": "IfcBuilding", "filter": [{"name": ".*", "value": ".*", "type": ".*"}]}],
+		"logic_view": "./caculate_data.exe", 
+		"style_view": [
+			{"class": "IfcBuilding", "filter": [{"name": ".*", "value": ".*", "type": ".*"}]}]
+	  },
+	  {
+		"type": "CM", 
+		"name": "Coordinate Mapping",
+		"description": "Define mapping between IFC and CityGML coordinate system.",
+		"output": "intermediate_CM.ifc",
+		"rule": [
+		  {
+			"source": "EPSG:4326",
+			"destination": "EPSG:3857"
+		  },
+		  {	
+			"tranform_matrix": [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+		  }
+		]
+	  },
+	  {
+		"type": "EM",
+		"name": "element mapping",
+		"output": "city.gml",
+		"description": "Define mapping element between IFC and CityGML elements.",
+		"rule": [
+		  {
+			"source": "IfcBuilding",
+			"destination": "CityModel.Building",
+			"child_node": ".*"
+		  }
+		]
+	  },
+	  {
+		"type": "LM",
+		"name": "LoD mapping",
+		"description": "Define mapping LoD between IFC and CityGML elements.",
+		"output": "city_LoD.gml",
+		"rule": []
+	  }
+	]
+  }
+  
