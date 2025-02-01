@@ -79,6 +79,9 @@ If you're considering XSD parser, refer the below link.
 - [generateDS](https://github.com/ricksladkey/generateDS)
 - [xsd2xml](https://github.com/miaozn/xsd2xml/blob/master/xsd2xml.py)
 
+If you want to view the GML file, use the below tool. 
+- [CityGMLViewer - SimStadt](https://simstadt.hft-stuttgart.de/related-softwares/city-gml-viewer/)
+
 ## 📜 License
 This project follows an open-source license. See `MIT` for details.
 
