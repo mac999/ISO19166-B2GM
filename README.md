@@ -75,6 +75,7 @@ If you're considering XSD parser, refer the below link.
 - [lxml](https://github.com/lxml/lxml?tab=readme-ov-file)
 - [xsdata](https://github.com/tefra/xsdata) and [manual](https://xsdata.readthedocs.io/en/latest/)
 - [xmlschema](https://github.com/sissaschool/xmlschema)
+- [generateDS](https://github.com/ricksladkey/generateDS)
 - [xsd2xml](https://github.com/miaozn/xsd2xml/blob/master/xsd2xml.py)
 
 ## 📜 License
