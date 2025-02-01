@@ -28,18 +28,18 @@ pip install geopandas numpy pyvista pydeck meshio xsdata shapely pyproj tqdm ifc
 ```
 
 ## ⚙️ Usage
-### 1. **BIM to GIS Conversion**
-Run the main script to process an **IFC** file and generate a **GIS output**:
-```bash
-python B2GM_main.py --input duplex_apartment.ifc --output city.gml --pipeline B2GM_example.json
-```
-
-### 2. **LoD Extrusion for 3D GIS Models**
+### 1. **LoD Extrusion for 3D GIS Models**
 Extrude building footprints from GeoJSON to 3D geometries:
 ```bash
 python B2GM_LM_op_extrude.py goyang_footprint_sample.geojson output_folder LoD1_mapping_example.json
 ```
 <img src="https://github.com/mac999/ISO19166-B2GM/blob/main/doc/fig2.JPG"></img>
+
+### 2. **BIM to GIS Conversion**
+Run the main script to process an **IFC** file and generate a **GIS output** (TBD):
+```bash
+python B2GM_main.py --input duplex_apartment.ifc --output city.gml --pipeline B2GM_example.json
+```
 
 ## 📌 Configuration
 The `LoD1_mapping_example.json` file defines the mapping rules:
