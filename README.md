@@ -71,6 +71,12 @@ In detail, please refer to below documents.
 - [무료 CityGML 3D 도시모델 뷰어 FZK Viewer 와 도시 시뮬레이션 SimStadt 소개](https://daddynkidsmakers.blogspot.com/2024/10/citygml.html)
 - [BIM, GIS 표준 IFC, CityGML 파일 변환 및 정보 추출하기](https://daddynkidsmakers.blogspot.com/2021/09/bim-to-gis.html)
 
+If you're considering XSD parser, refer the below link.
+- [lxml](https://github.com/lxml/lxml?tab=readme-ov-file)
+- [xsdata](https://github.com/tefra/xsdata) and [manual](https://xsdata.readthedocs.io/en/latest/)
+- [xmlschema](https://github.com/sissaschool/xmlschema)
+- [xsd2xml](https://github.com/miaozn/xsd2xml/blob/master/xsd2xml.py)
+
 ## 📜 License
 This project follows an open-source license. See `MIT` for details.
 
