@@ -23,7 +23,7 @@ B2GM_project/
 ## 🛠 Installation
 Install the required dependencies using **pip**:
 ```bash
-pip install geopandas numpy pyvista pydeck meshio shapely pyproj tqdm ifcopenshell
+pip install geopandas numpy pyvista pydeck meshio xsdata shapely pyproj tqdm ifcopenshell
 ```
 
 ## ⚙️ Usage
