@@ -65,6 +65,7 @@ In detail, please refer to below documents.
 - [Py3DTilers: an open-source toolkit to create 3DTiles](https://github.com/VCityTeam/py3dtilers)
 - [Technical University of Munich. Prof. Thomas H. Kolbe](https://www.asg.ed.tum.de/gis/unser-team/lehrstuhlangehoerige/prof-thomas-h-kolbe/)
 - [CityGML 3.0 Conceptual Model Encoding in OGC GML 3.2](https://github.com/opengeospatial/CityGML3.0-GML-Encoding/tree/main)
+- [CityJSON](https://www.cityjson.org/software/), [Convert GML to JSON](https://github.com/citygml4j/citygml-tools/releases) and [Viewer](https://ninja.cityjson.org/)
 - [BIM IFC 파일을 Cesium 디지털트윈 플랫폼에 3D tiles로 가시화하는 방법과 구조](https://daddynkidsmakers.blogspot.com/2024/10/bim-ifc-cesium-3d-tile.html)
 - [무료 CityGML 3D 도시모델 뷰어 FZK Viewer 와 도시 시뮬레이션 SimStadt 소개](https://daddynkidsmakers.blogspot.com/2024/10/citygml.html)
 - [BIM, GIS 표준 IFC, CityGML 파일 변환 및 정보 추출하기](https://daddynkidsmakers.blogspot.com/2021/09/bim-to-gis.html)
