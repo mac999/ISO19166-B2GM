@@ -5,7 +5,7 @@ This project is an ongoing development effort to implement **ISO TC211 TS 19166*
 
 ## 🚀 Features
 - **BIM to GIS Mapping:** Convert **BIM** like IFC, geojson files into **GIS** like CityGML, json or other GIS formats.
-- **IFC and CityGML parsing:** Read and Write IFC, CityGML file format. 
+- **IFC and CityGML parsing:** Read and Write IFC, CityGML file format using parser.
 - **LoD Extrusion:** Extrude 2D building footprints to **3D geometries** using LoD (Level of Detail) specifications.
 - **Coordinate System Transformation:** Convert geographic coordinates (WGS84) to projected UTM coordinates.
 - **Visualization Support:** Utilize PyVista and PyDeck for 3D rendering of transformed data.
