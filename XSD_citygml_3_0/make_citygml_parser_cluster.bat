@@ -1,1 +1,0 @@
-xsdata generate . -ss clusters
