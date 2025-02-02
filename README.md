@@ -5,7 +5,7 @@ This project is an ongoing development effort to implement **ISO TC211 TS 19166*
 
 ## 🚀 Features
 - **BIM to GIS Mapping:** Convert **BIM** like IFC, geojson files into **GIS** like CityGML, json or other GIS formats.
-- **IFC and CityGML parsing:** Read and Write IFC, CityGML file format using parser.
+- **IFC and [CityGML parsing](https://github.com/mac999/citygml_parser):** Read and Write IFC, CityGML file format using parser.
 - **LoD Extrusion:** Extrude 2D building footprints to **3D geometries** using LoD (Level of Detail) specifications.
 - **Coordinate System Transformation:** Convert geographic coordinates (WGS84) to projected UTM coordinates.
 - **Visualization Support:** Utilize PyVista and PyDeck for 3D rendering of transformed data.
@@ -63,6 +63,7 @@ The `LoD1_mapping_example.json` file defines the mapping rules:
 In detail, please refer to below documents. 
 - [Development of a Conceptual Mapping Standard to Link Building and Geospatial Information](https://www.mdpi.com/2220-9964/7/5/162)
 - [ISO/TS 19166:2021](https://www.iso.org/standard/78899.html)
+- [CityGML 3.0 Parser](https://github.com/mac999/citygml_parser)
 - [Py3DTilers: an open-source toolkit to create 3DTiles](https://github.com/VCityTeam/py3dtilers)
 - [Technical University of Munich. Prof. Thomas H. Kolbe](https://www.asg.ed.tum.de/gis/unser-team/lehrstuhlangehoerige/prof-thomas-h-kolbe/)
 - [CityGML 3.0 Specification XSD](https://github.com/opengeospatial/CityGML-3.0/tree/master)
