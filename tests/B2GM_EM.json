@@ -1,0 +1,25 @@
+{
+    "name": "IFC to GML",
+    "description": "Converts IFC to GML",
+    "input": {
+        "type": "ifc",
+        "format": "ifc"
+    },
+    "output": {
+        "type": "gml",
+        "format": "gml"
+    },
+    "element_map": [
+        {
+            "source": {
+                "type": "IfcWall"
+            },
+            "condition": {
+                "filter": ".*"
+            },
+            "desination": {
+                "type": "GmlWall"
+            }
+        }
+    ]
+}

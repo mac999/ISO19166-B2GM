@@ -1,0 +1,12 @@
+{
+    "CRS": "EPSG:4326",
+    "geometry": [
+        {
+            "input": "GY_PICK_20240603a.geojson",
+            "base_offset": [0.0, 0.0, 0.0],
+            "output": "./output"
+        }
+    ]
+}
+
+

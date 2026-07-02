@@ -1,0 +1,18 @@
+# --- Core (required to run the PD -> CM -> EM -> LM pipeline) ---
+ifcopenshell        # IFC (BIM) parsing
+pyproj              # coordinate reference system transforms (CM stage)
+shapely             # 2D geometry (LoD footprints)
+numpy
+tqdm
+
+# --- Testing ---
+pytest
+
+# --- Optional: CityGML dataclass serialisation (B2GM_simple_mapping) ---
+# xsdata
+
+# --- Optional: 3D LoD footprint extrusion / viewer (B2GM_LM_op_extrude) ---
+# geopandas
+# pyvista
+# pydeck
+# meshio

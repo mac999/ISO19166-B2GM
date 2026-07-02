@@ -1,0 +1,10 @@
+{
+  "logic_view": "./calculate_data.exe",
+  "selected": [
+    {
+      "name": "IfcBuilding",
+      "ifc_type": "IfcBuilding",
+      "GUID": "1xS3BCk291UvhgP2a6eflK"
+    }
+  ]
+}

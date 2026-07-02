@@ -1,0 +1,19 @@
+{
+    "CRS": "EPSG:4326",
+    "geometry": [
+        {
+            "input": "goyang_footprint_sample.geojson",
+            "base_offset": [0.0, 0.0, 0.0],
+            "ground_storey": "GRO_FLO_CO",
+            "underground_storey": "UND_FLO_CO",
+            "storey_height": 3.0,
+            "transform_utm": false,
+            "height_scale": 1.0,
+            "output": "./output_all"
+        }
+    ],
+    "style": [
+        {"property": "BLDG_NM", "match": "Terminal", "color": [1.0, 0.2, 0.2]},
+        {"property": "BLDG_NM", "match": "Sports Center", "color": [0.2, 1.0, 0.2]}
+    ]
+}

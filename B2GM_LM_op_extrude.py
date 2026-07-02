@@ -1,231 +1,318 @@
-'''
-LoD Extrude Mapping Operator for B2GM to creates B2GM LoD mapping operator on ISO 19166 B2GM
+"""
+LoD extrude operator for B2GM - generates GIS LOD1 block models from building
+footprints, following the ISO 19166 B2G LM ``extrude`` operator (Clause 9,
+Table 8).
+
+The geometry generation is *general purpose* and dataset agnostic:
+
+* extrusion is delegated to :mod:`B2GM_LM_operators` (numpy + shapely only), so
+  no coordinate offsets, building names, CRS or field names are hard-coded;
+* footprint attribute names, storey height, base offset, coordinate transform
+  and colouring are all supplied through the LoD mapping configuration file;
+* heavy dependencies are optional - ``geopandas`` is only needed to *read*
+  GeoJSON, and ``pyvista`` only to *visualise*; extrusion and OBJ/CSV export
+  work without them.
 
 Usage:
-	python B2GM_LM_op_extrude.py <input> <output> <option>
-	<input> - Input file path
-	<output> - Output file path
-	<option> - Option file path
+        python B2GM_LM_op_extrude.py <mapping_file.json>
 
-Reference: 
-	https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.polydata.save#pyvista.PolyData.save
-	https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.show.html
+Reference:
+        ISO/TS 19166 - Geographic information - BIM to GIS conceptual mapping.
 
 Author:
-	Taewook Kang (laputa99999@gmail.com)
+        Taewook Kang (laputa99999@gmail.com)
 
 Date:
-	2024-01-02
-	2024-06-22
-'''
-import geopandas as gpd, numpy as np, pyvista as pv, pydeck as pdk, meshio, random, json, re, os, time, logging
+        2024-01-02, 2024-06-22 (generalised 2026-07)
+"""
+
+import numpy as np, random, json, re, os, sys, time, logging, csv
 from shapely.geometry import Polygon, MultiPolygon
-from pyproj import Proj, transform
+from pyproj import CRS, Transformer
 from tqdm import tqdm
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+import B2GM_LM_operators as OP
+
+# Optional heavy dependencies (geospatial IO / 3D visualisation). The module
+# imports without them; functions that need them raise a clear error only when
+# actually called.
+try:
+    import geopandas as gpd
+except Exception:  # pragma: no cover - optional
+    gpd = None
+try:
+    import pyvista as pv
+except Exception:  # pragma: no cover - optional
+    pv = None
+try:
+    import pydeck as pdk
+except Exception:  # pragma: no cover - optional
+    pdk = None
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-logger.info('pyvista version: %s', pv.__version__)
+# approximate degrees-per-metre, used only to display un-projected WGS84 data
+DEG_PER_METER = 1.0 / 111_111.0
 
-# functions
-def latlon_to_utm(latitude, longitude, target_datum='WGS84'):
-	utm_zone = int((longitude + 180) / 6) + 1
-	is_northern = latitude >= 0
 
-	proj_wgs84 = Proj(proj='latlong', datum=target_datum)  # In example, WGS84 coordinate system
-	proj_utm = Proj(proj='utm', zone=utm_zone, datum=target_datum, south=not is_northern)
-	easting, northing = transform(proj_wgs84, proj_utm, longitude, latitude)
+def _require(module, name):
+    if module is None:
+        raise RuntimeError(
+            f"Optional dependency '{name}' is required for this operation. "
+            f"Install it with: pip install {name}"
+        )
+    return module
 
-	return easting, northing, utm_zone
 
-def extrude_polygon(poly, height, transform_utm = True, offset_x=4171084.250000, offset_y=302905.000000):   # TBD. 
-	"""
-	Extrude a 2D polygon to a 3D polygon with specified height.
-	"""
-	x, y = poly.exterior.coords.xy
+if pv is not None:  # pragma: no cover - informational
+    logger.info("pyvista version: %s", pv.__version__)
 
-	if transform_utm:
-		for i in range(len(x)):
-			y[i], x[i], utm_zone = latlon_to_utm(y[i], x[i])
-			x[i] -= offset_x
-			y[i] -= offset_y
-	else:
-		latlon_height_scale = 1.0 / 111111.0 # 1m = 1/111111 degree in WGS84
-		height = height * latlon_height_scale
 
-	coords = np.array([x, y])
-	points_2d = coords.T  # shape (N, 2)
-	N = len(points_2d)
+# ---------------------------------------------------------------------------
+# Coordinate helpers
+# ---------------------------------------------------------------------------
+def latlon_to_utm(latitude, longitude, target_datum="WGS84"):
+    """Transform a geographic (lat, lon) point to its UTM zone (easting, northing)."""
+    utm_zone = int((longitude + 180) / 6) + 1
+    is_northern = latitude >= 0
 
-	points_3d = np.pad(points_2d, [(0, 0), (0, 1)])  # shape (N, 3)
-	face = [N + 1] + list(range(N)) + [0]  # cell connectivity for a single cell
-	polygon = pv.PolyData(points_3d, faces=face)
+    utm_crs = CRS.from_dict(
+        {"proj": "utm", "zone": utm_zone, "datum": target_datum, "south": not is_northern}
+    )
+    transformer = Transformer.from_crs("EPSG:4326", utm_crs, always_xy=True)
+    easting, northing = transformer.transform(longitude, latitude)
 
-	obj = polygon.extrude((0, 0, height), capping=True)   # extrude along z and plot
-	
-	return obj
+    return easting, northing, utm_zone
 
-def extrude_geojson(geometry_mapping, input_geojson, base_offset):
-	building_metadata = geometry_mapping
 
-	gdf = gpd.read_file(input_geojson)
+# ---------------------------------------------------------------------------
+# Extrusion (B2G LM extrude operator)
+# ---------------------------------------------------------------------------
+def extrude_polygon(poly, height, base_offset=(0.0, 0.0, 0.0), transform_utm=False, height_scale=1.0):
+    """Extrude a 2D shapely ``Polygon`` into a 3D :class:`B2GM_LM_operators.Solid`.
 
-	# Extrude each polygon in the GeoDataFrame
-	features = []
-	for index, row in tqdm(gdf.iterrows()):
-		feature = {'properties': []}
-		feature['properties'] = {}
-		for key, value in row.items():
-			if key == 'geometry':
-				continue
-			feature['properties'][key] = value
+    Parameters
+    ----------
+    poly : shapely.geometry.Polygon
+        The footprint polygon (in the source CRS).
+    height : float
+        Extrusion height in metres.
+    base_offset : (x, y, z)
+        Local origin subtracted from every vertex (e.g. a scene origin). Not
+        hard-coded to any dataset - pass it explicitly via the config.
+    transform_utm : bool
+        If True, treat coords as (lon, lat) and reproject to the matching UTM
+        zone (metres) before extruding.
+    height_scale : float
+        Multiplier applied to ``height`` (use ``DEG_PER_METER`` to keep the
+        block proportional when extruding un-projected WGS84 coordinates).
+    """
+    xs, ys = poly.exterior.coords.xy
+    xs, ys = list(xs), list(ys)
+    ox, oy, oz = (list(base_offset) + [0.0, 0.0, 0.0])[:3]
 
-		gnd_storey_name = building_metadata['ground_storey']
-		ground_storey = feature['properties'][gnd_storey_name]
-		ugr_storey_name = building_metadata['underground_storey']
-		underground_storey = feature['properties'][ugr_storey_name]
-		storey_height = building_metadata['storey_height']
-		building_height = (ground_storey + underground_storey) * storey_height
-		underground_height = underground_storey * storey_height
+    pts = []
+    for x, y in zip(xs, ys):
+        if transform_utm:
+            easting, northing, _ = latlon_to_utm(y, x)  # x=lon, y=lat
+            x, y = easting, northing
+        pts.append((x - ox, y - oy))
 
-		geometry = row['geometry']
-		building_meshes = []
-		if isinstance(geometry, Polygon):
-			building = extrude_polygon(geometry, building_height)
-			building.translate((0., 0., -underground_height), inplace=True)
-			building_meshes.append(building)
-		elif isinstance(geometry, MultiPolygon):
-			for p in geometry.geoms:
-				building = extrude_polygon(p, building_height)
-				building.translate((0., 0., -underground_height), inplace=True)
-				building_meshes.append(building)
+    if len(pts) > 1 and pts[0] == pts[-1]:
+        pts = pts[:-1]  # drop the closing duplicate; operators re-close it
+    if len(pts) < 3:
+        raise ValueError("footprint polygon must have at least 3 distinct vertices")
 
-		feature['geometry'] = building_meshes
-		features.append(feature)
+    ring = Polygon(pts)
+    return OP.extrude(ring, (0.0, 0.0, 1.0), float(height) * float(height_scale), base_z=oz)
 
-	# extruded_gdf = gpd.GeoDataFrame(geometry=extruded_polygons, crs=gdf.crs)
-	# extruded_gdf.to_file(output_geojson, driver='GeoJSON')
 
-	return features
+# ---------------------------------------------------------------------------
+# GeoJSON -> extruded building solids
+# ---------------------------------------------------------------------------
+def _num(value, default=0.0):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
 
+
+def extrude_geojson(geometry_mapping, input_geojson, base_offset=(0.0, 0.0, 0.0)):
+    """Extrude every footprint in a GeoJSON file into LOD1 solids.
+
+    ``geometry_mapping`` (a config block) may define, all optional:
+
+    ==================  =========================================  ==========
+    key                 meaning                                    default
+    ==================  =========================================  ==========
+    ground_storey       property name for above-ground storeys     (none)
+    underground_storey  property name for below-ground storeys     (none)
+    storey_height       metres per storey                          3.0
+    default_height      height when storey fields are absent       storey_height
+    transform_utm       reproject (lon,lat) -> UTM before extrude  False
+    height_scale        multiplier on the computed height          1.0
+    ==================  =========================================  ==========
+    """
+    _require(gpd, "geopandas")
+    meta = geometry_mapping or {}
+    storey_height = _num(meta.get("storey_height", 3.0), 3.0)
+    gnd_field = meta.get("ground_storey")
+    ugr_field = meta.get("underground_storey")
+    default_height = _num(meta.get("default_height", storey_height), storey_height)
+    transform_utm = bool(meta.get("transform_utm", False))
+    height_scale = _num(meta.get("height_scale", 1.0), 1.0)
+
+    gdf = gpd.read_file(input_geojson)
+
+    features = []
+    for _, row in tqdm(gdf.iterrows(), total=len(gdf), desc="extruding"):
+        properties = {k: v for k, v in row.items() if k != "geometry"}
+
+        if gnd_field or ugr_field:
+            ground = _num(properties.get(gnd_field)) if gnd_field else 0.0
+            under = _num(properties.get(ugr_field)) if ugr_field else 0.0
+            building_height = (ground + under) * storey_height
+            underground_height = under * storey_height
+        else:
+            building_height, underground_height = default_height, 0.0
+        if building_height <= 0:
+            building_height = default_height
+
+        geometry = row["geometry"]
+        if isinstance(geometry, Polygon):
+            polys = [geometry]
+        elif isinstance(geometry, MultiPolygon):
+            polys = list(geometry.geoms)
+        else:
+            polys = []
+
+        solids = []
+        for p in polys:
+            solid = extrude_polygon(p, building_height, base_offset, transform_utm, height_scale)
+            if underground_height:
+                solid.vertices[:, 2] -= underground_height  # sink below ground
+            solids.append(solid)
+
+        features.append({"properties": properties, "geometry": solids})
+
+    return features
+
+
+# ---------------------------------------------------------------------------
+# Output (OBJ meshes + CSV of properties) - no pyvista/meshio required
+# ---------------------------------------------------------------------------
 def save_mesh_excel(features, out_folder):
-	index = 0
-	for feature in features:
-		meshes = feature['geometry']
-		for mesh in meshes:
-			index += 1
-			out_fname = f'{out_folder}/building_{index}.obj' # ply'
-			mesh.save(out_fname)	
+    os.makedirs(out_folder, exist_ok=True)
 
-	# save excel file including properties of feature in features
-	with open(f'{out_folder}/building_properties.csv', 'w') as f:
-		for index, feature in enumerate(features):
-			properties = feature['properties']
-			if index == 0:
-				header = 'ID,'
-				for key, value in properties.items():
-					header += f'{key},'
-				f.write(f'{header}\n')
-			record = f'{index},'
-			for key, value in properties.items():
-				record += f'{value},'
-			f.write(f'{record}\n')
-			
+    index = 0
+    for feature in features:
+        for mesh in feature["geometry"]:
+            index += 1
+            out_fname = os.path.join(out_folder, f"building_{index}.obj")
+            if hasattr(mesh, "save_obj"):          # B2GM_LM_operators.Solid
+                mesh.save_obj(out_fname)
+            elif pv is not None and hasattr(mesh, "save"):  # pyvista mesh
+                mesh.save(out_fname)
+
+    # collect the union of all property keys for a stable CSV header
+    keys = []
+    for feature in features:
+        for k in feature["properties"]:
+            if k not in keys:
+                keys.append(k)
+
+    with open(os.path.join(out_folder, "building_properties.csv"), "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["ID", *keys])
+        for i, feature in enumerate(features):
+            props = feature["properties"]
+            writer.writerow([i, *[props.get(k, "") for k in keys]])
+
+
+# ---------------------------------------------------------------------------
+# Visualisation
+# ---------------------------------------------------------------------------
+def _resolve_color(properties, style_rules, rng=random):
+    """Pick a colour for a building from config style rules, else random.
+
+    A style rule is ``{"property": <name>, "match": <regex>, "color": [r,g,b]}``.
+    The first rule whose property value matches its regex wins.
+    """
+    for rule in style_rules or []:
+        field = rule.get("property")
+        pattern = rule.get("match", ".*")
+        color = rule.get("color")
+        if field is None or color is None:
+            continue
+        if re.search(pattern, str(properties.get(field, ""))):
+            return tuple(color)
+    return (rng.uniform(0.3, 1.0), rng.uniform(0.3, 1.0), rng.uniform(0.2, 0.3))
+
+
 def visualize_geojson(geojson_path):
-	layer = pdk.Layer(
-		'PolygonLayer',
-		data=geojson_path,
-		get_polygon='geometry.coordinates',
-		get_fill_color=[255, 0, 0, 255],
-		extruded=True,
-		get_elevation='properties.Z'
-	)
+    _require(pdk, "pydeck")
+    layer = pdk.Layer(
+        "PolygonLayer",
+        data=geojson_path,
+        get_polygon="geometry.coordinates",
+        get_fill_color=[255, 0, 0, 255],
+        extruded=True,
+        get_elevation="properties.Z",
+    )
+    view_state = pdk.ViewState(latitude=0, longitude=0, zoom=2)
+    deck = pdk.Deck(layers=[layer], initial_view_state=view_state)
+    deck.show()
 
-	view_state = pdk.ViewState(latitude=0, longitude=0, zoom=2)
-	deck = pdk.Deck(layers=[layer], initial_view_state=view_state)
-	deck.show()
 
+# ---------------------------------------------------------------------------
+# Driver
+# ---------------------------------------------------------------------------
 def load_LoD_mapping_file(mapping_file):
-	mapping = None
-	with open(mapping_file) as f:
-		mapping = json.load(f)
-	
-	return mapping
+    with open(mapping_file, encoding="utf-8") as f:
+        return json.load(f)
 
-def test_mapping_file():
-	mapping_file['geometry'] = []
-	for i in range(0, 10):
-		for j in range(0, 10):
-			offset = [random.uniform(i * 30.0, i * 40.0), random.uniform(j * 30.0, j * 40), 0.0]
-			height = random.uniform(4.0, 30.0)
-
-			footprint = {
-				"input": "input.geojson",
-				"offset": offset,
-				"base_height": 0.0,
-				"height": height,
-				"output": "output.ply"
-			}
-			mapping_file['geometry'].append(footprint)
-
-	return mapping_file
 
 def mapping(mapping_file, show_flag=False):
-	mapping_file = load_LoD_mapping_file(mapping_file)
+    """Run footprint -> LOD1 extrusion for every geometry block in the config."""
+    cfg = load_LoD_mapping_file(mapping_file)
+    style_rules = cfg.get("style", [])
 
-	start_time = time.time()  # Start time logging
+    start_time = time.time()
+    objects = []
+    for g in cfg["geometry"]:
+        base_offset = g.get("base_offset", [0.0, 0.0, 0.0])
+        features = extrude_geojson(g, g["input"], base_offset)
+        output_folder = g.get("output", "./output")
+        save_mesh_excel(features, output_folder)
+        objects.extend(features)
 
-	objects = []
-	for g in mapping_file['geometry']:
-		inp = g['input']
-		base_offset = g['base_offset']
-		features = extrude_geojson(g, inp, base_offset)
-		output_folder = g['output']
-		if os.path.exists(output_folder) == False:
-			os.mkdir(output_folder)
-		save_mesh_excel(features, output_folder)
-		objects.extend(features)
+    logger.info("LoD mapping execution time: %.4f seconds", time.time() - start_time)
 
+    if show_flag:
+        _require(pv, "pyvista")
+        p = pv.Plotter()
+        p.camera = pv.Camera()
+        p.camera.position = (0.0, 0.0, 200.0)
+        p.camera.focal_point = (0.0, 0.0, 0.0)
+        p.camera.up = (0.0, 1.0, 0.0)
+        p.reset_camera()
 
-	end_time = time.time()  # End time logging
-	logger.info(f"LoD mapping execution time: {end_time - start_time:.4f} seconds")
+        for obj in objects:
+            color = _resolve_color(obj["properties"], style_rules)
+            for mesh in obj["geometry"]:
+                pv_mesh = mesh.to_pyvista() if hasattr(mesh, "to_pyvista") else mesh
+                p.add_mesh(pv_mesh, smooth_shading=False, color=color)
 
-	if show_flag:
-		# 3D view
-		p = pv.Plotter()
-		camera = pv.Camera()
-		p.camera = camera
-		p.camera.position = (0.0, 0.0, 200.0)
-		p.camera.focal_point = (0.0, 0.0, 0.0)
-		p.camera.up = (0.0, 1.0, 0.0)
+        p.show_axes()
+        p.background_color = "black"
+        p.reset_camera()
+        p.show(title="City 3D buildings viewer")
 
-		# zoom extents
-		p.reset_camera() # shortcut key 'v' maximizes the view
-
-		for obj in objects:
-			meshes = obj['geometry']
-			properties = obj['properties']
-
-			''' 
-			if re.search('고양종합터미널', properties['BLDG_NM']):
-				c = (1.0, 0.2, 0.2)
-			elif re.search('국민체육센타', properties['BLDG_NM']):
-				c = (0.2, 1.0, 0.2)
-			else:
-				c = (0.5, 0.5, 0.5)
-			''' 
-			c = (random.uniform(0.3, 1), random.uniform(0.3, 1), random.uniform(0.2, 0.3))
-			for mesh in meshes:
-				p.add_mesh(mesh, smooth_shading=False, color=c)
-				
-		p.show_axes()
-		p.background_color = 'black'
-
-		p.reset_camera()
-		p.show(title='City 3D buildings viewer') 
+    return objects
 
 
-if __name__ == '__main__':
-	mapping('LoD1_mapping_example.json')
+if __name__ == "__main__":
+    mapping_path = sys.argv[1] if len(sys.argv) > 1 else "LoD1_mapping_example.json"
+    show = "--show" in sys.argv
+    mapping(mapping_path, show_flag=show)

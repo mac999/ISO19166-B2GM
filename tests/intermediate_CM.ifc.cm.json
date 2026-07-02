@@ -1,0 +1,14 @@
+{
+  "source_crs": "EPSG:4326",
+  "dest_crs": "EPSG:3857",
+  "source_origin": {
+    "lon": -87.63939999972223,
+    "lat": 41.8744,
+    "elevation": 0.0
+  },
+  "dest_origin": {
+    "x": -9755973.381397098,
+    "y": 5142183.701609074,
+    "elevation": 0.0
+  }
+}
