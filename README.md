@@ -121,3 +121,6 @@ The suite (`tests/`) covers the conceptual model, PD filtering, CM coordinate
 transforms, EM/LM rule matching, GIS XML serialisation, IFC parsing and the
 full end-to-end pipeline. Tests that need the sample IFC or optional
 dependencies are skipped automatically when those are unavailable.
+
+# Author
+Taewook kang, Ph.D, laputa99999@gmail.com
