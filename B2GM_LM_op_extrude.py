@@ -13,8 +13,16 @@ The geometry generation is *general purpose* and dataset agnostic:
   GeoJSON, and ``pyvista`` only to *visualise*; extrusion and OBJ/CSV export
   work without them.
 
+Conventions:
+        By default the LoD-mapping config lives under ``input_data/`` and every
+        result (OBJ meshes + a properties CSV) is written under ``output/`` - the
+        same layout the main pipeline (``B2GM_main.py``) uses.  A bare
+        ``python B2GM_LM_op_extrude.py`` runs the shipped example end to end.
+
 Usage:
-        python B2GM_LM_op_extrude.py <mapping_file.json>
+        python B2GM_LM_op_extrude.py
+        python B2GM_LM_op_extrude.py --config input_data/LoD1_mapping_example.json
+        python B2GM_LM_op_extrude.py --show     # + open the 3D viewer (pyvista)
 
 Reference:
         ISO/TS 19166 - Geographic information - BIM to GIS conceptual mapping.
@@ -26,7 +34,7 @@ Date:
         2024-01-02, 2024-06-22 (generalised 2026-07)
 """
 
-import numpy as np, random, json, re, os, sys, time, logging, csv
+import numpy as np, random, json, re, os, sys, time, logging, csv, argparse
 from shapely.geometry import Polygon, MultiPolygon
 from pyproj import CRS, Transformer
 from tqdm import tqdm
@@ -138,6 +146,30 @@ def _num(value, default=0.0):
         return default
 
 
+def _read_footprints(input_geojson):
+    """Yield ``(shapely_geometry, properties_dict)`` for every GeoJSON feature.
+
+    Uses ``geopandas`` when available; otherwise falls back to the stdlib
+    ``json`` reader plus ``shapely.geometry.shape`` (both already required), so
+    the extrusion runs without the optional ``geopandas`` dependency.
+    """
+    if gpd is not None:
+        gdf = gpd.read_file(input_geojson)
+        for _, row in gdf.iterrows():
+            props = {k: v for k, v in row.items() if k != "geometry"}
+            yield row["geometry"], props
+        return
+
+    from shapely.geometry import shape
+
+    with open(input_geojson, encoding="utf-8") as f:
+        data = json.load(f)
+    features = data.get("features", []) if isinstance(data, dict) else []
+    for feat in features:
+        geom = feat.get("geometry")
+        yield (shape(geom) if geom else None), (feat.get("properties") or {})
+
+
 def extrude_geojson(geometry_mapping, input_geojson, base_offset=(0.0, 0.0, 0.0)):
     """Extrude every footprint in a GeoJSON file into LOD1 solids.
 
@@ -153,8 +185,10 @@ def extrude_geojson(geometry_mapping, input_geojson, base_offset=(0.0, 0.0, 0.0)
     transform_utm       reproject (lon,lat) -> UTM before extrude  False
     height_scale        multiplier on the computed height          1.0
     ==================  =========================================  ==========
+
+    Reading GeoJSON works with or without ``geopandas`` (see
+    :func:`_read_footprints`).
     """
-    _require(gpd, "geopandas")
     meta = geometry_mapping or {}
     storey_height = _num(meta.get("storey_height", 3.0), 3.0)
     gnd_field = meta.get("ground_storey")
@@ -163,12 +197,10 @@ def extrude_geojson(geometry_mapping, input_geojson, base_offset=(0.0, 0.0, 0.0)
     transform_utm = bool(meta.get("transform_utm", False))
     height_scale = _num(meta.get("height_scale", 1.0), 1.0)
 
-    gdf = gpd.read_file(input_geojson)
+    rows = list(_read_footprints(input_geojson))
 
     features = []
-    for _, row in tqdm(gdf.iterrows(), total=len(gdf), desc="extruding"):
-        properties = {k: v for k, v in row.items() if k != "geometry"}
-
+    for geometry, properties in tqdm(rows, total=len(rows), desc="extruding"):
         if gnd_field or ugr_field:
             ground = _num(properties.get(gnd_field)) if gnd_field else 0.0
             under = _num(properties.get(ugr_field)) if ugr_field else 0.0
@@ -179,7 +211,6 @@ def extrude_geojson(geometry_mapping, input_geojson, base_offset=(0.0, 0.0, 0.0)
         if building_height <= 0:
             building_height = default_height
 
-        geometry = row["geometry"]
         if isinstance(geometry, Polygon):
             polys = [geometry]
         elif isinstance(geometry, MultiPolygon):
@@ -283,8 +314,9 @@ def mapping(mapping_file, show_flag=False):
     for g in cfg["geometry"]:
         base_offset = g.get("base_offset", [0.0, 0.0, 0.0])
         features = extrude_geojson(g, g["input"], base_offset)
-        output_folder = g.get("output", "./output")
+        output_folder = g.get("output", os.path.join("output", "lod1_buildings"))
         save_mesh_excel(features, output_folder)
+        logger.info("wrote %d building(s) to %s", sum(len(feat["geometry"]) for feat in features), output_folder)
         objects.extend(features)
 
     logger.info("LoD mapping execution time: %.4f seconds", time.time() - start_time)
@@ -312,7 +344,55 @@ def mapping(mapping_file, show_flag=False):
     return objects
 
 
+DEFAULT_CONFIG = os.path.join("input_data", "LoD1_mapping_example.json")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog="B2GM_LM_op_extrude.py",
+        description=(
+            "ISO 19166 B2G LM 'extrude' operator (Clause 9, Table 8).\n\n"
+            "Reads building footprints (GeoJSON) listed in a LoD-mapping config and\n"
+            "generates GIS LOD1 block models by extruding each footprint to a height\n"
+            "derived from its storey-count attributes. Each solid is exported as a\n"
+            "Wavefront OBJ mesh plus a CSV of the source attributes.\n\n"
+            "By convention the config lives under 'input_data/' and every result is\n"
+            "written under 'output/'. These are the defaults, so a bare\n"
+            "'python B2GM_LM_op_extrude.py' runs the shipped example end to end."
+        ),
+        epilog=(
+            "Config (JSON) keys per 'geometry' block:\n"
+            "  input               GeoJSON of building footprints\n"
+            "  output              destination folder for the OBJ + CSV results\n"
+            "  ground_storey       property name for above-ground storey count\n"
+            "  underground_storey  property name for below-ground storey count\n"
+            "  storey_height       metres per storey (default 3.0)\n"
+            "  transform_utm       reproject (lon,lat) -> UTM before extruding\n"
+            "  height_scale        multiplier on the computed height\n"
+            "  base_offset         [x,y,z] local origin subtracted from vertices\n\n"
+            "Examples:\n"
+            "  # Run the shipped example (input_data/ -> output/)\n"
+            "  python B2GM_LM_op_extrude.py\n\n"
+            "  # Explicit config, then open the 3D viewer\n"
+            "  python B2GM_LM_op_extrude.py --config input_data/LoD1_mapping_example.json --show"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("config", nargs="?", default=DEFAULT_CONFIG,
+                        help=f"LoD-mapping config JSON (default: {DEFAULT_CONFIG})")
+    parser.add_argument("--config", dest="config_opt", default=None,
+                        help="Same as the positional config argument (keyword form)")
+    parser.add_argument("--show", action="store_true",
+                        help="Open the 3D viewer after extrusion (requires pyvista)")
+    args = parser.parse_args()
+
+    config_path = args.config_opt or args.config
+    if not os.path.exists(config_path):
+        logger.error("Config file does not exist: %s", config_path)
+        return
+
+    mapping(config_path, show_flag=args.show)
+
+
 if __name__ == "__main__":
-    mapping_path = sys.argv[1] if len(sys.argv) > 1 else "LoD1_mapping_example.json"
-    show = "--show" in sys.argv
-    mapping(mapping_path, show_flag=show)
+    main()

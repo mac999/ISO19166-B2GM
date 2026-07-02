@@ -13,8 +13,16 @@ Stages share a ``context`` dict so element mapping (EM) can hand its result to
 LoD mapping (LM) without re-parsing intermediate files.  Each stage also writes
 its output file for inspection.
 
+Conventions:
+    Input data and the mapping/pipeline config live under ``input_data/`` and
+    all results are written under ``output/``.  Both are the CLI defaults, so a
+    bare ``python B2GM_main.py`` runs the shipped example end to end.
+
 Usage:
-    python B2GM_main.py --input building.ifc --output city.gml --pipeline B2GM_example.json
+    python B2GM_main.py
+    python B2GM_main.py --input input_data/duplex_apartment.ifc \
+                        --pipeline input_data/B2GM_example.json \
+                        --output-dir output
 
 Author:
     Taewook Kang (laputa99999@gmail.com)
@@ -173,24 +181,32 @@ _STAGE_FUNCS = {
 }
 
 
-def mapping_ifc_to_target(input_file: str, output_file: str, pipeline_file: str) -> Dict[str, Any]:
-    """Run the full pipeline described by ``pipeline_file`` on ``input_file``."""
+def mapping_ifc_to_target(input_file: str, output_file: str, pipeline_file: str,
+                          output_dir: str = "output") -> Dict[str, Any]:
+    """Run the full pipeline described by ``pipeline_file`` on ``input_file``.
+
+    Every intermediate and final artefact is written under ``output_dir`` so the
+    source tree stays clean.  A stage ``output`` is treated as a bare filename
+    (its directory part is ignored) and re-rooted at ``output_dir``.
+    """
     with open(pipeline_file, "r", encoding="utf-8") as f:
         pipelines = json.load(f)
 
     pipeline: List[Dict[str, Any]] = pipelines["BIM_GIS_mapping.pipeline"]
 
+    os.makedirs(output_dir, exist_ok=True)
+
     context: Dict[str, Any] = {}
     current_input = input_file
-    final_output = output_file
+    final_output = os.path.join(output_dir, os.path.basename(output_file))
 
     for stage in pipeline:
         stage_type = stage.get("type")
         if "output" in stage:
-            current_output = stage["output"]
+            current_output = os.path.join(output_dir, os.path.basename(stage["output"]))
         else:
-            fname, fext = os.path.splitext(current_input)
-            current_output = f"{fname}_{stage_type}{fext}"
+            fname, fext = os.path.splitext(os.path.basename(current_input))
+            current_output = os.path.join(output_dir, f"{fname}_{stage_type}{fext}")
 
         func = _STAGE_FUNCS.get(stage_type)
         if func is None:
@@ -207,19 +223,70 @@ def mapping_ifc_to_target(input_file: str, output_file: str, pipeline_file: str)
     return context
 
 
+DEFAULT_INPUT = os.path.join("input_data", "duplex_apartment.ifc")
+DEFAULT_PIPELINE = os.path.join("input_data", "B2GM_example.json")
+DEFAULT_OUTPUT_DIR = "output"
+DEFAULT_OUTPUT = "city.gml"
+
+
 def main():
-    parser = argparse.ArgumentParser(description="ISO 19166 B2GM BIM-to-GIS mapping pipeline")
-    parser.add_argument("--input", default="sample_file/duplex_apartment.ifc", help="Input IFC file")
-    parser.add_argument("--output", default="city.gml", help="Output CityGML file")
-    parser.add_argument("--pipeline", default="B2GM_example.json", help="Mapping pipeline JSON")
+    parser = argparse.ArgumentParser(
+        prog="B2GM_main.py",
+        description=(
+            "ISO 19166 B2GM BIM-to-GIS conceptual mapping pipeline.\n\n"
+            "Runs an IFC (BIM) file through four mapping stages driven by a pipeline\n"
+            "JSON config:\n"
+            "  PD  Perspective Definition  - select the required BIM subset\n"
+            "  CM  Coordinate Mapping      - source CRS -> destination CRS\n"
+            "  EM  Element Mapping         - IFC element -> GIS/CityGML element\n"
+            "  LM  LoD Mapping             - assign a GIS Level-of-Detail\n\n"
+            "By convention input data and the pipeline config live under 'input_data/'\n"
+            "and every result (intermediate + final) is written under 'output/'.\n"
+            "These are the defaults, so a bare 'python B2GM_main.py' runs the shipped\n"
+            "example end to end."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  # Run the shipped example (input_data/ -> output/)\n"
+            "  python B2GM_main.py\n\n"
+            "  # Explicit paths\n"
+            "  python B2GM_main.py --input input_data/duplex_apartment.ifc \\\n"
+            "                      --pipeline input_data/B2GM_example.json \\\n"
+            "                      --output-dir output\n\n"
+            "  # Change the final CityGML filename (still written under --output-dir)\n"
+            "  python B2GM_main.py --output my_city.gml\n\n"
+            "Outputs written to <output-dir>/ (names come from the pipeline JSON):\n"
+            "  intermediate.ifc     + .pd.json   PD perspective (selected elements)\n"
+            "  intermediate_CM.ifc  + .cm.json   CM georeferencing summary\n"
+            "  city.gml                          EM result (CityGML)\n"
+            "  city_LoD.gml                      LM result (CityGML with per-element LoD)"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("--input", default=DEFAULT_INPUT,
+                        help=f"Input IFC file (default: {DEFAULT_INPUT})")
+    parser.add_argument("--pipeline", default=DEFAULT_PIPELINE,
+                        help=f"Mapping pipeline JSON config (default: {DEFAULT_PIPELINE})")
+    parser.add_argument("--output-dir", default=DEFAULT_OUTPUT_DIR, dest="output_dir",
+                        help=f"Directory for all intermediate and final results (default: {DEFAULT_OUTPUT_DIR})")
+    parser.add_argument("--output", default=DEFAULT_OUTPUT,
+                        help=f"Final CityGML filename, written under --output-dir (default: {DEFAULT_OUTPUT})")
     args = parser.parse_args()
+
+    if not os.path.exists(args.input):
+        logger.error("Input file does not exist: %s", args.input)
+        return
 
     ext = os.path.splitext(args.input)[1].lower()
     if ext != ".ifc":
         logger.error("Input must be an .ifc file, got: %s", args.input)
         return
 
-    mapping_ifc_to_target(args.input, args.output, args.pipeline)
+    if not os.path.exists(args.pipeline):
+        logger.error("Pipeline config does not exist: %s", args.pipeline)
+        return
+
+    mapping_ifc_to_target(args.input, args.output, args.pipeline, args.output_dir)
     logging.info("Finished")
 
 

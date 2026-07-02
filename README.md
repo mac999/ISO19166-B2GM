@@ -48,21 +48,45 @@ pip install -r requirements.txt
 
 ## Run
 
+Input data and the pipeline config live under `input_data/`; **all** results
+(intermediate + final) are written under `output/`. These are the defaults, so a
+bare command runs the shipped example end to end:
+
 ```powershell
-python B2GM_main.py --input sample_file/duplex_apartment.ifc --output city.gml --pipeline B2GM_example.json
+python B2GM_main.py
 ```
 
-Outputs (paths come from the pipeline file):
+Equivalent explicit form:
+
+```powershell
+python B2GM_main.py --input input_data/duplex_apartment.ifc `
+                    --pipeline input_data/B2GM_example.json `
+                    --output-dir output
+```
+
+`python B2GM_main.py --help` lists every option and shows worked examples.
+
+| Option         | Default                            | Meaning                                            |
+|----------------|------------------------------------|----------------------------------------------------|
+| `--input`      | `input_data/duplex_apartment.ifc`  | Source IFC (BIM) file                              |
+| `--pipeline`   | `input_data/B2GM_example.json`     | Mapping pipeline JSON config                       |
+| `--output-dir` | `output`                           | Directory for every intermediate and final result |
+| `--output`     | `city.gml`                         | Final CityGML filename (written under `--output-dir`) |
+
+Outputs written to `output/` (filenames come from the pipeline file):
 
 - `intermediate.ifc`      + `intermediate.ifc.pd.json`  — PD perspective (selected elements)
 - `intermediate_CM.ifc`   + `intermediate_CM.ifc.cm.json` — CM georeferencing summary
 - `city.gml`              — EM result (CityGML)
 - `city_LoD.gml`          — LM result (CityGML with `<lod>` per element)
 
+A stage's `output` in the pipeline JSON is treated as a bare filename and
+re-rooted at `--output-dir`, so the source tree stays clean.
+
 Each stage is also runnable stand-alone, e.g.:
 
 ```powershell
-python B2GM_element.py --input sample_file/duplex_apartment.ifc --output city.gml --option B2GM_example.json
+python B2GM_element.py --input input_data/duplex_apartment.ifc --output output/city.gml --option input_data/B2GM_example.json
 ```
 
 ## Pipeline configuration
@@ -104,12 +128,21 @@ OP.void(wall_element)           # window/door/opening sub-elements
 Footprint extrusion for whole cities (GeoJSON in, OBJ/CSV out) is driven entirely
 by the config file — footprint attribute names, storey height, base offset,
 CRS transform and per-building colouring are all parameters, nothing is
-hard-coded:
+hard-coded. It follows the same convention as the main pipeline: the config
+lives under `input_data/` and results are written under `output/`, so a bare
+command runs the shipped example (`input_data/GY_PICK_20240603a.geojson` →
+`output/lod1_buildings/`):
 
 ```powershell
-python B2GM_LM_op_extrude.py LoD1_mapping_example.json         # extrude + export
-python B2GM_LM_op_extrude.py LoD1_mapping_example.json --show  # 3D viewer (pyvista)
+python B2GM_LM_op_extrude.py                                              # extrude + export
+python B2GM_LM_op_extrude.py --config input_data/LoD1_mapping_example.json
+python B2GM_LM_op_extrude.py --show                                       # + 3D viewer (pyvista)
 ```
+
+`python B2GM_LM_op_extrude.py --help` documents every config key. GeoJSON is read
+with `geopandas` when installed, otherwise via the stdlib `json` reader plus
+`shapely` (both already required), so the example runs without any optional
+dependency.
 
 ## Tests
 
