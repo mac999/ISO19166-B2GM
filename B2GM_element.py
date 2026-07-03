@@ -66,9 +66,18 @@ class ElementRule:
 
         The ``source`` is a full-match regular expression (use ``.*Wall.*`` for
         substring matching), so ``IfcBuilding`` does not match ``IfcBuildingStorey``.
+
+        When the element carries an IFC ``PredefinedType`` (e.g. an ``IfcSlab``
+        with ``ROOF``), a compound candidate ``"<ifc_type>.<PredefinedType>"``
+        (e.g. ``"IfcSlab.ROOF"``) is also matched, so a rule can refine a type by
+        its predefined kind while a plain ``"IfcSlab"`` rule still matches every
+        slab.
         """
+        ifc_type = obj.get("ifc_type", "")
+        predefined = obj.get("predefined_type", "")
         candidates = [
-            obj.get("ifc_type", ""),
+            ifc_type,
+            f"{ifc_type}.{predefined}" if ifc_type and predefined else "",
             obj.get("name", ""),
             obj.get("code", ""),
         ]

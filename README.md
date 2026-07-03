@@ -25,7 +25,7 @@ See `doc/fig1.JPG` for the conceptual data model and mapping flow.
 |---------------------------|------|
 | `B2GM_model.py`           | Common conceptual data model (`element`, `geometry`, `property_set`, `property`, `relationship`, `LOD`, `model`) |
 | `B2GM_BIM.py`             | BIM side — parses IFC into B2GM objects (tags each with a stable `ifc_type`) |
-| `B2GM_GIS.py`             | GIS side — serialises mapped objects to a (simplified) CityGML XML file |
+| `B2GM_GIS.py`             | GIS side — serialises mapped objects to a **renderable CityGML 2.0** file (geometry + `gml:Envelope`) |
 | `B2GM_PD.py`              | PD stage — perspective definition + element selection filters |
 | `B2GM_CM.py`              | CM stage — CRS transforms (pyproj) + IFC georeference reading (DMS → degrees) |
 | `B2GM_element.py`         | EM stage — element mapping rules (`source` → `destination`, `PSet_operation`) + CLI |
@@ -77,8 +77,23 @@ Outputs written to `output/` (filenames come from the pipeline file):
 
 - `intermediate.ifc`      + `intermediate.ifc.pd.json`  — PD perspective (selected elements)
 - `intermediate_CM.ifc`   + `intermediate_CM.ifc.cm.json` — CM georeferencing summary
-- `city.gml`              — EM result (CityGML)
-- `city_LoD.gml`          — LM result (CityGML with `<lod>` per element)
+- `city.gml`              — EM result (CityGML 2.0)
+- `city_LoD.gml`          — LM result (CityGML 2.0, LoD recorded as a generic attribute)
+
+Both are **renderable CityGML 2.0**: the BIM parser extracts each element's
+triangulated geometry (world coordinates, via ifcopenshell's geometry engine),
+and the GIS side writes a `gml:Envelope` plus one `bldg:Building` whose
+sub-features carry real geometry — thematic boundary surfaces
+(`bldg:WallSurface`, `RoofSurface`, `FloorSurface`, `CeilingSurface`,
+`GroundSurface`) as `bldg:lod2MultiSurface`, and the remaining features
+(windows, doors, rooms, installations) as `bldg:BuildingInstallation`
+(`bldg:lod2Geometry`). IFC type, GUID, the B2GM LoD name and every property-set
+value are preserved as `gen:stringAttribute` generic attributes, so no element
+is lost. Open either file in a CityGML viewer to see the model.
+
+> The geometry is written at CityGML `lod2MultiSurface` (the minimum LoD valid
+> for thematic boundary surfaces); the B2GM LoD-mapping result (e.g. `LOD1`) is
+> kept alongside as the `lod` generic attribute.
 
 A stage's `output` in the pipeline JSON is treated as a bare filename and
 re-rooted at `--output-dir`, so the source tree stays clean.
@@ -102,6 +117,45 @@ python B2GM_element.py --input input_data/duplex_apartment.ifc --output output/c
 `source` / `class` patterns are **full-match** regular expressions, so
 `IfcBuilding` does **not** match `IfcBuildingStorey` (use `.*Wall.*` for
 substring matching).
+
+### Full-element mapping
+
+The shipped `input_data/B2GM_example.json` maps **every** element of the input
+IFC to an appropriate CityGML feature — not just the building. Its PD `data_view`
+selects all classes (`class: ".*"`) so nothing is dropped before element
+mapping, and the EM stage carries one rule per IFC type, evaluated top-down
+(**first full-match wins**) with a trailing `.*` catch-all so no element is ever
+lost.
+
+The BIM parser also exposes each element's IFC `PredefinedType`, so a rule can
+**refine a type by its predefined kind** using a compound source
+`<ifc_type>.<PredefinedType>` (e.g. `IfcSlab\.ROOF`); a plain `IfcSlab` rule
+still matches every slab, and the ordering (specific before generic) resolves
+the rest:
+
+| IFC type (source) | CityGML feature |
+|-------------------|-----------------|
+| `IfcBuilding` | `CityModel.Building` |
+| `IfcBuildingStorey` | `BuildingStorey` |
+| `IfcSpace` | `Room` |
+| `IfcWall`, `IfcWallStandardCase` (`IfcWall.*`) | `WallSurface` |
+| `IfcSlab\.ROOF` | `RoofSurface` |
+| `IfcSlab\.FLOOR`, `IfcSlab\.LANDING`, `IfcSlab` *(generic)* | `FloorSurface` |
+| `IfcSlab\.BASESLAB` | `GroundSurface` |
+| `IfcWindow` | `Window` |
+| `IfcDoor` | `Door` |
+| `IfcCovering\.CEILING` | `CeilingSurface` |
+| `IfcCovering\.FLOORING` | `FloorSurface` |
+| `IfcCovering`, `IfcBeam`, `IfcColumn`, `IfcMember`, `IfcRailing`, `IfcStair` | `BuildingInstallation` |
+| `IfcSite` | `LandUse` |
+| *(any other)* `.*` | `GenericCityObject` |
+
+For the sample `duplex_apartment.ifc` this maps all **174** elements: 57
+`WallSurface`, 24 `Window`, 21 `Room`, 20 `FloorSurface`, 18
+`BuildingInstallation`, 14 `Door`, 13 `CeilingSurface`, 4 `BuildingStorey`, 1
+`RoofSurface`, 1 `LandUse`, 1 `CityModel.Building` — the 21 slabs correctly
+split into 20 floors + 1 roof, and the 13 ceiling coverings into
+`CeilingSurface`.
 
 ## B2G LM geometry operators
 

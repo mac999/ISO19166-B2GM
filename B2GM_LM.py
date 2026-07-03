@@ -47,8 +47,17 @@ class LoDRule:
         return cls(d.get("source", ".*"), lod)
 
     def matches(self, obj: Dict[str, Any]) -> bool:
-        # source is a full-match regex, consistent with element (EM) mapping
-        candidates = [obj.get("ifc_type", ""), obj.get("name", ""), obj.get("code", "")]
+        # source is a full-match regex, consistent with element (EM) mapping;
+        # a compound "<ifc_type>.<PredefinedType>" candidate lets a LoD rule
+        # refine by predefined kind (e.g. "IfcSlab.ROOF").
+        ifc_type = obj.get("ifc_type", "")
+        predefined = obj.get("predefined_type", "")
+        candidates = [
+            ifc_type,
+            f"{ifc_type}.{predefined}" if ifc_type and predefined else "",
+            obj.get("name", ""),
+            obj.get("code", ""),
+        ]
         return any(c and re.fullmatch(self.source, str(c)) for c in candidates)
 
 
