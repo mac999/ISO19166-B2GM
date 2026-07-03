@@ -1,0 +1,875 @@
+{
+  "logic_view": "",
+  "selected": [
+    {
+      "name": "IfcSite",
+      "ifc_type": "IfcSite",
+      "GUID": "1xS3BCk291UvhgP2a6eflN"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "3Y4YRln2r91vflHcHE5ITs"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "3Y4YRln2r91vflHcHE5ITm"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "3Y4YRln2r91vflHcHE5ITn"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "3Y4YRln2r91vflHcHE5ITp"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "3Y4YRln2r91vflHcHE5IVJ"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "3Y4YRln2r91vflHcHE5IVT"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "3Y4YRln2r91vflHcHE5IVI"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "3Y4YRln2r91vflHcHE5IVS"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "1CZILmCaHETO8tf3SgGEXu"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "1CZILmCaHETO8tf3SgGEWh"
+    },
+    {
+      "name": "IfcBeam",
+      "ifc_type": "IfcBeam",
+      "GUID": "2OrWItJ6zAwBNp0OUxK$Dw"
+    },
+    {
+      "name": "IfcBeam",
+      "ifc_type": "IfcBeam",
+      "GUID": "2OrWItJ6zAwBNp0OUxK$Dx"
+    },
+    {
+      "name": "IfcBeam",
+      "ifc_type": "IfcBeam",
+      "GUID": "2OrWItJ6zAwBNp0OUxK$Du"
+    },
+    {
+      "name": "IfcBeam",
+      "ifc_type": "IfcBeam",
+      "GUID": "2OrWItJ6zAwBNp0OUxK$Dv"
+    },
+    {
+      "name": "IfcBeam",
+      "ifc_type": "IfcBeam",
+      "GUID": "2OrWItJ6zAwBNp0OUxK$CR"
+    },
+    {
+      "name": "IfcBeam",
+      "ifc_type": "IfcBeam",
+      "GUID": "2OrWItJ6zAwBNp0OUxK$Bq"
+    },
+    {
+      "name": "IfcBeam",
+      "ifc_type": "IfcBeam",
+      "GUID": "2OrWItJ6zAwBNp0OUxK$8W"
+    },
+    {
+      "name": "IfcBeam",
+      "ifc_type": "IfcBeam",
+      "GUID": "2OrWItJ6zAwBNp0OUxK_l8"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "1aj$VJZFn2TxepZUBcKphf"
+    },
+    {
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "1aj$VJZFn2TxepZUBcKpac"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "1aj$VJZFn2TxepZUBcKpee"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "1aj$VJZFn2TxepZUBcKpZw"
+    },
+    {
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "1aj$VJZFn2TxepZUBcKp$i"
+    },
+    {
+      "name": "IfcRailing",
+      "ifc_type": "IfcRailing",
+      "GUID": "21ldoMpbP4VfsJ0XGY_335"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "1aj$VJZFn2TxepZUBcKpvt"
+    },
+    {
+      "name": "IfcRailing",
+      "ifc_type": "IfcRailing",
+      "GUID": "21ldoMpbP4VfsJ0XGY_34P"
+    },
+    {
+      "name": "IfcMember",
+      "ifc_type": "IfcMember",
+      "GUID": "01KzA4SPn5IOODwLEb5RNY"
+    },
+    {
+      "name": "IfcMember",
+      "ifc_type": "IfcMember",
+      "GUID": "37Fy90kSD2PvviizyM7EKl"
+    },
+    {
+      "name": "IfcStair",
+      "ifc_type": "IfcStair",
+      "GUID": "21ldoMpbP4VfsJ0XGY_34d"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0dxE1Sy6nDqfpDb5vIMNiA"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0dxE1Sy6nDqfpDb5vIMN_Z"
+    },
+    {
+      "name": "IfcCovering",
+      "ifc_type": "IfcCovering",
+      "GUID": "3bXiCStxP6Fgxdej$yc55m"
+    },
+    {
+      "name": "IfcCovering",
+      "ifc_type": "IfcCovering",
+      "GUID": "3bXiCStxP6Fgxdej$yc55k"
+    },
+    {
+      "name": "IfcCovering",
+      "ifc_type": "IfcCovering",
+      "GUID": "3bXiCStxP6Fgxdej$yc55c"
+    },
+    {
+      "name": "IfcCovering",
+      "ifc_type": "IfcCovering",
+      "GUID": "3bXiCStxP6Fgxdej$yc55U"
+    },
+    {
+      "name": "IfcCovering",
+      "ifc_type": "IfcCovering",
+      "GUID": "3bXiCStxP6Fgxdej$yc55M"
+    },
+    {
+      "name": "IfcCovering",
+      "ifc_type": "IfcCovering",
+      "GUID": "3bXiCStxP6Fgxdej$yc554"
+    },
+    {
+      "name": "IfcCovering",
+      "ifc_type": "IfcCovering",
+      "GUID": "3bXiCStxP6Fgxdej$yc55E"
+    },
+    {
+      "name": "IfcCovering",
+      "ifc_type": "IfcCovering",
+      "GUID": "3bXiCStxP6Fgxdej$yc52o"
+    },
+    {
+      "name": "IfcCovering",
+      "ifc_type": "IfcCovering",
+      "GUID": "3bXiCStxP6Fgxdej$yc50n"
+    },
+    {
+      "name": "IfcCovering",
+      "ifc_type": "IfcCovering",
+      "GUID": "3bXiCStxP6Fgxdej$yc50U"
+    },
+    {
+      "name": "IfcCovering",
+      "ifc_type": "IfcCovering",
+      "GUID": "3bXiCStxP6Fgxdej$yc50B"
+    },
+    {
+      "name": "IfcCovering",
+      "ifc_type": "IfcCovering",
+      "GUID": "3bXiCStxP6Fgxdej$yc503"
+    },
+    {
+      "name": "IfcCovering",
+      "ifc_type": "IfcCovering",
+      "GUID": "3bXiCStxP6Fgxdej$yc5T8"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1Eo2$BaHX42AEkDvQQDoy2"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1Eo2$BaHX42AEkDvQQDocD"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0jf0rYHfX3RAB3bSIRjmr1"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0jf0rYHfX3RAB3bSIRjmoa"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0jf0rYHfX3RAB3bSIRjmmy"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0jf0rYHfX3RAB3bSIRjmpw"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "3ThA22djr8AQQ9eQMA5s7I"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4ZZ"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4hv"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4aS"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4gQ"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4kJ"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4pU"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4qs"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4oq"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4u1"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4$e"
+    },
+    {
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "1s1jVhK8z0pgKYcr9jt7AB"
+    },
+    {
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "1s1jVhK8z0pgKYcr9jt781"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUten"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUtgP"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUtju"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUtoa"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUtjR"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUtxr"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUt0F"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUt2f"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUt5W"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUt8s"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUt8F"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUtBP"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUtDX"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUtC0"
+    },
+    {
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "2OBrcmyk58NupXoVOHUvR4"
+    },
+    {
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "2OBrcmyk58NupXoVOHUvPL"
+    },
+    {
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "2OBrcmyk58NupXoVOHUvVV"
+    },
+    {
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "2OBrcmyk58NupXoVOHUuXp"
+    },
+    {
+      "name": "IfcRailing",
+      "ifc_type": "IfcRailing",
+      "GUID": "0wkEuT1wr1kOyafLY4v_PH"
+    },
+    {
+      "name": "IfcRailing",
+      "ifc_type": "IfcRailing",
+      "GUID": "0wkEuT1wr1kOyafLY4v_PL"
+    },
+    {
+      "name": "IfcMember",
+      "ifc_type": "IfcMember",
+      "GUID": "1gtrSK5QnDuxDwygd0EDGO"
+    },
+    {
+      "name": "IfcMember",
+      "ifc_type": "IfcMember",
+      "GUID": "34qUFGjJzFKwVWpXe2dTPt"
+    },
+    {
+      "name": "IfcStair",
+      "ifc_type": "IfcStair",
+      "GUID": "0wkEuT1wr1kOyafLY4v_O1"
+    },
+    {
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "1hOSvn6df7F8_7GcBWlSDm"
+    },
+    {
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "1hOSvn6df7F8_7GcBWlSFK"
+    },
+    {
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "1hOSvn6df7F8_7GcBWlS9F"
+    },
+    {
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "1hOSvn6df7F8_7GcBWlS8Z"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlS4Q"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlS1M"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlS2V"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlS_W"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlSnC"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlSp1"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlSga"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlSXO"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlRRL"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlRLx"
+    },
+    {
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "1hOSvn6df7F8_7GcBWlRH8"
+    },
+    {
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "1hOSvn6df7F8_7GcBWlRGQ"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlRBU"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlR72"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "1hOSvn6df7F8_7GcBWlRrM"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLCm"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "1hOSvn6df7F8_7GcBWlRqU"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLEJ"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FL96"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FL8v"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FL9r"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLKI"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLMr"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLJd"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLTF"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLIE"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLPP"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLOH"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLQD"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLR9"
+    },
+    {
+      "name": "IfcWall",
+      "ifc_type": "IfcWall",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FKau"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FKcz"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FK4F"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FK04"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FK1b"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FK3E"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FKEr"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FKE5"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FK9N"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FK80"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FKIu"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FKGS"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FKST"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FKRH"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FKRi"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNbT"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNau"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNld"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNr2"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNhv"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNqI"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNtn"
+    },
+    {
+      "name": "Roof",
+      "ifc_type": "IfcSpace",
+      "GUID": "0pNy6pOyf7JPmXRLgxs3sW"
+    },
+    {
+      "name": "Room",
+      "ifc_type": "IfcSpace",
+      "GUID": "10mjSDZJj9gPS2PrQaxa4o"
+    },
+    {
+      "name": "Stair",
+      "ifc_type": "IfcSpace",
+      "GUID": "10mjSDZJj9gPS2PrQaxa3z"
+    },
+    {
+      "name": "Utility",
+      "ifc_type": "IfcSpace",
+      "GUID": "2gRXFgjRn2HPE$YoDLX3FC"
+    },
+    {
+      "name": "Utility",
+      "ifc_type": "IfcSpace",
+      "GUID": "2gRXFgjRn2HPE$YoDLX3FV"
+    },
+    {
+      "name": "Bedroom 1",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_3A"
+    },
+    {
+      "name": "Bedroom 2",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_39"
+    },
+    {
+      "name": "Bathroom 2",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_3C"
+    },
+    {
+      "name": "Hallway",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_3G"
+    },
+    {
+      "name": "Foyer",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_3Q"
+    },
+    {
+      "name": "Bathroom 1",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_3P"
+    },
+    {
+      "name": "Kitchen",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_3S"
+    },
+    {
+      "name": "Living Room",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_CZ"
+    },
+    {
+      "name": "Bedroom 1",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXrc"
+    },
+    {
+      "name": "Bedroom 2",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXrb"
+    },
+    {
+      "name": "Bathroom 2",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXre"
+    },
+    {
+      "name": "Hallway",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXri"
+    },
+    {
+      "name": "Foyer",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXrr"
+    },
+    {
+      "name": "Bathroom 1",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXru"
+    },
+    {
+      "name": "Kitchen",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXr$"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0iEHWY1$XA8eQeeULq4jDb"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0iEHWY1$XA8eQeeULq4jE6"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0iEHWY1$XA8eQeeULq4jpl"
+    },
+    {
+      "name": "Living Room",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXr2"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0iEHWY1$XA8eQeeULq4j_U"
+    },
+    {
+      "name": "IfcBuilding",
+      "ifc_type": "IfcBuilding",
+      "GUID": "1xS3BCk291UvhgP2a6eflK"
+    },
+    {
+      "name": "Level 1",
+      "ifc_type": "IfcBuildingStorey",
+      "GUID": "1xS3BCk291UvhgP2dvNMKI"
+    },
+    {
+      "name": "Level 2",
+      "ifc_type": "IfcBuildingStorey",
+      "GUID": "1xS3BCk291UvhgP2dvNMQJ"
+    },
+    {
+      "name": "T/FDN",
+      "ifc_type": "IfcBuildingStorey",
+      "GUID": "1xS3BCk291UvhgP2dvNsgp"
+    },
+    {
+      "name": "Roof",
+      "ifc_type": "IfcBuildingStorey",
+      "GUID": "1xS3BCk291UvhgP2dvNtSE"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0iEHWY1$XA8eQeeULq4jZ1"
+    }
+  ]
+}
