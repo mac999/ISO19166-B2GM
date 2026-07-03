@@ -22,8 +22,7 @@ BIM model (IFC) into a GIS model (CityGML) through four well-defined stages.
 <img src="./doc/fig1.JPG" height="200"> </img>  </br>
 <img src="./doc/fig5.png" height="150"> </img>
 <img src="./doc/fig4.png" height="150"> </img>  </br>
-<img src="./doc/fig2.JPG" height="150"> </img> 
-<img src="./doc/fig3.JPG" height="150"> </img>
+<img src="./doc/fig2.JPG" height="250"> </img> 
 </p>
 
 ## Architecture
