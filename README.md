@@ -17,7 +17,14 @@ BIM model (IFC) into a GIS model (CityGML) through four well-defined stages.
 | EM    | Element Mapping         | Map an IFC class to its GIS/CityGML class (e.g. `IfcBuilding` → `CityModel.Building`) |
 | LM    | LoD Mapping             | Assign a GIS Level-of-Detail (LOD0…LOD4)                        |
 
-See `doc/fig1.JPG` for the conceptual data model and mapping flow.
+
+<p align="center">
+<img src="./doc/fig1.JPG" height="200"> </img>
+<img src="./doc/fig5.JPG" height="150"> </img> </br>
+<img src="./doc/fig4.JPG" height="150"> </img>
+<img src="./doc/fig2.JPG" height="150"> </img> </br>
+<img src="./doc/fig3.JPG" height="150"> </img>
+</p>
 
 ## Architecture
 
