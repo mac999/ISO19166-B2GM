@@ -1,7 +1,6 @@
 # ISO 19166 B2GM — BIM to GIS conceptual Mapping
 
-An implementation of the **ISO/TS 19166 B2GM** conceptual framework: mapping a
-BIM model (IFC) into a GIS model (CityGML) through four well-defined stages.
+An implementation of the **ISO/TS 19166 B2GM** conceptual framework: mapping a BIM model (IFC) into a GIS model (CityGML) through four well-defined stages. In fact, I thought there were issues with practical application because standards like ISO often only have standard documents without providing tools. Taking this into consideration, I plan to continue updating it whenever I have time.
 
 ```
  IFC (BIM)  ──►  PD  ──►  CM  ──►  EM  ──►  LM  ──►  CityGML (GIS)
@@ -16,7 +15,6 @@ BIM model (IFC) into a GIS model (CityGML) through four well-defined stages.
 | CM    | Coordinate Mapping      | Transform source CRS → destination CRS (e.g. EPSG:4326 → EPSG:3857) |
 | EM    | Element Mapping         | Map an IFC class to its GIS/CityGML class (e.g. `IfcBuilding` → `CityModel.Building`) |
 | LM    | LoD Mapping             | Assign a GIS Level-of-Detail (LOD0…LOD4)                        |
-
 
 <p align="center">
 <img src="./doc/fig1.JPG" height="240"> </img>  </br>
