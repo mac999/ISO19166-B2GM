@@ -62,7 +62,34 @@ def test_resolve_color_is_config_driven_not_hardcoded():
     assert len(fallback) == 3 and all(0.0 <= c <= 1.0 for c in fallback)
 
 
-@pytest.mark.skipif(EX.gpd is not None, reason="geopandas installed; guard not exercised")
-def test_extrude_geojson_requires_geopandas():
-    with pytest.raises(RuntimeError, match="geopandas"):
-        EX.extrude_geojson({}, "missing.geojson", [0, 0, 0])
+def test_extrude_geojson_reads_without_geopandas(tmp_path):
+    # GeoJSON reading falls back to json + shapely when geopandas is absent,
+    # so a valid FeatureCollection extrudes without the optional dependency.
+    import json
+
+    gj = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {"BLDG_NM": "Terminal", "GRD_FL": 3, "UGR_FL": 1},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]],
+                },
+            }
+        ],
+    }
+    path = tmp_path / "footprints.geojson"
+    path.write_text(json.dumps(gj), encoding="utf-8")
+
+    features = EX.extrude_geojson(
+        {"ground_storey": "GRD_FL", "underground_storey": "UGR_FL", "storey_height": 3.0},
+        str(path),
+    )
+    assert len(features) == 1
+    assert features[0]["properties"]["BLDG_NM"] == "Terminal"
+    solid = features[0]["geometry"][0]
+    assert isinstance(solid, OP.Solid)
+    # (3 ground + 1 underground) * 3 m = 12 m tall over a 10x10 footprint
+    assert solid.volume() == pytest.approx(1200.0)

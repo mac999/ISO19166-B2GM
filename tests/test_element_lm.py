@@ -14,6 +14,31 @@ def test_element_rule_fullmatch(bim_objects):
     assert not rule.matches(storey)
 
 
+def test_predefined_type_refines_mapping():
+    """A rule may target '<ifc_type>.<PredefinedType>' while a plain type rule
+    still matches every element of that type (ISO 19166 EM refinement)."""
+    roof_slab = {"ifc_type": "IfcSlab", "predefined_type": "ROOF", "name": "s1", "code": "s1"}
+    floor_slab = {"ifc_type": "IfcSlab", "predefined_type": "FLOOR", "name": "s2", "code": "s2"}
+    plain_slab = {"ifc_type": "IfcSlab", "predefined_type": "", "name": "s3", "code": "s3"}
+
+    rules = EM.rules_from_stage(
+        {
+            "rule": [
+                {"source": r"IfcSlab\.ROOF", "destination": "RoofSurface"},
+                {"source": r"IfcSlab\.FLOOR", "destination": "FloorSurface"},
+                {"source": "IfcSlab", "destination": "FloorSurface"},
+            ]
+        }
+    )
+    assert EM.map_element(roof_slab, rules) == "RoofSurface"
+    assert EM.map_element(floor_slab, rules) == "FloorSurface"
+    # a slab without a predefined type falls through to the generic slab rule
+    assert EM.map_element(plain_slab, rules) == "FloorSurface"
+    # the ROOF-specific rule must NOT match a FLOOR slab
+    roof_only = [EM.ElementRule(r"IfcSlab\.ROOF", "RoofSurface")]
+    assert EM.map_element(floor_slab, roof_only) is None
+
+
 def test_map_element_returns_destination(bim_objects):
     rules = [EM.ElementRule("IfcBuilding", "CityModel.Building")]
     assert EM.map_element(bim_objects[0], rules) == "CityModel.Building"

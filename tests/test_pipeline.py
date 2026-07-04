@@ -10,29 +10,29 @@ import B2GM_main as MAIN
 
 
 def _pipeline_file(tmp_path):
-    """Write a pipeline whose stage outputs live inside tmp_path."""
+    """Write a pipeline whose stage outputs are bare filenames (re-rooted at output_dir)."""
     pipeline = {
         "BIM_GIS_mapping.pipeline": [
             {
                 "type": "PD",
-                "output": str(tmp_path / "intermediate.ifc"),
+                "output": "intermediate.ifc",
                 "data_view": [{"class": "IfcBuilding", "filter": [{"name": ".*", "value": ".*", "type": ".*"}]}],
                 "logic_view": "",
                 "style_view": [],
             },
             {
                 "type": "CM",
-                "output": str(tmp_path / "intermediate_CM.ifc"),
+                "output": "intermediate_CM.ifc",
                 "rule": [{"source": "EPSG:4326", "destination": "EPSG:3857"}],
             },
             {
                 "type": "EM",
-                "output": str(tmp_path / "city.gml"),
+                "output": "city.gml",
                 "rule": [{"source": "IfcBuilding", "destination": "CityModel.Building"}],
             },
             {
                 "type": "LM",
-                "output": str(tmp_path / "city_LoD.gml"),
+                "output": "city_LoD.gml",
                 "rule": [{"source": "IfcBuilding", "lod": "LOD1"}],
             },
         ]
@@ -46,7 +46,9 @@ def _pipeline_file(tmp_path):
 def run_pipeline(tmp_path, sample_ifc):
     pytest.importorskip("ifcopenshell")
     pipeline_file = _pipeline_file(tmp_path)
-    context = MAIN.mapping_ifc_to_target(sample_ifc, str(tmp_path / "city.gml"), pipeline_file)
+    context = MAIN.mapping_ifc_to_target(
+        sample_ifc, "city.gml", pipeline_file, output_dir=str(tmp_path)
+    )
     return tmp_path, context
 
 
@@ -66,10 +68,20 @@ def test_pipeline_final_output_is_valid_lod_citygml(run_pipeline):
     def local(tag):
         return tag.split("}")[-1]
 
-    buildings = [el for el in root.iter() if local(el.tag) == "CityModel.Building"]
+    # CityGML 2.0: one bldg:Building plus a gml:Envelope
+    assert local(root.tag) == "CityModel"
+    buildings = [el for el in root.iter() if local(el.tag) == "Building"]
     assert len(buildings) == 1
-    lods = [el.text for el in root.iter() if local(el.tag) == "lod"]
-    assert lods == ["LOD1"]
+    assert any(local(el.tag) == "Envelope" for el in root.iter())
+    # LM result recorded as a generic attribute
+    lods = [
+        v.text
+        for sa in root.iter()
+        if local(sa.tag) == "stringAttribute" and sa.get("name") == "lod"
+        for v in sa
+        if local(v.tag) == "value"
+    ]
+    assert "LOD1" in lods
 
 
 def test_pipeline_context_has_crs_and_perspective(run_pipeline):
