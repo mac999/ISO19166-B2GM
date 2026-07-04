@@ -213,5 +213,8 @@ transforms, EM/LM rule matching, GIS XML serialisation, IFC parsing and the
 full end-to-end pipeline. Tests that need the sample IFC or optional
 dependencies are skipped automatically when those are unavailable.
 
+# Reference 
+ISO 19166 - https://www.iso.org/standard/90943.html
+
 # Author
 Taewook kang, Ph.D, laputa99999@gmail.com
