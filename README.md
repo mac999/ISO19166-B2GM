@@ -26,8 +26,8 @@ An implementation of the **ISO/TS 19166 B2GM** conceptual framework: mapping a B
 <img src="./doc/fig1.JPG" height="240"> </img>  </br>
 <img src="./doc/fig5.png" height="150"> </img>
 <img src="./doc/fig4.png" height="150"> </img>  </br>
-<img src="./doc/fig2.JPG" height="270"> </img> </br>
-<img src="./doc/fig7.png" height="270"> </img> 
+<img src="./doc/fig7.png" height="230"> </img> </br>
+<img src="./doc/fig2.JPG" height="270"> </img> 
 </p>
 
 ## Architecture
