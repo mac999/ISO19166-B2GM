@@ -37,8 +37,8 @@ all = ["geopandas", "pyvista", "pydeck", "xsdata", "meshio"]
 dev = ["pytest"]
 
 [project.urls]
-Homepage = "https://github.com/mac999/Projects"
-Repository = "https://github.com/mac999/Projects"
+Homepage = "https://github.com/mac999/ISO19166-B2GM"
+Repository = "https://github.com/mac999/ISO19166-B2GM"
 
 [project.scripts]
 b2gm = "B2GM_main:main"                 # full pipeline
