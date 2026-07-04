@@ -1,4 +1,4 @@
-import os, sys, argparse, json, time, datetime, logging, requests, re, csv, random, string
+import os, sys, argparse, json, time, datetime, logging, re, csv, random, string
 import ifcopenshell, ifcopenshell.api
 import B2GM_property, B2GM_model
 from tqdm import tqdm

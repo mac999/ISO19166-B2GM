@@ -243,15 +243,27 @@ def save_models(context: Dict[str, Any], output_dir: str) -> Dict[str, str]:
     return written
 
 
-DEFAULT_INPUT = os.path.join("input_data", "duplex_apartment.ifc")
-DEFAULT_PIPELINE = os.path.join("input_data", "B2GM_example.json")
+_HERE = os.path.dirname(os.path.abspath(__file__))
+
+
+def _bundled(*parts: str) -> str:
+    """Resolve a bundled example path: prefer the current directory (running
+    from a repo clone), else fall back to the location of this module (works for
+    an editable install run from any working directory)."""
+    cwd_path = os.path.join(*parts)
+    if os.path.exists(cwd_path):
+        return cwd_path
+    return os.path.join(_HERE, *parts)
+
+
+DEFAULT_INPUT = _bundled("input_data", "duplex_apartment.ifc")
+DEFAULT_PIPELINE = _bundled("input_data", "B2GM_example.json")
 DEFAULT_OUTPUT_DIR = "output"
 DEFAULT_OUTPUT = "city.gml"
 
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="B2GM_main.py",
         description=(
             "ISO 19166 B2GM BIM-to-GIS conceptual mapping pipeline.\n\n"
             "Runs an IFC (BIM) file through four mapping stages driven by a pipeline\n"

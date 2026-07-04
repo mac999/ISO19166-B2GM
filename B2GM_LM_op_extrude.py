@@ -344,12 +344,20 @@ def mapping(mapping_file, show_flag=False):
     return objects
 
 
-DEFAULT_CONFIG = os.path.join("input_data", "LoD1_mapping_example.json")
+def _bundled_config():
+    """Prefer the current directory's example config, else the copy shipped next
+    to this module (so an editable install works from any working directory)."""
+    cwd_path = os.path.join("input_data", "LoD1_mapping_example.json")
+    if os.path.exists(cwd_path):
+        return cwd_path
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "input_data", "LoD1_mapping_example.json")
+
+
+DEFAULT_CONFIG = _bundled_config()
 
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="B2GM_LM_op_extrude.py",
         description=(
             "ISO 19166 B2G LM 'extrude' operator (Clause 9, Table 8).\n\n"
             "Reads building footprints (GeoJSON) listed in a LoD-mapping config and\n"

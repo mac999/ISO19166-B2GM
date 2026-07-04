@@ -126,6 +126,44 @@ python B2GM_main.py --save-json     # + output/bim_model.json, output/gis_model.
 
 ## Install
 
+Install as a package (adds the `b2gm` console commands) — from a clone:
+
+```powershell
+pip install .            # or: pip install -e .   (editable / development)
+```
+
+or straight from GitHub:
+
+```powershell
+pip install "git+https://github.com/mac999/Projects.git#subdirectory=cad_gis_pcd/ISO19166-B2GM"
+```
+
+Optional extras: `pip install ".[geo]"` (GeoJSON via geopandas), `".[viz]"`
+(pyvista/pydeck 3D viewers), `".[citygml]"` (typed CityGML via xsdata), or
+`".[all]"`. Core dependencies (ifcopenshell, pyproj, shapely, numpy, tqdm) are
+installed automatically.
+
+Installing exposes four console commands:
+
+| Command | Equivalent module | Purpose |
+|---------|-------------------|---------|
+| `b2gm` | `B2GM_main` | run the full PD → CM → EM → LM pipeline |
+| `b2gm-extrude` | `B2GM_LM_op_extrude` | footprint → LOD1 solid extrusion |
+| `b2gm-em` | `B2GM_element` | element-mapping stage (stand-alone) |
+| `b2gm-lm` | `B2GM_LM` | LoD-mapping stage (stand-alone) |
+
+```powershell
+b2gm --help
+b2gm --input my_building.ifc --pipeline my_pipeline.json --output-dir out
+```
+
+The bundled example (`input_data/`) resolves automatically for a repo clone or an
+editable install, so a bare `b2gm` runs it; a non-editable install has no bundled
+data, so pass `--input`/`--pipeline` explicitly. To build distributables:
+`pip install build && python -m build` (produces `dist/*.whl` and `*.tar.gz`).
+
+Or just install the runtime dependencies without packaging:
+
 ```powershell
 pip install -r requirements.txt
 ```

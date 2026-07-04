@@ -1,0 +1,22 @@
+include README.md
+include LICENSE
+include requirements.txt
+include pytest.ini
+
+# ISO 19166 conceptual schemas
+recursive-include XSD *.XSD
+
+# Bundled example input (config + a small sample IFC/GeoJSON)
+include input_data/B2GM_example.json
+include input_data/B2GM_EM.json
+include input_data/LoD1_mapping_example.json
+include input_data/duplex_apartment.ifc
+include input_data/GY_PICK_20240603a.geojson
+
+# Tests
+recursive-include tests *.py *.json *.geojson
+
+# Exclude generated / bulky artefacts
+prune output
+prune __pycache__
+global-exclude *.pyc

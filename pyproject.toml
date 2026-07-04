@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "iso19166-b2gm"
+version = "0.1.0"
+description = "ISO/TS 19166 B2GM — BIM (IFC) to GIS (CityGML) conceptual mapping pipeline"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [{ name = "Taewook Kang", email = "laputa99999@gmail.com" }]
+keywords = ["ISO19166", "BIM", "GIS", "IFC", "CityGML", "B2GM", "geospatial"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Intended Audience :: Developers",
+]
+
+# Core dependencies required to run the PD -> CM -> EM -> LM pipeline.
+dependencies = [
+    "ifcopenshell",   # IFC (BIM) parsing + geometry
+    "pyproj",         # CRS transforms (CM stage)
+    "shapely",        # 2D geometry (LoD footprints / operators)
+    "numpy",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+geo = ["geopandas"]                 # read GeoJSON in B2GM_LM_op_extrude
+viz = ["pyvista", "pydeck"]         # 3D viewers
+citygml = ["xsdata"]               # typed CityGML output (B2GM_simple_mapping)
+mesh = ["meshio"]
+all = ["geopandas", "pyvista", "pydeck", "xsdata", "meshio"]
+dev = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/mac999/Projects"
+Repository = "https://github.com/mac999/Projects"
+
+[project.scripts]
+b2gm = "B2GM_main:main"                 # full pipeline
+b2gm-extrude = "B2GM_LM_op_extrude:main"  # footprint -> LOD1 extrusion
+b2gm-em = "B2GM_element:main"           # element-mapping stage (stand-alone)
+b2gm-lm = "B2GM_LM:main"                # LoD-mapping stage (stand-alone)
+
+# Flat module layout: each B2GM_*.py is installed as an importable top-level module.
+[tool.setuptools]
+py-modules = [
+    "B2GM_main",
+    "B2GM_model",
+    "B2GM_BIM",
+    "B2GM_GIS",
+    "B2GM_PD",
+    "B2GM_CM",
+    "B2GM_element",
+    "B2GM_LM",
+    "B2GM_LM_operators",
+    "B2GM_LM_op_extrude",
+    "B2GM_property",
+    "B2GM_simple_mapping",
+]
