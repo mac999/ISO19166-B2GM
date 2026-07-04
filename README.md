@@ -3,7 +3,7 @@
 An implementation of the [ISO/TS 19166 B2GM](https://www.iso.org/standard/90943.html) conceptual framework: mapping a BIM model (IFC) into a GIS model (CityGML) through four well-defined stages. In fact, I thought there were issues with practical application because standards like ISO often only have standard documents without providing tools. Taking this into consideration, I plan to continue updating it whenever I have time.
 
 <p align="center">
-<img src="./doc/img6.png" height="200"></img>
+<img src="./doc/img6.png" height="150"></img>
 </p>
 
 ```
