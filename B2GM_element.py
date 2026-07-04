@@ -30,8 +30,33 @@ PSET_REPLACE = "Replace"
 PSET_APPEND = "Append"
 
 
+class EM_source:  # noqa: N801 - ISO 19166 EM_source complexType
+    """Source element name of an EM rule (``EM_source.element``)."""
+
+    def __init__(self, element: str = ""):
+        self.element = element
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"element": self.element}
+
+
+class EM_destination:  # noqa: N801 - ISO 19166 EM_destination complexType
+    """Destination element name of an EM rule (``EM_destination.element``)."""
+
+    def __init__(self, element: str = ""):
+        self.element = element
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"element": self.element}
+
+
 class ElementRule:
-    """A single source(IFC) -> destination(GIS) element mapping rule.
+    """A single source(IFC) -> destination(GIS) element mapping rule (``EM_rule``).
+
+    Mirrors ISO 19166 Table 6 ``EM_rule`` = ``{name, destination, PSet_operation,
+    EM_source, EM_destination}``.  ``source``/``destination`` remain the primary
+    (regex) matching fields; ``em_source``/``em_destination`` expose the same
+    values as the schema's wrapper objects.
 
     ``pset_operation`` follows ISO 19166 Table 5 ``EM_rule.PSet_operation``:
 
@@ -46,11 +71,16 @@ class ElementRule:
         destination: str,
         child_node: str = ".*",
         pset_operation: str = PSET_APPEND,
+        name: str = "",
     ):
+        self.name = name or f"{source}->{destination}"
         self.source = source
         self.destination = destination
         self.child_node = child_node
         self.pset_operation = pset_operation
+        # XSD EM_rule -> EM_source / EM_destination wrappers
+        self.em_source = EM_source(source)
+        self.em_destination = EM_destination(destination)
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> "ElementRule":
@@ -59,7 +89,17 @@ class ElementRule:
             d.get("destination", ""),
             d.get("child_node", ".*"),
             d.get("PSet_operation", d.get("pset_operation", PSET_APPEND)),
+            d.get("name", ""),
         )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "name": self.name,
+            "destination": self.destination,
+            "PSet_operation": self.pset_operation,
+            "EM_source": self.em_source.to_dict(),
+            "EM_destination": self.em_destination.to_dict(),
+        }
 
     def matches(self, obj: Dict[str, Any]) -> bool:
         """Match the rule source against an object's IFC type / name / code.
@@ -84,8 +124,54 @@ class ElementRule:
         return any(c and re.fullmatch(self.source, str(c)) for c in candidates)
 
 
+class EM_ruleset:  # noqa: N801 - ISO 19166 EM_ruleset complexType
+    """A named set of EM rules (ISO 19166 Table 6 ``EM_ruleset``).
+
+    Members: ``{name, description, BIM_model_source, GIS_model_destination,
+    EM_rule(0..*)}``.
+    """
+
+    def __init__(
+        self,
+        name: str = "",
+        description: str = "",
+        bim_model_source: str = "",
+        gis_model_destination: str = "",
+        rules: Optional[List[ElementRule]] = None,
+    ):
+        self.name = name
+        self.description = description
+        self.bim_model_source = bim_model_source
+        self.gis_model_destination = gis_model_destination
+        self.rules: List[ElementRule] = rules if rules is not None else []
+
+    @classmethod
+    def from_stage(cls, stage: Dict[str, Any]) -> "EM_ruleset":
+        return cls(
+            stage.get("name", ""),
+            stage.get("description", ""),
+            stage.get("BIM_model_source", stage.get("input", "")),
+            stage.get("GIS_model_destination", stage.get("output", "")),
+            rules_from_stage(stage),
+        )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "name": self.name,
+            "description": self.description,
+            "BIM_model_source": self.bim_model_source,
+            "GIS_model_destination": self.gis_model_destination,
+            "EM_rule": [r.to_dict() for r in self.rules],
+        }
+
+
 def rules_from_stage(stage: Dict[str, Any]) -> List[ElementRule]:
     return [ElementRule.from_dict(r) for r in stage.get("rule", [])]
+
+
+def ruleset_from_stage(stage: Dict[str, Any]) -> EM_ruleset:
+    """Build the ISO 19166 ``EM_ruleset`` object for a pipeline EM stage."""
+    return EM_ruleset.from_stage(stage)
 
 
 def map_rule(obj: Dict[str, Any], rules: List[ElementRule]) -> Optional[ElementRule]:

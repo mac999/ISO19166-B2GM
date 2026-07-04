@@ -24,6 +24,8 @@ Author:
 
 from __future__ import annotations
 
+import json
+import logging
 import re
 from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape, quoteattr
@@ -136,6 +138,84 @@ class GIS(B2GM_model.model):
 
             f.write("</core:CityModel>\n")
         return written
+
+    def save(self, fname: str, objects: List[Dict[str, Any]], stage: Optional[Dict[str, Any]] = None) -> str:
+        """Serialise mapped GIS objects to JSON per ``B2GM_GIS_model.XSD``.
+
+        The document mirrors the ISO 19166 GIS model UML: a ``GIS_model`` holds
+        ``GIS_element`` entries, each with ``runtime`` / ``LOD`` / ``relationship``
+        / ``property_set`` (member order follows the XSD).  ``runtime.type`` is
+        the mapped GIS class (EM destination), and each ``LOD`` carries its name
+        plus the element geometry as B-rep (GM3-style).
+
+        The destination is taken from ``_destination`` (set by EM) or resolved
+        from the ``stage`` rules; elements with no destination are skipped when
+        rules are present (mirroring :meth:`store`).
+        """
+        rules = B2GM_element.rules_from_stage(stage) if stage else []
+        elements = []
+        for o in objects:
+            destination = o.get("_destination")
+            if destination is None and rules:
+                destination = B2GM_element.map_element(o, rules)
+            if destination is None:
+                if rules:
+                    continue
+                destination = o.get("ifc_type", "")
+            elements.append(
+                {
+                    "runtime": {"type": destination},
+                    "LOD": [
+                        {
+                            "name": o.get("_lod", "LOD1"),
+                            "geometry": B2GM_model.geometry_json(o.get("geometry")),
+                        }
+                    ],
+                    "relationship": B2GM_model.relationships_json(o.get("relationship")),
+                    "property_set": B2GM_model.element_property_sets_json(o),
+                }
+            )
+        document = {"GIS_model": {"GIS_element": elements}}
+        with open(fname, "w", encoding="utf-8") as f:
+            json.dump(document, f, indent=2, ensure_ascii=False, default=str)
+        logging.info("GIS model saved (%d elements) -> %s", len(elements), fname)
+        return fname
+
+    def load(self, fname: str) -> List[Dict[str, Any]]:
+        """Load a ``B2GM_GIS_model.XSD`` JSON file written by :meth:`save`.
+
+        Reconstructs the internal mapped-object dicts, restoring ``_destination``
+        (from ``runtime.type``), ``_lod`` and ``geometry`` (from the first
+        ``LOD``), ``pset``, ``relationship`` and the system ``name`` / ``GUID`` /
+        ``predefined_type``.  The result can be fed straight back to
+        :meth:`store` (to re-emit CityGML) or :meth:`save`.
+        """
+        with open(fname, "r", encoding="utf-8") as f:
+            document = json.load(f)
+
+        elements = (document.get("GIS_model") or {}).get("GIS_element", [])
+        objects: List[Dict[str, Any]] = []
+        for e in elements:
+            system, user = B2GM_model.property_sets_from_json(e.get("property_set"))
+            lod = (e.get("LOD") or [{}])[0]
+            obj: Dict[str, Any] = {
+                "name": system.get("name", ""),
+                "code": system.get("name", ""),
+                "predefined_type": system.get("predefined_type", ""),
+                "type": "struct",
+                "GUID": system.get("GUID", ""),
+                "_destination": (e.get("runtime") or {}).get("type", ""),
+                "_lod": lod.get("name", ""),
+                "pset": user,
+                "relationship": e.get("relationship", []),
+            }
+            geom = B2GM_model.geometry_from_json(lod.get("geometry"))
+            if geom:
+                obj["geometry"] = geom
+            objects.append(obj)
+
+        logging.info("GIS model loaded (%d elements) <- %s", len(objects), fname)
+        return objects
 
     # -- internals ----------------------------------------------------------
     @staticmethod

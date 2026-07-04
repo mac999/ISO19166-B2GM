@@ -127,11 +127,17 @@ class brep:  # noqa: N801
 
 
 class geometry:  # noqa: N801
-    """Geometry of an element, optionally holding a boundary representation."""
+    """Geometry of an element, optionally holding a boundary representation.
+
+    Mirrors the ISO 19166 ``geometry`` complexType (extends ``GM_Solid`` on the
+    BIM side) which carries zero or more ``B-rep`` structures.
+    """
 
     def __init__(self, geom_type: str = "", brep_obj: Optional[brep] = None):
         self.type = geom_type
         self.brep = brep_obj
+        # XSD: geometry -> B-rep (0..*)
+        self.breps: List[brep] = [brep_obj] if brep_obj is not None else []
         self.points: List = []
         # raw source references / attributes (e.g. IfcExtrudedAreaSolid data)
         self.attributes: Dict[str, Any] = {}
@@ -141,8 +147,23 @@ class geometry:  # noqa: N801
             "type": self.type,
             "points": self.points,
             "brep": self.brep.to_dict() if self.brep else None,
+            "breps": [b.to_dict() for b in self.breps],
             "attributes": self.attributes,
         }
+
+
+class geometry2D(geometry):  # noqa: N801
+    """2D geometry (ISO 19166 ``geometry2D``, extends ``geometry``)."""
+
+    def __init__(self, geom_type: str = "2D", brep_obj: Optional[brep] = None):
+        super().__init__(geom_type, brep_obj)
+
+
+class geometry3D(geometry):  # noqa: N801
+    """3D geometry (ISO 19166 ``geometry3D``, extends ``geometry``)."""
+
+    def __init__(self, geom_type: str = "3D", brep_obj: Optional[brep] = None):
+        super().__init__(geom_type, brep_obj)
 
 
 class relationship:  # noqa: N801
@@ -162,13 +183,23 @@ class relationship:  # noqa: N801
 
 
 class LOD:  # noqa: N801
-    """Level of Detail descriptor for the GIS side (LOD0..LOD4)."""
+    """Level of Detail descriptor for the GIS side (LOD0..LOD4).
 
-    def __init__(self, name: str = ""):
+    Mirrors the ISO 19166 GIS-model ``LOD`` complexType: ``{name, geometry(1..*)}``.
+    Each LOD owns one or more :class:`geometry` representations.
+    """
+
+    def __init__(self, name: str = "", geometries: Optional[List[geometry]] = None):
         self.name = name
+        # XSD: LOD -> geometry (1..*)
+        self.geometries: List[geometry] = geometries if geometries is not None else []
+
+    def add_geometry(self, geom: geometry) -> geometry:
+        self.geometries.append(geom)
+        return geom
 
     def to_dict(self) -> Dict[str, Any]:
-        return {"name": self.name}
+        return {"name": self.name, "geometries": [g.to_dict() for g in self.geometries]}
 
 
 class runtime:  # noqa: N801
@@ -204,9 +235,13 @@ class element(object):  # noqa: N801
         super().__init__(name, guid, description)
         self.code: str = name
         self.type: str = "struct"
+        # XSD BIM_element/GIS_element -> runtime (1). Identifies the element kind.
+        self.runtime: runtime = runtime(self.type)
         self.geometries: List[geometry] = []
         self.property_sets: List[property_set] = []
         self.relationships: List[relationship] = []
+        # GIS_element -> LOD (1..*); a single LOD is also accepted via ``lod``.
+        self.lods: List[LOD] = []
         self.lod: Optional[LOD] = None
 
     def add_property_set(self, pset: property_set) -> property_set:
@@ -223,10 +258,12 @@ class element(object):  # noqa: N801
             {
                 "code": self.code,
                 "type": self.type,
+                "runtime": self.runtime.to_dict() if self.runtime else None,
                 "pset": {ps.name: {p.name: p.value for p in ps} for ps in self.property_sets},
                 "geometries": [g.to_dict() for g in self.geometries],
                 "relationships": [r.to_dict() for r in self.relationships],
                 "lod": self.lod.to_dict() if self.lod else None,
+                "lods": [l.to_dict() for l in self.lods],
             }
         )
         return d
@@ -257,6 +294,115 @@ class model:  # noqa: N801
             "relationships": [r.to_dict() for r in self.relationships],
             "runtime": self.runtime.to_dict() if self.runtime else None,
         }
+
+
+# ---------------------------------------------------------------------------
+# XSD-shaped JSON serialisation helpers
+# (B2GM_BIM_model.XSD / B2GM_GIS_model.XSD - property / property_set / geometry)
+# ---------------------------------------------------------------------------
+def property_json(name: str, value: Any, data_type: str = "") -> Dict[str, Any]:
+    """One ISO 19166 ``property`` = ``{name, type, value}`` (type inferred if omitted)."""
+    return {"name": name, "type": data_type or PropertyType.of(value), "value": value}
+
+
+def property_set_json(pset_dict: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """``{pset_name: {prop: value}}`` -> XSD ``property_set`` list ``[{name, property[]}]``."""
+    out: List[Dict[str, Any]] = []
+    for name, props in (pset_dict or {}).items():
+        out.append(
+            {"name": name, "property": [property_json(k, v) for k, v in (props or {}).items()]}
+        )
+    return out
+
+
+def system_property_set_json(obj: Dict[str, Any]) -> Dict[str, Any]:
+    """The mandatory system properties (ISO 19166 Table 1 - element name + GUID)
+    expressed as a ``property_set``."""
+    props = [property_json("name", obj.get("name", ""), PropertyType.STRING)]
+    if obj.get("GUID"):
+        props.append(property_json("GUID", obj["GUID"], PropertyType.STRING))
+    if obj.get("predefined_type"):
+        props.append(property_json("predefined_type", obj["predefined_type"], PropertyType.STRING))
+    return {"name": "system", "property": props}
+
+
+def element_property_sets_json(obj: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """System ``property_set`` followed by the element's user property sets."""
+    return [system_property_set_json(obj)] + property_set_json(obj.get("pset"))
+
+
+def relationship_json(name: str, rel_type: str, related: Any = None) -> Dict[str, Any]:
+    """One ISO 19166 ``relationship`` = ``{name, type}`` (plus a ``related``
+    reference to the target element/material/type when known)."""
+    out: Dict[str, Any] = {"name": name, "type": rel_type}
+    if related is not None:
+        out["related"] = related
+    return out
+
+
+def relationships_json(rels: Optional[List[Dict[str, Any]]]) -> List[Dict[str, Any]]:
+    """Normalise a list of relationship records to the XSD ``relationship`` shape."""
+    return [
+        relationship_json(r.get("name", ""), r.get("type", ""), r.get("related"))
+        for r in (rels or [])
+    ]
+
+
+def brep_json(geom: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    """Flat ``{'verts':[...], 'faces':[...]}`` -> XSD ``B-rep`` ``{points, faces}``."""
+    verts = (geom or {}).get("verts") or []
+    faces = (geom or {}).get("faces") or []
+    points = [verts[i : i + 3] for i in range(0, len(verts) - 2, 3)]
+    tris = [faces[i : i + 3] for i in range(0, len(faces) - 2, 3)]
+    return {"points": points, "faces": tris}
+
+
+def geometry_json(geom: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Wrap a geometry dict as the XSD ``geometry`` list ``[{B-rep:[...]}]``."""
+    if not geom:
+        return []
+    return [{"B-rep": [brep_json(geom)]}]
+
+
+# ---------------------------------------------------------------------------
+# Reverse helpers: XSD-shaped JSON -> the internal ``{...}`` object dicts that
+# ``B2GM_BIM.parse`` / the mapping stages consume (used by BIM.load / GIS.load).
+# ---------------------------------------------------------------------------
+def property_sets_from_json(pset_list: Optional[List[Dict[str, Any]]]):
+    """Split an XSD ``property_set`` list into ``(system_dict, user_psets)``.
+
+    ``system_dict`` is the flattened ``{prop: value}`` of the ``system``
+    property_set (element name / GUID / predefined_type); ``user_psets`` is the
+    ``{pset_name: {prop: value}}`` mapping used as ``obj['pset']``.
+    """
+    system: Dict[str, Any] = {}
+    user: Dict[str, Any] = {}
+    for ps in pset_list or []:
+        props = {p.get("name"): p.get("value") for p in ps.get("property", [])}
+        if ps.get("name") == "system":
+            system = props
+        else:
+            user[ps.get("name")] = props
+    return system, user
+
+
+def brep_from_json(brep: Dict[str, Any]) -> Dict[str, Any]:
+    """XSD ``B-rep`` ``{points, faces}`` -> flat ``{'verts':[...], 'faces':[...]}``."""
+    points = brep.get("points") or []
+    faces = brep.get("faces") or []
+    return {
+        "verts": [c for p in points for c in p],
+        "faces": [i for f in faces for i in f],
+    }
+
+
+def geometry_from_json(geometry_list: Optional[List[Dict[str, Any]]]) -> Optional[Dict[str, Any]]:
+    """XSD ``geometry`` list -> the flat geometry dict (first B-rep), or ``None``."""
+    for geom in geometry_list or []:
+        breps = geom.get("B-rep") or []
+        if breps:
+            return brep_from_json(breps[0])
+    return None
 
 
 def test():

@@ -35,16 +35,25 @@ DEFAULT_LOD = "LOD1"
 
 
 class LoDRule:
-    """A rule that assigns a LoD name to elements matching ``source``."""
+    """A rule that assigns a LoD name to elements matching ``source`` (``LM_rule``).
 
-    def __init__(self, source: str = ".*", lod: str = DEFAULT_LOD):
+    ISO 19166 Table 8 ``LM_rule`` carries a ``name``; this implementation adds the
+    functional ``source`` (regex) and ``lod`` (target LoD) fields used to drive
+    the mapping.
+    """
+
+    def __init__(self, source: str = ".*", lod: str = DEFAULT_LOD, name: str = ""):
         self.source = source
         self.lod = lod
+        self.name = name or f"{source}->{lod}"
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> "LoDRule":
         lod = d.get("lod") or d.get("destination") or DEFAULT_LOD
-        return cls(d.get("source", ".*"), lod)
+        return cls(d.get("source", ".*"), lod, d.get("name", ""))
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"name": self.name, "source": self.source, "lod": self.lod}
 
     def matches(self, obj: Dict[str, Any]) -> bool:
         # source is a full-match regex, consistent with element (EM) mapping;
@@ -61,8 +70,29 @@ class LoDRule:
         return any(c and re.fullmatch(self.source, str(c)) for c in candidates)
 
 
+class LM_ruleset:  # noqa: N801 - ISO 19166 Table 8 LM_ruleset complexType
+    """A named set of LoD-mapping rules (ISO 19166 ``LM_ruleset`` = ``{name,
+    LM_rule(0..*)}``)."""
+
+    def __init__(self, name: str = "", rules: Optional[List[LoDRule]] = None):
+        self.name = name
+        self.rules: List[LoDRule] = rules if rules is not None else []
+
+    @classmethod
+    def from_stage(cls, stage: Dict[str, Any]) -> "LM_ruleset":
+        return cls(stage.get("name", ""), rules_from_stage(stage))
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"name": self.name, "LM_rule": [r.to_dict() for r in self.rules]}
+
+
 def rules_from_stage(stage: Dict[str, Any]) -> List[LoDRule]:
     return [LoDRule.from_dict(r) for r in stage.get("rule", [])]
+
+
+def ruleset_from_stage(stage: Dict[str, Any]) -> LM_ruleset:
+    """Build the ISO 19166 ``LM_ruleset`` object for a pipeline LM stage."""
+    return LM_ruleset.from_stage(stage)
 
 
 def assign_lod(

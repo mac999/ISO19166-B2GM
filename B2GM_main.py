@@ -223,6 +223,26 @@ def mapping_ifc_to_target(input_file: str, output_file: str, pipeline_file: str,
     return context
 
 
+def save_models(context: Dict[str, Any], output_dir: str) -> Dict[str, str]:
+    """Save the BIM and GIS conceptual models as JSON (per the ISO 19166 XSDs).
+
+    Uses the objects already held in ``context`` (no re-parsing): the parsed BIM
+    objects for ``bim_model.json`` and the LM/EM-mapped objects for
+    ``gis_model.json``.  Returns the written paths.
+    """
+    written: Dict[str, str] = {}
+    objects = context.get("objects") or []
+    if objects:
+        path = os.path.join(output_dir, "bim_model.json")
+        written["bim"] = B2GM_BIM.BIM().save(path, objects)
+
+    gis_objects = context.get("lm_mapped") or context.get("em_mapped") or []
+    if gis_objects:
+        path = os.path.join(output_dir, "gis_model.json")
+        written["gis"] = B2GM_GIS.GIS().save(path, gis_objects)
+    return written
+
+
 DEFAULT_INPUT = os.path.join("input_data", "duplex_apartment.ifc")
 DEFAULT_PIPELINE = os.path.join("input_data", "B2GM_example.json")
 DEFAULT_OUTPUT_DIR = "output"
@@ -259,7 +279,8 @@ def main():
             "  intermediate.ifc     + .pd.json   PD perspective (selected elements)\n"
             "  intermediate_CM.ifc  + .cm.json   CM georeferencing summary\n"
             "  city.gml                          EM result (CityGML)\n"
-            "  city_LoD.gml                      LM result (CityGML with per-element LoD)"
+            "  city_LoD.gml                      LM result (CityGML with per-element LoD)\n"
+            "  bim_model.json / gis_model.json   conceptual models per ISO 19166 XSD (with --save-json)"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -271,6 +292,8 @@ def main():
                         help=f"Directory for all intermediate and final results (default: {DEFAULT_OUTPUT_DIR})")
     parser.add_argument("--output", default=DEFAULT_OUTPUT,
                         help=f"Final CityGML filename, written under --output-dir (default: {DEFAULT_OUTPUT})")
+    parser.add_argument("--save-json", action="store_true", dest="save_json",
+                        help="Also save the BIM/GIS conceptual models as JSON (per ISO 19166 XSD) under --output-dir")
     args = parser.parse_args()
 
     if not os.path.exists(args.input):
@@ -286,7 +309,10 @@ def main():
         logger.error("Pipeline config does not exist: %s", args.pipeline)
         return
 
-    mapping_ifc_to_target(args.input, args.output, args.pipeline, args.output_dir)
+    context = mapping_ifc_to_target(args.input, args.output, args.pipeline, args.output_dir)
+    if args.save_json:
+        written = save_models(context, args.output_dir)
+        logger.info("Saved conceptual models: %s", ", ".join(written.values()))
     logging.info("Finished")
 
 

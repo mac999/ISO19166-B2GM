@@ -69,24 +69,152 @@ class DataView:
 StyleView = DataView
 
 
+# ---------------------------------------------------------------------------
+# ISO 19166 B2G PD conceptual classes (XSD ``B2GM_PD.XSD``, Clause 7 / Table 4)
+# ---------------------------------------------------------------------------
+class PD_property:  # noqa: N801 - ISO 19166 PD_property complexType
+    """A perspective property ``{name, value, type}`` (Table 4)."""
+
+    def __init__(self, name: str = "", value: Any = "", type: str = ""):
+        self.name = name
+        self.value = value
+        self.type = type
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"name": self.name, "value": self.value, "type": self.type}
+
+
+class PD_category:  # noqa: N801 - ISO 19166 PD_category complexType
+    """A group of similar properties: ``{name, PD_property*, PD_category}``."""
+
+    def __init__(self, name: str = "", pd_properties: Optional[List[PD_property]] = None,
+                 pd_category: Optional["PD_category"] = None):
+        self.name = name
+        self.PD_property = pd_properties if pd_properties is not None else []
+        self.PD_category = pd_category  # nested sub-category (XSD 1..1)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "name": self.name,
+            "PD_property": [p.to_dict() for p in self.PD_property],
+            "PD_category": self.PD_category.to_dict() if self.PD_category else None,
+        }
+
+
+class PD_element:  # noqa: N801 - ISO 19166 PD_element complexType
+    """A BIM element linked in the data view, keyed by ``objectGUID`` (PK)."""
+
+    def __init__(self, objectGUID: str = "", pd_categories: Optional[List[PD_category]] = None):
+        self.objectGUID = objectGUID
+        self.PD_category = pd_categories if pd_categories is not None else []
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"objectGUID": self.objectGUID, "PD_category": [c.to_dict() for c in self.PD_category]}
+
+
+class PD_data_view:  # noqa: N801 - ISO 19166 PD_data_view complexType
+    """Data view = the set of selected ``PD_element`` (each with a GUID PK)."""
+
+    def __init__(self, pd_elements: Optional[List[PD_element]] = None):
+        self.PD_element = pd_elements if pd_elements is not None else []
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"PD_element": [e.to_dict() for e in self.PD_element]}
+
+
+class PD_logic_view:  # noqa: N801 - ISO 19166 PD_logic_view complexType
+    """Logic view = ``{external_data_source: URI, ETL_module: CharacterString}``.
+
+    Accepts either the schema object (a dict) or the legacy single-string form
+    (interpreted as the ETL module path).
+    """
+
+    def __init__(self, external_data_source: str = "", ETL_module: str = ""):
+        self.external_data_source = external_data_source
+        self.ETL_module = ETL_module
+
+    @classmethod
+    def from_value(cls, value: Any) -> "PD_logic_view":
+        if isinstance(value, dict):
+            return cls(value.get("external_data_source", ""),
+                       value.get("ETL_module", value.get("etl_module", "")))
+        return cls("", str(value or ""))
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"external_data_source": self.external_data_source, "ETL_module": self.ETL_module}
+
+
+class PD_property_style:  # noqa: N801 - ISO 19166 PD_property_style complexType
+    """Style rule ``{category, property, formattingOperation}`` (Table 4)."""
+
+    def __init__(self, category: str = "", property: str = "", formattingOperation: str = ""):
+        self.category = category
+        self.property = property
+        self.formattingOperation = formattingOperation
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "PD_property_style":
+        return cls(d.get("category", ""), d.get("property", ""), d.get("formattingOperation", ""))
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"category": self.category, "property": self.property,
+                "formattingOperation": self.formattingOperation}
+
+
+class PD_style_view:  # noqa: N801 - ISO 19166 PD_sytle_view complexType
+    """Style view = a container of ``PD_property_style`` objects."""
+
+    def __init__(self, pd_property_styles: Optional[List[PD_property_style]] = None):
+        self.PD_property_style = pd_property_styles if pd_property_styles is not None else []
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"PD_property_style": [s.to_dict() for s in self.PD_property_style]}
+
+
 class PerspectiveDefinition:
-    """The full PD: data views, an optional logic view and style views."""
+    """The full PD (ISO 19166 ``PD`` complexType).
+
+    Functional fields (``data_view``/``style_view`` filters, ``logic_view``
+    string) drive the actual element selection, while the schema-conformant
+    members (``name``, ``BIM_model_destination``, ``PD_data_view``,
+    ``PD_logic_view``, ``PD_style_view``) mirror ``B2GM_PD.XSD``.  After
+    :meth:`select`, ``PD_data_view`` is populated with a ``PD_element`` (carrying
+    the ``objectGUID`` PK) for every selected element.
+    """
 
     def __init__(
         self,
         data_view: Optional[List[DataView]] = None,
         logic_view: str = "",
         style_view: Optional[List[StyleView]] = None,
+        name: str = "",
+        bim_model_destination: str = "",
+        pd_style_view: Optional[PD_style_view] = None,
     ):
         self.data_view = data_view if data_view is not None else []
         self.logic_view = logic_view
         self.style_view = style_view if style_view is not None else []
+        # ISO 19166 PD members
+        self.name = name
+        self.BIM_model_destination = bim_model_destination
+        self.PD_data_view = PD_data_view()
+        self.PD_logic_view = PD_logic_view.from_value(logic_view)
+        self.PD_style_view = pd_style_view if pd_style_view is not None else PD_style_view()
 
     @classmethod
     def from_stage(cls, stage: Dict[str, Any]) -> "PerspectiveDefinition":
         data_view = [DataView.from_dict(dv) for dv in stage.get("data_view", [])]
         style_view = [DataView.from_dict(sv) for sv in stage.get("style_view", [])]
-        return cls(data_view, stage.get("logic_view", ""), style_view)
+        # optional explicit property-style definitions (XSD PD_property_style)
+        styles = [PD_property_style.from_dict(s) for s in stage.get("property_style", [])]
+        return cls(
+            data_view,
+            stage.get("logic_view", ""),
+            style_view,
+            name=stage.get("name", ""),
+            bim_model_destination=stage.get("BIM_model_destination", stage.get("output", "")),
+            pd_style_view=PD_style_view(styles),
+        )
 
     def element_selected(self, obj: Dict[str, Any]) -> bool:
         """Return ``True`` if the given BIM object matches at least one data view.
@@ -116,8 +244,17 @@ class PerspectiveDefinition:
         return False
 
     def select(self, objects: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Filter a list of BIM objects down to the perspective."""
-        return [o for o in objects if self.element_selected(o)]
+        """Filter a list of BIM objects down to the perspective.
+
+        Also populates :attr:`PD_data_view` with a ``PD_element`` (carrying the
+        ``objectGUID`` primary key, per ISO 19166 requirement PD1) for every
+        selected element, so the schema-conformant data view reflects the result.
+        """
+        selected = [o for o in objects if self.element_selected(o)]
+        self.PD_data_view = PD_data_view(
+            [PD_element(objectGUID=o.get("GUID", "")) for o in selected]
+        )
+        return selected
 
 
 def from_stage(stage: Dict[str, Any]) -> PerspectiveDefinition:
