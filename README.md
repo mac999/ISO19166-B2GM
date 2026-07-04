@@ -1,6 +1,6 @@
 # ISO 19166 B2GM — BIM to GIS conceptual Mapping
 
-An implementation of the **ISO/TS 19166 B2GM** conceptual framework: mapping a BIM model (IFC) into a GIS model (CityGML) through four well-defined stages. In fact, I thought there were issues with practical application because standards like ISO often only have standard documents without providing tools. Taking this into consideration, I plan to continue updating it whenever I have time.
+An implementation of the [ISO/TS 19166 B2GM](https://www.iso.org/standard/90943.html?__cf_chl_f_tk=kQzk7Sv.wtD0SW3l3_Je9LoXWNXBhLEQEXA6Hk0pKfI-1783160263-1.0.1.1-62DOANOnXh6FQ5oxYhj0y2uqeMqNkTNrxb_9_RSg8tY) conceptual framework: mapping a BIM model (IFC) into a GIS model (CityGML) through four well-defined stages. In fact, I thought there were issues with practical application because standards like ISO often only have standard documents without providing tools. Taking this into consideration, I plan to continue updating it whenever I have time.
 
 <p align="center">
  <img src="./doc/fig6.png" height="150"></img>
@@ -26,7 +26,7 @@ An implementation of the **ISO/TS 19166 B2GM** conceptual framework: mapping a B
 <img src="./doc/fig1.JPG" height="240"> </img>  </br>
 <img src="./doc/fig5.png" height="150"> </img>
 <img src="./doc/fig4.png" height="150"> </img>  </br>
-<img src="./doc/fig7.png" height="210"> </img> </br>
+<img src="./doc/fig7.png" height="205"> </img> </br>
 <img src="./doc/fig2.JPG" height="270"> </img> 
 </p>
 
