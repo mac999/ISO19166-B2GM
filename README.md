@@ -135,7 +135,7 @@ pip install .            # or: pip install -e .   (editable / development)
 or straight from GitHub:
 
 ```powershell
-pip install "git+https://github.com/mac999/Projects.git#subdirectory=cad_gis_pcd/ISO19166-B2GM"
+pip install "git+https://github.com/mac999/ISO19166-B2GM.git"
 ```
 
 Optional extras: `pip install ".[geo]"` (GeoJSON via geopandas), `".[viz]"`
