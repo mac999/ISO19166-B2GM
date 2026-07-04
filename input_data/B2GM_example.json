@@ -4,12 +4,12 @@
         {
             "type": "PD",
             "name": "perspective definition",
-            "description": "Define required dataset from source.",
+            "description": "Select the full BIM dataset so every element flows to element mapping (class '.*' matches all IFC types).",
             "output": "intermediate.ifc",
             "data_view":
             [
                 {
-                    "class": "IfcBuilding",
+                    "class": ".*",
                     "filter":
                     [
                         {
@@ -20,11 +20,11 @@
                     ]
                 }
             ],
-            "logic_view": "./calculate_data.exe",
+            "logic_view": "",
             "style_view":
             [
                 {
-                    "class": "IfcBuilding",
+                    "class": ".*",
                     "filter":
                     [
                         {
@@ -62,27 +62,41 @@
             "type": "EM",
             "name": "element mapping",
             "output": "city.gml",
-            "description": "Define mapping element between IFC and CityGML elements.",
+            "description": "Map every IFC element type to an appropriate CityGML feature. Rules are evaluated top-down (first full-match wins); the trailing '.*' rule is a catch-all so no element is dropped.",
             "rule":
             [
-                {
-                    "source": "IfcBuilding",
-                    "destination": "CityModel.Building",
-                    "child_node": ".*"
-                }
+                { "source": "IfcBuilding",       "destination": "CityModel.Building", "child_node": ".*" },
+                { "source": "IfcBuildingStorey", "destination": "BuildingStorey" },
+                { "source": "IfcSpace",          "destination": "Room" },
+                { "source": "IfcWall.*",         "destination": "WallSurface" },
+                { "source": "IfcSlab\\.ROOF",     "destination": "RoofSurface" },
+                { "source": "IfcSlab\\.FLOOR",    "destination": "FloorSurface" },
+                { "source": "IfcSlab\\.BASESLAB", "destination": "GroundSurface" },
+                { "source": "IfcSlab\\.LANDING",  "destination": "FloorSurface" },
+                { "source": "IfcSlab",           "destination": "FloorSurface" },
+                { "source": "IfcWindow",         "destination": "Window" },
+                { "source": "IfcDoor",           "destination": "Door" },
+                { "source": "IfcCovering\\.CEILING", "destination": "CeilingSurface" },
+                { "source": "IfcCovering\\.FLOORING", "destination": "FloorSurface" },
+                { "source": "IfcCovering",       "destination": "BuildingInstallation" },
+                { "source": "IfcBeam",           "destination": "BuildingInstallation" },
+                { "source": "IfcColumn",         "destination": "BuildingInstallation" },
+                { "source": "IfcMember",         "destination": "BuildingInstallation" },
+                { "source": "IfcRailing",        "destination": "BuildingInstallation" },
+                { "source": "IfcStair",          "destination": "BuildingInstallation" },
+                { "source": "IfcSite",           "destination": "LandUse" },
+                { "source": ".*",                "destination": "GenericCityObject" }
             ]
         },
         {
             "type": "LM",
             "name": "LoD mapping",
-            "description": "Define mapping LoD between IFC and CityGML elements.",
+            "description": "Assign a GIS Level-of-Detail to each mapped element (unmatched elements fall back to the default LOD1).",
             "output": "city_LoD.gml",
             "rule":
             [
-                {
-                    "source": "IfcBuilding",
-                    "lod": "LOD1"
-                }
+                { "source": "IfcBuilding", "lod": "LOD1" },
+                { "source": ".*",          "lod": "LOD1" }
             ]
         }
     ]

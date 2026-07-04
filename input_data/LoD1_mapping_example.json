@@ -1,0 +1,19 @@
+{
+    "CRS": "EPSG:4326",
+    "geometry": [
+        {
+            "input": "input_data/GY_PICK_20240603a.geojson",
+            "base_offset": [0.0, 0.0, 0.0],
+            "ground_storey": "GRD_FL",
+            "underground_storey": "UGR_FL",
+            "storey_height": 3.0,
+            "transform_utm": true,
+            "height_scale": 1.0,
+            "output": "output/lod1_buildings"
+        }
+    ],
+    "style": [
+        {"property": "BLDG_NM", "match": "Terminal", "color": [1.0, 0.2, 0.2]},
+        {"property": "BLDG_NM", "match": "Sports", "color": [0.2, 1.0, 0.2]}
+    ]
+}
