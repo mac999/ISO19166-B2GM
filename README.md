@@ -23,6 +23,8 @@ An implementation of the [ISO/TS 19166 B2GM](https://www.iso.org/standard/90943.
 <img src="./doc/fig2.JPG" height="270"> </img> 
 </p>
 
+Welcome to update ISO 19166 for the purpuse of your usecase. If you want to join this project, please let me know:)
+
 ## Architecture
 
 | Module                    | Role |
