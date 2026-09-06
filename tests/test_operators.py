@@ -83,9 +83,18 @@ def test_boolean_operators():
     assert OP.subtract(a, b).area == pytest.approx(12.0)
 
 
-def test_boolean_3d_not_supported(block):
+def test_boolean_3d_prisms(block):
+    other = OP.extrude(Polygon([(5, 5), (15, 5), (15, 15), (5, 15)]), (0, 0, 1), 12.0)
+    assert OP.union(block, other).volume() == pytest.approx(3000.0)     # (200+100-50)*12
+    assert OP.intersect(block, other).volume() == pytest.approx(600.0)  # 50*12
+    assert OP.subtract(block, other).volume() == pytest.approx(1800.0)  # 150*12
+
+
+def test_boolean_3d_rejects_non_prism(block):
+    skewed = OP.Solid([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                      [[0, 1, 2], [0, 1, 3], [1, 2, 3], [0, 2, 3]])
     with pytest.raises(NotImplementedError):
-        OP.union(block, block)
+        OP._prism_boolean(block, skewed, "union")
 
 
 # --- VOID ------------------------------------------------------------------

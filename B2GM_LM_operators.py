@@ -43,7 +43,15 @@ from shapely.geometry.base import BaseGeometry
 from shapely.ops import unary_union
 
 # Reference planes: which two axes remain after projecting onto the plane.
-PLANE_AXES: Dict[str, Tuple[int, int]] = {"XY": (0, 1), "XZ": (0, 2), "YZ": (1, 2)}
+# ZX/YX/ZY are the reversed spellings used in the standard's operator table.
+PLANE_AXES: Dict[str, Tuple[int, int]] = {
+    "XY": (0, 1),
+    "XZ": (0, 2),
+    "YZ": (1, 2),
+    "YX": (0, 1),
+    "ZX": (0, 2),
+    "ZY": (1, 2),
+}
 
 # IFC element types that represent VOID/opening features (Table 8, VOID()).
 VOID_ELEMENT_TYPES = {
@@ -208,8 +216,8 @@ def _faces_as_2d(geometry: Any, plane: str) -> List[Polygon]:
 def projection(geometry: Any, plane: str = "XY") -> BaseGeometry:
     """Project a 3D geometry onto a reference plane, returning a 2D area."""
     if plane not in PLANE_AXES:
-        raise ValueError(f"plane must be one of {list(PLANE_AXES)}, got {plane!r}")
-    polys = _faces_as_2d(geometry, plane)
+        raise ValueError(f"plane must be one of {sorted(PLANE_AXES)}, got {plane!r}")
+    polys = _faces_as_2d(_geometry_of(geometry), plane)
     if not polys:
         return Polygon()
     merged = unary_union(polys)
@@ -231,7 +239,7 @@ def footprint(element: Any) -> BaseGeometry:
 
 def obb(geometry: Any) -> OBB:
     """Compute an oriented bounding box via principal component analysis."""
-    pts = _points_of(geometry)
+    pts = _points_of(_geometry_of(geometry))
     center = pts.mean(axis=0)
     centered = pts - center
     # principal axes from the covariance matrix
@@ -348,29 +356,89 @@ def void(element: Any) -> List[Any]:
 
 
 # --- boolean set operators (Table 8: union / subtract / intersect) ---------
-def _boolean(g1: Any, g2: Any, op: str) -> BaseGeometry:
+_SHAPELY_OPS = {"union": "union", "subtract": "difference", "intersect": "intersection"}
+
+
+def _prism_of(solid: Solid, tol: float = 1e-6) -> Optional[Tuple[Polygon, float, float]]:
+    """Return ``(footprint, z_min, z_max)`` when ``solid`` is a vertical prism."""
+    if len(solid.vertices) < 6 or not solid.faces:
+        return None
+    z = solid.vertices[:, 2]
+    lo, hi = float(z.min()), float(z.max())
+    if hi - lo <= tol:
+        return None
+    if not np.all((np.abs(z - lo) < tol) | (np.abs(z - hi) < tol)):
+        return None
+    bottom = projection(solid, "XY")
+    if bottom.is_empty or not isinstance(bottom, (Polygon, MultiPolygon)):
+        return None
+    return bottom, lo, hi
+
+
+def _prism_boolean(s1: Solid, s2: Solid, op: str) -> Solid:
+    """Boolean on two vertical prisms, done on the footprint and re-extruded."""
+    p1, p2 = _prism_of(s1), _prism_of(s2)
+    if p1 is None or p2 is None:
+        raise NotImplementedError(
+            "3D boolean needs a mesh backend (install trimesh) or two vertical prisms"
+        )
+    (f1, lo1, hi1), (f2, lo2, hi2) = p1, p2
+    if op == "intersect":
+        lo, hi = max(lo1, lo2), min(hi1, hi2)
+        if hi - lo <= 0:
+            return Solid(np.zeros((0, 3)), [])
+    elif op == "union":
+        # only exact z-alignment keeps the result a prism
+        if abs(lo1 - lo2) > 1e-6 or abs(hi1 - hi2) > 1e-6:
+            raise NotImplementedError("prism union needs both solids on the same z range")
+        lo, hi = lo1, hi1
+    else:  # subtract
+        if lo2 > lo1 + 1e-6 or hi2 < hi1 - 1e-6:
+            raise NotImplementedError("prism subtract needs the cutter to span the target z range")
+        lo, hi = lo1, hi1
+    area = getattr(f1, _SHAPELY_OPS[op])(f2)
+    if area.is_empty:
+        return Solid(np.zeros((0, 3)), [])
+    return extrude(area, (0.0, 0.0, 1.0), hi - lo, base_z=lo)
+
+
+def _mesh_boolean(s1: Solid, s2: Solid, op: str) -> Optional[Solid]:
+    """Mesh boolean through trimesh when it is installed."""
+    try:
+        import trimesh
+    except Exception:
+        return None
+    try:
+        meshes = [trimesh.Trimesh(**_triangulated(s)) for s in (s1, s2)]
+        name = {"union": "union", "subtract": "difference", "intersect": "intersection"}[op]
+        result = getattr(trimesh.boolean, name)(meshes)
+    except Exception:
+        return None
+    if result is None or len(result.faces) == 0:
+        return Solid(np.zeros((0, 3)), [])
+    return Solid(np.asarray(result.vertices), [list(map(int, f)) for f in result.faces])
+
+
+def _boolean(g1: Any, g2: Any, op: str) -> Any:
     if isinstance(g1, BaseGeometry) and isinstance(g2, BaseGeometry):
-        if op == "union":
-            return g1.union(g2)
-        if op == "subtract":
-            return g1.difference(g2)
-        if op == "intersect":
-            return g1.intersection(g2)
-    raise NotImplementedError(
-        "3D boolean operations require a mesh boolean backend; only 2D shapely "
-        "geometries are supported natively. Project to 2D first (projection())."
-    )
+        return getattr(g1, _SHAPELY_OPS[op])(g2)
+    a, b = _geometry_of(g1), _geometry_of(g2)
+    if isinstance(a, BaseGeometry) and isinstance(b, BaseGeometry):
+        return getattr(a, _SHAPELY_OPS[op])(b)
+    s1, s2 = _as_solid(a), _as_solid(b)
+    meshed = _mesh_boolean(s1, s2, op)
+    return meshed if meshed is not None else _prism_boolean(s1, s2, op)
 
 
-def union(g1: Any, g2: Any) -> BaseGeometry:
+def union(g1: Any, g2: Any) -> Any:
     return _boolean(g1, g2, "union")
 
 
-def subtract(g1: Any, g2: Any) -> BaseGeometry:
+def subtract(g1: Any, g2: Any) -> Any:
     return _boolean(g1, g2, "subtract")
 
 
-def intersect(g1: Any, g2: Any) -> BaseGeometry:
+def intersect(g1: Any, g2: Any) -> Any:
     return _boolean(g1, g2, "intersect")
 
 
@@ -411,20 +479,133 @@ def apply_operator(name: str, *args, **kwargs):
 
 
 # ---------------------------------------------------------------------------
+# Declarative operator chains (pipeline / CLI driven)
+# ---------------------------------------------------------------------------
+def _triangulated(solid: Solid) -> Dict[str, Any]:
+    """Fan-triangulate every face; returns kwargs for a triangle mesh."""
+    tris: List[List[int]] = []
+    for face in solid.faces:
+        for i in range(1, len(face) - 1):
+            tris.append([face[0], face[i], face[i + 1]])
+    return {"vertices": solid.vertices, "faces": np.asarray(tris, dtype=int).reshape(-1, 3)}
+
+
+def to_brep(geometry: Any, z: float = 0.0) -> Optional[Dict[str, List[float]]]:
+    """Convert an operator result to the flat ``{'verts', 'faces'}`` B-rep."""
+    if geometry is None:
+        return None
+    if isinstance(geometry, (Polygon, MultiPolygon)):
+        parts = geometry.geoms if isinstance(geometry, MultiPolygon) else [geometry]
+        solid = _merge_solids([_flat_face(p, z) for p in parts if not p.is_empty])
+    elif isinstance(geometry, Solid):
+        solid = geometry
+    elif isinstance(geometry, OBB):
+        solid = _obb_solid(geometry)
+    else:
+        return None
+    if len(solid.vertices) == 0 or not solid.faces:
+        return None
+    mesh = _triangulated(solid)
+    return {
+        "verts": [float(c) for c in np.asarray(mesh["vertices"]).reshape(-1)],
+        "faces": [int(i) for i in np.asarray(mesh["faces"]).reshape(-1)],
+    }
+
+
+def _flat_face(poly: Polygon, z: float) -> Solid:
+    ring = np.asarray(poly.exterior.coords[:-1], dtype=float)
+    verts = np.hstack([ring, np.full((len(ring), 1), z)])
+    return Solid(verts, [list(range(len(ring)))])
+
+
+def _obb_solid(box: OBB) -> Solid:
+    x = np.asarray(box.x_direction, dtype=float)
+    y = np.asarray(box.y_direction, dtype=float)
+    zdir = np.asarray(box.z_direction, dtype=float)
+    ex, ey, ez = box.extent
+    centre = np.asarray(box.center, dtype=float)
+    corners = []
+    for sx in (-0.5, 0.5):
+        for sy in (-0.5, 0.5):
+            for sz in (-0.5, 0.5):
+                corners.append(centre + x * (sx * ex) + y * (sy * ey) + zdir * (sz * ez))
+    faces = [[0, 1, 3, 2], [4, 6, 7, 5], [0, 4, 5, 1], [2, 3, 7, 6], [0, 2, 6, 4], [1, 5, 7, 3]]
+    return Solid(np.asarray(corners), faces)
+
+
+def run_chain(source: Any, steps: Any, resolver=None) -> Any:
+    """Run a declarative operator chain and return the final geometry.
+
+    ``steps`` is a list of ``{"op": name, "args": {...}}`` (a bare string or a
+    single dict is accepted too).  The first step gets ``source``; each later
+    step gets the previous result as its first argument.  ``resolver`` maps an
+    argument value to a concrete one, letting a rule reference element data.
+    """
+    result = source
+    for index, step in enumerate(_normalise_steps(steps)):
+        name = step["op"]
+        args = dict(step.get("args") or {})
+        if resolver is not None:
+            args = {k: resolver(v) for k, v in args.items()}
+        positional = args.pop("_args", [])
+        if step.get("source") == "element" or index == 0:
+            result = apply_operator(name, source if index == 0 else result, *positional, **args)
+        else:
+            result = apply_operator(name, result, *positional, **args)
+    return result
+
+
+def _normalise_steps(steps: Any) -> List[Dict[str, Any]]:
+    if steps is None:
+        return []
+    if isinstance(steps, str):
+        return [{"op": steps}]
+    if isinstance(steps, dict):
+        steps = [steps]
+    out = []
+    for step in steps:
+        if isinstance(step, str):
+            out.append({"op": step})
+        elif isinstance(step, dict):
+            name = step.get("op") or step.get("name")
+            if not name:
+                raise ValueError(f"operator step needs an 'op' name: {step!r}")
+            out.append({**step, "op": name})
+        else:
+            raise ValueError(f"unsupported operator step: {step!r}")
+    return out
+
+
+# ---------------------------------------------------------------------------
 # internal helpers
 # ---------------------------------------------------------------------------
+def from_brep(brep: Dict[str, Any]) -> Solid:
+    """Build a Solid from the flat ``{'verts': [...], 'faces': [...]}`` B-rep
+    produced by the BIM parser (faces are consecutive triangle indices)."""
+    flat_v = list(brep.get("verts") or [])
+    flat_f = list(brep.get("faces") or [])
+    verts = np.asarray(flat_v, dtype=float).reshape(-1, 3) if flat_v else np.zeros((0, 3))
+    faces = [list(map(int, flat_f[i:i + 3])) for i in range(0, len(flat_f) - 2, 3)]
+    return Solid(verts, faces)
+
+
 def _geometry_of(element: Any) -> Any:
     """Extract a geometry from a BIM object dict, or pass geometry through."""
     if isinstance(element, dict):
+        if "verts" in element:            # flat B-rep straight from the BIM parser
+            return from_brep(element)
         geom = element.get("solid") or element.get("geometry") or element.get("geometries")
         if isinstance(geom, list) and geom:
             geom = geom[0]
+        if isinstance(geom, dict) and "verts" in geom:
+            return from_brep(geom)
         if geom is not None:
             return geom
     return element
 
 
 def _as_solid(geometry: Any) -> Solid:
+    geometry = _geometry_of(geometry)
     if isinstance(geometry, Solid):
         return geometry
     pts = _points_of(geometry)
