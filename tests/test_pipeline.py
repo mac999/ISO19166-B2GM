@@ -99,3 +99,34 @@ def test_pipeline_writes_sidecars(run_pipeline):
     assert cm_sidecar.exists()
     data = json.loads(cm_sidecar.read_text(encoding="utf-8"))
     assert data["source_crs"] == "EPSG:4326"
+
+
+def test_pipeline_georeferences_the_output(tmp_path):
+    """The CM stage must place the CityGML in the destination CRS."""
+    import re
+
+    import B2GM_main
+
+    ifc = os.path.join(os.path.dirname(__file__), "..", "input_data",
+                       "duplex_apartment.ifc")
+    if not os.path.exists(ifc):
+        pytest.skip("sample IFC not available")
+    pytest.importorskip("pyproj")
+
+    pipeline = tmp_path / "pipe.json"
+    pipeline.write_text(json.dumps({"BIM_GIS_mapping.pipeline": [
+        {"type": "CM", "output": "cm.ifc",
+         "rule": [{"source": "EPSG:4326", "destination": "EPSG:3857"}]},
+        {"type": "EM", "output": "city.gml",
+         "rule": [{"source": ".*", "destination": "GenericCityObject"}]},
+    ]}), encoding="utf-8")
+
+    context = B2GM_main.mapping_ifc_to_target(ifc, "city.gml", str(pipeline), str(tmp_path))
+    assert context["crs"]["elements_transformed"] > 0
+    assert context["srs_name"] == "EPSG:3857"
+
+    text = open(context["final_output"], encoding="utf-8").read(2000)
+    assert 'srsName="EPSG:3857"' in text
+    lower = [float(v) for v in re.search(r"lowerCorner>([^<]+)<", text).group(1).split()]
+    # the sample sits in Chicago, so EPSG:3857 easting must be far negative
+    assert lower[0] < -9_000_000 and 5_000_000 < lower[1] < 5_300_000

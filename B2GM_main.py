@@ -38,7 +38,7 @@ import json
 import logging
 import os
 import shutil
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import B2GM_BIM
 import B2GM_CM
@@ -49,6 +49,14 @@ import B2GM_PD
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
+
+def _carry_objects(context: Dict[str, Any], output_file: str):
+    """PD/CM copy the IFC forward unchanged, so the parsed objects stay valid;
+    mark them as belonging to the new path so EM does not re-parse (and lose the
+    PD logic/style result)."""
+    if context.get("objects") is not None:
+        context["objects_from"] = output_file
 
 
 def _write_sidecar(output_file: str, suffix: str, data: Dict[str, Any]):
@@ -81,6 +89,7 @@ def mapping_PD(input_file: str, output_file: str, stage: Dict[str, Any], context
     context["perspective_guids"] = {o.get("GUID") for o in selected if o.get("GUID")}
 
     logger.info("PD selected %d / %d elements", len(selected), len(objects))
+    _carry_objects(context, output_file)
     _write_sidecar(
         output_file,
         "pd",
@@ -112,9 +121,28 @@ def mapping_CM(input_file: str, output_file: str, stage: Dict[str, Any], context
         summary = B2GM_CM.apply_to_ifc(ifc, mapping)
     except Exception as exc:
         logger.warning("CM could not read IFC georeferencing: %s", exc)
+
+    placement = summary.pop("placement", None)
+    objects = context.get("objects")
+    if placement is not None and objects is None:
+        # CM may run before any stage has parsed the model
+        objects = B2GM_BIM.BIM().parse(input_file)
+        context["objects"] = objects
+    if placement is not None and objects:
+        moved = B2GM_CM.apply_placement(objects, placement)
+        context["srs_name"] = placement.dest_crs
+        summary["placement"] = placement.to_dict()
+        summary["elements_transformed"] = moved
+        logger.info("CM %s -> %s, %d elements placed at %s",
+                    summary.get("source_crs"), summary.get("dest_crs"),
+                    moved, summary.get("dest_origin"))
+    else:
+        logger.info("CM %s -> %s, origin: %s (geometry left in local coordinates)",
+                    summary.get("source_crs"), summary.get("dest_crs"),
+                    summary.get("dest_origin"))
     context["crs"] = summary
-    logger.info("CM %s -> %s, origin: %s", summary.get("source_crs"), summary.get("dest_crs"), summary.get("dest_origin"))
     _write_sidecar(output_file, "cm", summary)
+    _carry_objects(context, output_file)
 
     if os.path.abspath(input_file) != os.path.abspath(output_file):
         shutil.copy(input_file, output_file)
@@ -126,7 +154,7 @@ def mapping_EM(input_file: str, output_file: str, stage: Dict[str, Any], context
     logger.info("Stage EM, input: %s, output: %s", input_file, output_file)
 
     objects = context.get("objects")
-    if objects is None or not context.get("objects_from", "").startswith(input_file):
+    if objects is None or context.get("objects_from") != input_file:
         objects = B2GM_BIM.BIM().parse(input_file)
         context["objects"] = objects
         context["objects_from"] = input_file
@@ -142,7 +170,10 @@ def mapping_EM(input_file: str, output_file: str, stage: Dict[str, Any], context
     context["em_mapped"] = mapped
     logger.info("EM mapped %d / %d elements", len(mapped), len(objects))
 
-    B2GM_GIS.GIS().store(output_file, objects, stage)
+    # write the mapped copies so the rule's PSet_operation result reaches CityGML
+    version = B2GM_GIS.version_from_stage(stage, context.get("citygml_version"))
+    B2GM_GIS.GIS().store(output_file, mapped, stage,
+                         srs_name=context.get("srs_name"), version=version)
     return output_file
 
 
@@ -169,7 +200,9 @@ def mapping_LM(input_file: str, output_file: str, stage: Dict[str, Any], context
     logger.info("LM assigned LoD to %d elements: %s", len(tagged), lods)
 
     # objects already carry _destination from EM, so an empty-rule stage still writes them
-    B2GM_GIS.GIS().store(output_file, tagged, stage)
+    version = B2GM_GIS.version_from_stage(stage, context.get("citygml_version"))
+    B2GM_GIS.GIS().store(output_file, tagged, stage,
+                         srs_name=context.get("srs_name"), version=version)
     return output_file
 
 
@@ -182,7 +215,8 @@ _STAGE_FUNCS = {
 
 
 def mapping_ifc_to_target(input_file: str, output_file: str, pipeline_file: str,
-                          output_dir: str = "output") -> Dict[str, Any]:
+                          output_dir: str = "output",
+                          citygml_version: Optional[str] = None) -> Dict[str, Any]:
     """Run the full pipeline described by ``pipeline_file`` on ``input_file``.
 
     Every intermediate and final artefact is written under ``output_dir`` so the
@@ -196,7 +230,12 @@ def mapping_ifc_to_target(input_file: str, output_file: str, pipeline_file: str,
 
     os.makedirs(output_dir, exist_ok=True)
 
-    context: Dict[str, Any] = {}
+    # CityGML version: CLI wins, then the pipeline file, then the default
+    version = B2GM_GIS.normalise_version(
+        citygml_version or pipelines.get("citygml_version") or B2GM_GIS.DEFAULT_VERSION)
+    logger.info("CityGML output version: %s", version)
+
+    context: Dict[str, Any] = {"citygml_version": version}
     current_input = input_file
     final_output = os.path.join(output_dir, os.path.basename(output_file))
 
@@ -287,6 +326,10 @@ def main():
             "                      --output-dir output\n\n"
             "  # Change the final CityGML filename (still written under --output-dir)\n"
             "  python B2GM_main.py --output my_city.gml\n\n"
+            "  # Emit CityGML 3.0 instead of 2.0\n"
+            "  python B2GM_main.py --citygml-version 3.0\n\n"
+            "  # Browse input, stages, 3D result and outputs in a browser\n"
+            "  python B2GM_main.py --web\n\n"
             "Outputs written to <output-dir>/ (names come from the pipeline JSON):\n"
             "  intermediate.ifc     + .pd.json   PD perspective (selected elements)\n"
             "  intermediate_CM.ifc  + .cm.json   CM georeferencing summary\n"
@@ -306,7 +349,32 @@ def main():
                         help=f"Final CityGML filename, written under --output-dir (default: {DEFAULT_OUTPUT})")
     parser.add_argument("--save-json", action="store_true", dest="save_json",
                         help="Also save the BIM/GIS conceptual models as JSON (per ISO 19166 XSD) under --output-dir")
+    parser.add_argument("--citygml-version", dest="citygml_version",
+                        choices=["2.0", "3.0"], default=None,
+                        help="CityGML output version (default: the pipeline file's "
+                             "'citygml_version', else 2.0). 3.0 keeps building storeys, "
+                             "which 2.0 has no feature for.")
+    parser.add_argument("--web", action="store_true",
+                        help="Open the web view (input tree + stage properties, 3D canvas, output tree)")
+    parser.add_argument("--port", type=int, default=8000, help="Web view port (with --web)")
+    parser.add_argument("--no-browser", action="store_true", dest="no_browser",
+                        help="Do not open a browser window (with --web)")
     args = parser.parse_args()
+
+    if args.web:
+        import B2GM_web
+
+        os.makedirs(args.output_dir, exist_ok=True)
+        workspace = B2GM_web.Workspace(os.path.dirname(args.input) or ".",
+                                       args.output_dir, args.pipeline, args.output)
+        server = B2GM_web.serve(workspace, port=args.port, open_browser=not args.no_browser)
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            logger.info("stopped")
+        finally:
+            server.server_close()
+        return
 
     if not os.path.exists(args.input):
         logger.error("Input file does not exist: %s", args.input)
@@ -321,7 +389,8 @@ def main():
         logger.error("Pipeline config does not exist: %s", args.pipeline)
         return
 
-    context = mapping_ifc_to_target(args.input, args.output, args.pipeline, args.output_dir)
+    context = mapping_ifc_to_target(args.input, args.output, args.pipeline,
+                                    args.output_dir, args.citygml_version)
     if args.save_json:
         written = save_models(context, args.output_dir)
         logger.info("Saved conceptual models: %s", ", ".join(written.values()))
