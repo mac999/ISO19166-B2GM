@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ISO 19166 B2GM</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="bar">
+  <div class="brand">
+    <span class="mark">B2GM</span>
+    <span class="sub" data-i18n="subtitle">BIM to GIS conceptual mapping</span>
+  </div>
+  <div class="stages" id="stage-chips"></div>
+  <div class="actions">
+    <button id="run" class="primary" data-i18n="run">Run pipeline</button>
+    <button id="lang" class="ghost" title="Language">EN</button>
+    <button id="theme" class="ghost" title="Theme">Dark</button>
+  </div>
+</header>
+
+<main id="workspace">
+  <section class="panel" id="left">
+    <div class="panel-head">
+      <span data-i18n="inputPanel">Input</span>
+      <span class="path" id="input-path"></span>
+    </div>
+    <div class="panel-body">
+      <div class="block">
+        <div class="block-head" data-i18n="inputFiles">Input files</div>
+        <ul class="tree" id="input-tree"></ul>
+      </div>
+      <div class="block">
+        <div class="block-head" data-i18n="pipeline">Pipeline stages</div>
+        <div id="stage-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="splitter" data-target="left"></div>
+
+  <section class="panel center" id="middle">
+    <div class="panel-head">
+      <span id="model-title" data-i18n="canvas">3D view</span>
+      <span class="path" id="model-stats"></span>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="scene"></canvas>
+      <div class="legend" id="legend"></div>
+      <div class="hint" id="hint" data-i18n="hint">Drag to orbit, wheel to zoom, right drag to pan</div>
+      <div class="overlay" id="overlay" hidden><div class="spinner"></div><span id="overlay-text"></span></div>
+    </div>
+    <div class="console" id="console" hidden><div class="console-head"><span data-i18n="log">Log</span><button id="close-log" class="ghost">x</button></div><pre id="log"></pre></div>
+  </section>
+
+  <div class="splitter" data-target="right"></div>
+
+  <section class="panel" id="right">
+    <div class="panel-head">
+      <span data-i18n="outputPanel">Output</span>
+      <span class="path" id="output-path"></span>
+    </div>
+    <div class="panel-body">
+      <div class="block">
+        <div class="block-head" data-i18n="outputFiles">Output files</div>
+        <ul class="tree" id="output-tree"></ul>
+      </div>
+      <div class="block">
+        <div class="block-head" data-i18n="preview">File preview</div>
+        <pre class="preview" id="preview" data-i18n="previewEmpty">Select a file</pre>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
