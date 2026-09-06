@@ -60,9 +60,10 @@ class ElementRule:
 
     ``pset_operation`` follows ISO 19166 Table 5 ``EM_rule.PSet_operation``:
 
-    * ``Append``  - the source property sets are added to the destination
-      (default);
-    * ``Replace`` - the destination property sets are replaced by the source.
+    * ``Append``  - the source (IFC) property sets are merged into the rule's own
+      ``property_set`` (default), so both reach the GIS element;
+    * ``Replace`` - the rule's ``property_set`` is replaced by the source, so only
+      the IFC property sets reach the GIS element.
     """
 
     def __init__(
@@ -72,12 +73,14 @@ class ElementRule:
         child_node: str = ".*",
         pset_operation: str = PSET_APPEND,
         name: str = "",
+        property_set: Optional[Dict[str, Any]] = None,
     ):
         self.name = name or f"{source}->{destination}"
         self.source = source
         self.destination = destination
         self.child_node = child_node
         self.pset_operation = pset_operation
+        self.property_set = property_set or {}
         # XSD EM_rule -> EM_source / EM_destination wrappers
         self.em_source = EM_source(source)
         self.em_destination = EM_destination(destination)
@@ -90,6 +93,7 @@ class ElementRule:
             d.get("child_node", ".*"),
             d.get("PSet_operation", d.get("pset_operation", PSET_APPEND)),
             d.get("name", ""),
+            d.get("property_set"),
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -99,6 +103,7 @@ class ElementRule:
             "PSet_operation": self.pset_operation,
             "EM_source": self.em_source.to_dict(),
             "EM_destination": self.em_destination.to_dict(),
+            "property_set": self.property_set,
         }
 
     def matches(self, obj: Dict[str, Any]) -> bool:
@@ -198,7 +203,7 @@ def merge_psets(
     """
     if operation == PSET_REPLACE:
         return dict(src_psets or {})
-    merged = {name: dict(props) for name, props in (dest_psets or {}).items()}
+    merged = {name: dict(props or {}) for name, props in (dest_psets or {}).items()}
     for name, props in (src_psets or {}).items():
         merged.setdefault(name, {}).update(props or {})
     return merged
@@ -208,8 +213,9 @@ def apply(objects: List[Dict[str, Any]], rules: List[ElementRule]) -> List[Dict[
     """Return the subset of objects that match a rule, tagged for downstream stages.
 
     Each returned dict is a shallow copy with ``_destination`` (the GIS target
-    class) and ``_pset_operation`` (Table 5 ``PSet_operation``) added, so LoD
-    mapping and serialisation know how to treat the element.
+    class) and ``_pset_operation`` (Table 5 ``PSet_operation``) added; ``pset``
+    is rebuilt per that operation, so the rule's own ``property_set`` is either
+    merged in (``Append``) or dropped (``Replace``).
     """
     mapped: List[Dict[str, Any]] = []
     for obj in objects:
@@ -219,6 +225,7 @@ def apply(objects: List[Dict[str, Any]], rules: List[ElementRule]) -> List[Dict[
         tagged = dict(obj)
         tagged["_destination"] = rule.destination
         tagged["_pset_operation"] = rule.pset_operation
+        tagged["pset"] = merge_psets(rule.property_set, obj.get("pset"), rule.pset_operation)
         mapped.append(tagged)
     return mapped
 
@@ -229,6 +236,9 @@ def main():
     parser.add_argument("--input", required=True, help="Input IFC file")
     parser.add_argument("--output", required=True, help="Output CityGML file")
     parser.add_argument("--option", required=True, help="Rule option JSON file")
+    parser.add_argument("--citygml-version", dest="citygml_version",
+                        choices=["2.0", "3.0"], default=None,
+                        help="CityGML output version (default: 2.0)")
     args = parser.parse_args()
 
     import B2GM_BIM
@@ -245,7 +255,8 @@ def main():
     mapped = apply(objects, rules)
     logging.info("EM mapped %d / %d elements", len(mapped), len(objects))
 
-    B2GM_GIS.GIS().store(args.output, objects, stage)
+    version = B2GM_GIS.version_from_stage(stage, args.citygml_version)
+    B2GM_GIS.GIS().store(args.output, mapped, stage, version=version)
     logging.info("Wrote %s", args.output)
 
 
