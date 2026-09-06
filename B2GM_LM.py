@@ -2,16 +2,22 @@
 B2GM LM - LoD Mapping (ISO 19166 B2GM, stage 3).
 
 LoD Mapping ("B2G LM" in ``doc/fig1.JPG``) assigns a GIS Level-of-Detail
-(LOD0..LOD4) to each mapped element.  A pipeline LM stage looks like::
+(LOD0..LOD4) to each mapped element and, optionally, rebuilds its geometry with
+the ISO 19166 Table 8 operators.  A pipeline LM stage looks like::
 
     {
       "type": "LM",
-      "rule": [ {"source": "IfcBuilding", "lod": "LOD1"} ]
+      "rule": [
+        {"source": "IfcBuilding", "lod": "LOD1",
+         "operation": [{"op": "footprint"},
+                       {"op": "extrude", "args": {"height": {"$extent": "z"}}}]}
+      ]
     }
 
-When no rule matches an element, a configurable default LoD is used.  The
-heavier geometric LoD generation (footprint extrusion) lives in
-``B2GM_LM_op_extrude.py``.
+The operation chain runs in ``B2GM_LM_operators`` and its result replaces the
+element geometry (``_lod_geometry``).  Argument values may reference the element
+itself: ``{"$property": "Pset.Name"}``, ``{"$extent": "z"}``, ``{"$min": "z"}``,
+``{"$max": "z"}``.  When no rule matches, a configurable default LoD is used.
 
 Usage (stand-alone):
     python B2GM_LM.py --input city.gml --output city_LoD.gml --option rules.json
@@ -35,25 +41,36 @@ DEFAULT_LOD = "LOD1"
 
 
 class LoDRule:
-    """A rule that assigns a LoD name to elements matching ``source`` (``LM_rule``).
+    """Assigns a LoD (and optionally new geometry) to matching elements.
 
-    ISO 19166 Table 8 ``LM_rule`` carries a ``name``; this implementation adds the
-    functional ``source`` (regex) and ``lod`` (target LoD) fields used to drive
-    the mapping.
+    ISO 19166 ``LM_rule`` carries a ``name``; ``source`` (regex), ``lod`` and
+    ``operation`` (a Table 8 operator chain) drive the mapping.  ``aggregate`` is
+    a regex over IFC types: when set the chain runs on the merged geometry of
+    every matching element instead of the matched element's own (an IfcBuilding
+    carries no geometry of its own, so its LOD1 block comes from its parts).
     """
 
-    def __init__(self, source: str = ".*", lod: str = DEFAULT_LOD, name: str = ""):
+    def __init__(self, source: str = ".*", lod: str = DEFAULT_LOD, name: str = "",
+                 operation: Any = None, aggregate: str = ""):
         self.source = source
         self.lod = lod
+        self.operation = operation
+        self.aggregate = aggregate
         self.name = name or f"{source}->{lod}"
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> "LoDRule":
         lod = d.get("lod") or d.get("destination") or DEFAULT_LOD
-        return cls(d.get("source", ".*"), lod, d.get("name", ""))
+        return cls(d.get("source", ".*"), lod, d.get("name", ""), d.get("operation"),
+                   d.get("aggregate", ""))
 
     def to_dict(self) -> Dict[str, Any]:
-        return {"name": self.name, "source": self.source, "lod": self.lod}
+        out = {"name": self.name, "source": self.source, "lod": self.lod}
+        if self.operation:
+            out["operation"] = self.operation
+        if self.aggregate:
+            out["aggregate"] = self.aggregate
+        return out
 
     def matches(self, obj: Dict[str, Any]) -> bool:
         # source is a full-match regex, consistent with element (EM) mapping;
@@ -68,6 +85,24 @@ class LoDRule:
             obj.get("code", ""),
         ]
         return any(c and re.fullmatch(self.source, str(c)) for c in candidates)
+
+    def run_operation(self, obj: Dict[str, Any], model: Optional[List[Dict[str, Any]]] = None):
+        """Run the rule's operator chain against ``obj``; returns a B-rep or None."""
+        if not self.operation:
+            return None
+        import B2GM_LM_operators as OP
+
+        source = obj
+        if self.aggregate:
+            merged = aggregate_geometry(model or [], self.aggregate)
+            if not merged:
+                raise ValueError(f"aggregate {self.aggregate!r} matched no geometry")
+            source = {**obj, "geometry": merged}
+        result = OP.run_chain(source, self.operation, resolver=lambda v: resolve_arg(v, source))
+        # a 2D result (footprint, projection, boolean) carries no elevation, so it
+        # stays at the element's own base rather than dropping to z = 0
+        bounds = element_bounds(source)
+        return OP.to_brep(result, z=bounds[0][2] if bounds else 0.0)
 
 
 class LM_ruleset:  # noqa: N801 - ISO 19166 Table 8 LM_ruleset complexType
@@ -95,22 +130,96 @@ def ruleset_from_stage(stage: Dict[str, Any]) -> LM_ruleset:
     return LM_ruleset.from_stage(stage)
 
 
+_AXIS = {"x": 0, "y": 1, "z": 2}
+
+
+def element_bounds(obj: Dict[str, Any]):
+    """Return ``(min_xyz, max_xyz)`` of an element's B-rep, or ``None``."""
+    verts = (obj.get("geometry") or {}).get("verts") or []
+    if len(verts) < 3:
+        return None
+    lo = [min(verts[i::3]) for i in range(3)]
+    hi = [max(verts[i::3]) for i in range(3)]
+    return lo, hi
+
+
+def aggregate_geometry(objects: List[Dict[str, Any]], pattern: str) -> Optional[Dict[str, Any]]:
+    """Merge the B-reps of every element whose IFC type matches ``pattern``."""
+    verts: List[float] = []
+    faces: List[int] = []
+    for obj in objects:
+        if not re.fullmatch(pattern, str(obj.get("ifc_type", ""))):
+            continue
+        geom = obj.get("geometry") or {}
+        v, f = geom.get("verts") or [], geom.get("faces") or []
+        if not v or not f:
+            continue
+        offset = len(verts) // 3
+        verts.extend(float(c) for c in v)
+        faces.extend(int(i) + offset for i in f)
+    return {"verts": verts, "faces": faces} if faces else None
+
+
+def _lookup_property(obj: Dict[str, Any], path: str):
+    """Look up ``"Pset.Property"`` (or a bare property name) in an element."""
+    psets = obj.get("pset") or {}
+    if "." in path:
+        pset_name, prop = path.split(".", 1)
+        return (psets.get(pset_name) or {}).get(prop)
+    for props in psets.values():
+        if path in (props or {}):
+            return props[path]
+    return obj.get(path)
+
+
+def resolve_arg(value: Any, obj: Dict[str, Any]) -> Any:
+    """Resolve an operator argument that references the element."""
+    if not isinstance(value, dict) or len(value) != 1:
+        return value
+    key, arg = next(iter(value.items()))
+    if key == "$property":
+        found = _lookup_property(obj, str(arg))
+        try:
+            return float(found)
+        except (TypeError, ValueError):
+            return found
+    if key in ("$extent", "$min", "$max"):
+        bounds = element_bounds(obj)
+        if bounds is None:
+            raise ValueError(f"{key} needs element geometry")
+        lo, hi = bounds
+        axis = _AXIS[str(arg).lower()]
+        return hi[axis] - lo[axis] if key == "$extent" else (lo if key == "$min" else hi)[axis]
+    return value
+
+
 def assign_lod(
     objects: List[Dict[str, Any]],
     rules: List[LoDRule],
     default_lod: str = DEFAULT_LOD,
 ) -> List[Dict[str, Any]]:
-    """Return objects annotated with an ``_lod`` key (in place-safe copies)."""
+    """Annotate objects with ``_lod`` and, when a rule has an operator chain,
+    the geometry it produces (``_lod_geometry``)."""
     out: List[Dict[str, Any]] = []
+    applied = 0
     for obj in objects:
-        lod: Optional[str] = None
-        for rule in rules:
-            if rule.matches(obj):
-                lod = rule.lod
-                break
+        matched: Optional[LoDRule] = next((r for r in rules if r.matches(obj)), None)
         tagged = dict(obj)
-        tagged["_lod"] = lod or default_lod
+        tagged["_lod"] = (matched.lod if matched else None) or default_lod
+        if matched is not None and matched.operation:
+            try:
+                brep = matched.run_operation(obj, objects)
+            except Exception as exc:
+                logging.warning("LM operator %s failed on %s: %s",
+                                matched.name, obj.get("name", "?"), exc)
+                brep = None
+            if brep:
+                tagged["_lod_geometry"] = brep
+                tagged["_lod_operation"] = matched.operation
+                applied += 1
         out.append(tagged)
+    if applied:
+        logging.info("LM operators rebuilt geometry for %d elements", applied)
     return out
 
 
@@ -132,6 +241,9 @@ def main():
     parser.add_argument("--input", required=True, help="Input IFC or CityGML file")
     parser.add_argument("--output", required=True, help="Output CityGML file")
     parser.add_argument("--option", required=True, help="Rule option JSON file")
+    parser.add_argument("--citygml-version", dest="citygml_version",
+                        choices=["2.0", "3.0"], default=None,
+                        help="CityGML output version (default: 2.0)")
     args = parser.parse_args()
 
     import B2GM_BIM
@@ -147,7 +259,8 @@ def main():
     objects = assign_lod(objects, rules)
     logging.info("LM assigned LoD to %d elements", len(objects))
 
-    B2GM_GIS.GIS().store(args.output, objects, stage)
+    version = B2GM_GIS.version_from_stage(stage, args.citygml_version)
+    B2GM_GIS.GIS().store(args.output, objects, stage, version=version)
     logging.info("Wrote %s", args.output)
 
 
