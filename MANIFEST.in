@@ -13,6 +13,12 @@ include input_data/LoD1_mapping_example.json
 include input_data/duplex_apartment.ifc
 include input_data/GY_PICK_20240603a.geojson
 
+# Web view assets
+recursive-include web *.html *.css *.js
+
+# PD logic view example source
+include input_data/PD_logic_source.json
+
 # Tests
 recursive-include tests *.py *.json *.geojson
 

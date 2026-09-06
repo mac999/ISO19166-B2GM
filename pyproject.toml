@@ -45,6 +45,10 @@ b2gm = "B2GM_main:main"                 # full pipeline
 b2gm-extrude = "B2GM_LM_op_extrude:main"  # footprint -> LOD1 extrusion
 b2gm-em = "B2GM_element:main"           # element-mapping stage (stand-alone)
 b2gm-lm = "B2GM_LM:main"                # LoD-mapping stage (stand-alone)
+b2gm-web = "B2GM_web:main"              # browser workspace (3D view + pipeline panels)
+
+[tool.setuptools.data-files]
+"share/b2gm/web" = ["web/index.html", "web/style.css", "web/app.js"]
 
 # Flat module layout: each B2GM_*.py is installed as an importable top-level module.
 [tool.setuptools]
@@ -61,4 +65,7 @@ py-modules = [
     "B2GM_LM_op_extrude",
     "B2GM_property",
     "B2GM_simple_mapping",
+    "B2GM_web",
+    "B2GM_citygml3",
+    "citygml_parser",
 ]
