@@ -1,17 +1,14 @@
 {
-    "BIM_GIS_mapping.pipeline":
-    [
+    "BIM_GIS_mapping.pipeline": [
         {
             "type": "PD",
             "name": "perspective definition",
             "description": "Select the full BIM dataset so every element flows to element mapping (class '.*' matches all IFC types).",
             "output": "intermediate.ifc",
-            "data_view":
-            [
+            "data_view": [
                 {
                     "class": ".*",
-                    "filter":
-                    [
+                    "filter": [
                         {
                             "name": ".*",
                             "value": ".*",
@@ -20,19 +17,32 @@
                     ]
                 }
             ],
-            "logic_view": "",
-            "style_view":
-            [
+            "logic_view": {
+                "external_data_source": "input_data/PD_logic_source.json",
+                "ETL_module": ""
+            },
+            "style_view": [
                 {
                     "class": ".*",
-                    "filter":
-                    [
+                    "filter": [
                         {
                             "name": ".*",
                             "value": ".*",
                             "type": ".*"
                         }
                     ]
+                }
+            ],
+            "property_style": [
+                {
+                    "category": "PSet_Revit_Dimensions",
+                    "property": "Length|Area|Volume",
+                    "formattingOperation": "round:3"
+                },
+                {
+                    "category": "Pset_.*Common",
+                    "property": "Reference",
+                    "formattingOperation": "strip|upper"
                 }
             ]
         },
@@ -41,19 +51,37 @@
             "name": "Coordinate Mapping",
             "description": "Define mapping between IFC and CityGML coordinate system.",
             "output": "intermediate_CM.ifc",
-            "rule":
-            [
+            "rule": [
                 {
                     "source": "EPSG:4326",
                     "destination": "EPSG:3857"
                 },
                 {
-                    "transform_matrix":
-                    [
-                        [1, 0, 0, 0],
-                        [0, 1, 0, 0],
-                        [0, 0, 1, 0],
-                        [0, 0, 0, 1]
+                    "transform_matrix": [
+                        [
+                            1,
+                            0,
+                            0,
+                            0
+                        ],
+                        [
+                            0,
+                            1,
+                            0,
+                            0
+                        ],
+                        [
+                            0,
+                            0,
+                            1,
+                            0
+                        ],
+                        [
+                            0,
+                            0,
+                            0,
+                            1
+                        ]
                     ]
                 }
             ]
@@ -63,40 +91,176 @@
             "name": "element mapping",
             "output": "city.gml",
             "description": "Map every IFC element type to an appropriate CityGML feature. Rules are evaluated top-down (first full-match wins); the trailing '.*' rule is a catch-all so no element is dropped.",
-            "rule":
-            [
-                { "source": "IfcBuilding",       "destination": "CityModel.Building", "child_node": ".*" },
-                { "source": "IfcBuildingStorey", "destination": "BuildingStorey" },
-                { "source": "IfcSpace",          "destination": "Room" },
-                { "source": "IfcWall.*",         "destination": "WallSurface" },
-                { "source": "IfcSlab\\.ROOF",     "destination": "RoofSurface" },
-                { "source": "IfcSlab\\.FLOOR",    "destination": "FloorSurface" },
-                { "source": "IfcSlab\\.BASESLAB", "destination": "GroundSurface" },
-                { "source": "IfcSlab\\.LANDING",  "destination": "FloorSurface" },
-                { "source": "IfcSlab",           "destination": "FloorSurface" },
-                { "source": "IfcWindow",         "destination": "Window" },
-                { "source": "IfcDoor",           "destination": "Door" },
-                { "source": "IfcCovering\\.CEILING", "destination": "CeilingSurface" },
-                { "source": "IfcCovering\\.FLOORING", "destination": "FloorSurface" },
-                { "source": "IfcCovering",       "destination": "BuildingInstallation" },
-                { "source": "IfcBeam",           "destination": "BuildingInstallation" },
-                { "source": "IfcColumn",         "destination": "BuildingInstallation" },
-                { "source": "IfcMember",         "destination": "BuildingInstallation" },
-                { "source": "IfcRailing",        "destination": "BuildingInstallation" },
-                { "source": "IfcStair",          "destination": "BuildingInstallation" },
-                { "source": "IfcSite",           "destination": "LandUse" },
-                { "source": ".*",                "destination": "GenericCityObject" }
+            "rule": [
+                {
+                    "source": "IfcBuilding",
+                    "destination": "CityModel.Building",
+                    "child_node": ".*",
+                    "PSet_operation": "Append",
+                    "property_set": {
+                        "B2GM": {
+                            "source_standard": "ISO 19166 B2GM",
+                            "mapping_stage": "EM"
+                        }
+                    }
+                },
+                {
+                    "source": "IfcBuildingStorey",
+                    "destination": "BuildingStorey"
+                },
+                {
+                    "source": "IfcSpace",
+                    "destination": "Room",
+                    "PSet_operation": "Replace",
+                    "property_set": {
+                        "B2GM": {
+                            "dropped_by": "Replace"
+                        }
+                    }
+                },
+                {
+                    "source": "IfcWall.*",
+                    "destination": "WallSurface"
+                },
+                {
+                    "source": "IfcSlab\\.ROOF",
+                    "destination": "RoofSurface"
+                },
+                {
+                    "source": "IfcSlab\\.FLOOR",
+                    "destination": "FloorSurface"
+                },
+                {
+                    "source": "IfcSlab\\.BASESLAB",
+                    "destination": "GroundSurface"
+                },
+                {
+                    "source": "IfcSlab\\.LANDING",
+                    "destination": "FloorSurface"
+                },
+                {
+                    "source": "IfcSlab",
+                    "destination": "FloorSurface"
+                },
+                {
+                    "source": "IfcWindow",
+                    "destination": "Window"
+                },
+                {
+                    "source": "IfcDoor",
+                    "destination": "Door"
+                },
+                {
+                    "source": "IfcCovering\\.CEILING",
+                    "destination": "CeilingSurface"
+                },
+                {
+                    "source": "IfcCovering\\.FLOORING",
+                    "destination": "FloorSurface"
+                },
+                {
+                    "source": "IfcCovering",
+                    "destination": "BuildingInstallation"
+                },
+                {
+                    "source": "IfcBeam",
+                    "destination": "BuildingInstallation"
+                },
+                {
+                    "source": "IfcColumn",
+                    "destination": "BuildingInstallation"
+                },
+                {
+                    "source": "IfcMember",
+                    "destination": "BuildingInstallation"
+                },
+                {
+                    "source": "IfcRailing",
+                    "destination": "BuildingInstallation"
+                },
+                {
+                    "source": "IfcStair",
+                    "destination": "BuildingInstallation"
+                },
+                {
+                    "source": "IfcSite",
+                    "destination": "LandUse"
+                },
+                {
+                    "source": ".*",
+                    "destination": "GenericCityObject"
+                }
             ]
         },
         {
             "type": "LM",
             "name": "LoD mapping",
-            "description": "Assign a GIS Level-of-Detail to each mapped element (unmatched elements fall back to the default LOD1).",
+            "description": "Assign a GIS Level-of-Detail and rebuild geometry with the ISO 19166 Table 8 operators. The building LOD1 block is the extruded footprint of its walls (slabs are excluded: entrance terraces reach well beyond the building envelope); rooms get their own block, roof slabs a LOD0 surface.",
             "output": "city_LoD.gml",
-            "rule":
-            [
-                { "source": "IfcBuilding", "lod": "LOD1" },
-                { "source": ".*",          "lod": "LOD1" }
+            "rule": [
+                {
+                    "source": "IfcBuilding",
+                    "lod": "LOD1",
+                    "aggregate": "IfcWall.*",
+                    "operation": [
+                        {
+                            "op": "footprint"
+                        },
+                        {
+                            "op": "extrude",
+                            "args": {
+                                "v": [
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "height": {
+                                    "$extent": "z"
+                                },
+                                "base_z": {
+                                    "$min": "z"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "source": "IfcSpace",
+                    "lod": "LOD1",
+                    "operation": [
+                        {
+                            "op": "footprint"
+                        },
+                        {
+                            "op": "extrude",
+                            "args": {
+                                "height": {
+                                    "$extent": "z"
+                                },
+                                "base_z": {
+                                    "$min": "z"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "source": "IfcSlab\\.ROOF",
+                    "lod": "LOD0",
+                    "operation": [
+                        {
+                            "op": "footprint"
+                        }
+                    ]
+                },
+                {
+                    "source": "IfcSite",
+                    "lod": "LOD0"
+                },
+                {
+                    "source": ".*",
+                    "lod": "LOD2"
+                }
             ]
         }
     ]
