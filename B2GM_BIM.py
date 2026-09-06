@@ -147,6 +147,12 @@ class BIM(B2GM_model.model):
         "IfcRelDefinesByType": ("RelatedObjects", "RelatingType", "generalization", "type"),
     }
 
+    # Relationships whose source side is never exported (an IfcOpeningElement is
+    # not a product we keep), so the record is attached to the target instead:
+    # a window "fills" the opening that a wall "voids", which is how the GIS side
+    # nests an opening under its boundary surface.
+    _REL_REVERSE = {"IfcRelFillsElement": "fills"}
+
     def _attach_relationships(self, objects):
         """Populate ``obj['relationship']`` from the IFC ``IfcRel*`` entities.
 
@@ -198,6 +204,20 @@ class BIM(B2GM_model.model):
                             continue
                         by_guid[guid].setdefault("relationship", []).append(
                             {"name": rel_name, "type": uml_type, "related": ref}
+                        )
+                reverse = self._REL_REVERSE.get(rel.is_a())
+                if reverse is None:
+                    continue
+                for tgt in targets:
+                    guid = getattr(tgt, "GlobalId", None)
+                    if guid not in by_guid:
+                        continue
+                    for src in sources:
+                        ref = ref_of(src)
+                        if ref is None:
+                            continue
+                        by_guid[guid].setdefault("relationship", []).append(
+                            {"name": reverse, "type": uml_type, "related": ref}
                         )
             except Exception:
                 continue
