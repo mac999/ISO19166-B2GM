@@ -1,5 +1,8 @@
 {
-  "logic_view": "",
+  "logic_view": {
+    "external_data_source": "input_data/PD_logic_source.json",
+    "ETL_module": ""
+  },
   "selected": [
     {
       "name": "IfcSite",
