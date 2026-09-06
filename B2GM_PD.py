@@ -6,11 +6,12 @@ subset of a BIM/IFC dataset before it is mapped to GIS.  It is expressed with
 three views:
 
 * ``data_view``   - which classes/properties are required (a filter),
-* ``logic_view``  - optional external logic applied to the selected data,
+* ``logic_view``  - external data joined in by an ETL module,
 * ``style_view``  - which classes/properties drive styling.
 
 This module turns a pipeline ``stage`` dict (see ``B2GM_example.json``) into
-typed objects and implements the filter matching used to select elements.
+typed objects, selects elements, runs the logic view and applies the style
+view's ``formattingOperation`` to the selected property values.
 
 Author:
     Taewook Kang (laputa99999@gmail.com)
@@ -18,8 +19,15 @@ Author:
 
 from __future__ import annotations
 
+import csv
+import importlib
+import json
+import logging
+import os
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 class Filter:
@@ -143,9 +151,115 @@ class PD_logic_view:  # noqa: N801 - ISO 19166 PD_logic_view complexType
     def to_dict(self) -> Dict[str, Any]:
         return {"external_data_source": self.external_data_source, "ETL_module": self.ETL_module}
 
+    def load_source(self) -> Dict[str, Dict[str, Any]]:
+        """Read the external source into ``{GUID: {attribute: value}}``.
+
+        JSON may be a ``{guid: {...}}`` map or a list of records carrying a
+        ``GUID`` key; CSV needs a ``GUID`` column.
+        """
+        path = self.external_data_source
+        if not path:
+            return {}
+        if not os.path.exists(path):
+            logger.warning("logic_view source not found: %s", path)
+            return {}
+        if path.lower().endswith(".csv"):
+            with open(path, newline="", encoding="utf-8") as f:
+                rows = list(csv.DictReader(f))
+            return {r.get("GUID", ""): {k: v for k, v in r.items() if k != "GUID"} for r in rows}
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        if isinstance(data, list):
+            return {r.get("GUID", ""): {k: v for k, v in r.items() if k != "GUID"} for r in data}
+        return {k: dict(v) for k, v in (data or {}).items()}
+
+    def run(self, objects: List[Dict[str, Any]], pset_name: str = "PD_logic") -> List[Dict[str, Any]]:
+        """Apply the logic view to the selected elements.
+
+        ``ETL_module`` is ``"module:function"``; the function is called as
+        ``fn(objects, source)`` and returns the transformed objects.  Without a
+        module the external source is joined onto elements by GUID.
+        """
+        source = self.load_source()
+        module_ref = (self.ETL_module or "").strip()
+        if module_ref:
+            if ":" not in module_ref:
+                logger.warning("ETL_module must be 'module:function', got %r", module_ref)
+                return objects
+            module_name, _, func_name = module_ref.partition(":")
+            try:
+                func = getattr(importlib.import_module(module_name), func_name)
+            except Exception as exc:
+                logger.warning("ETL_module %s unavailable: %s", module_ref, exc)
+                return objects
+            result = func(objects, source)
+            logger.info("logic_view ETL %s applied to %d elements", module_ref, len(objects))
+            return result if result is not None else objects
+        if not source:
+            return objects
+        joined = 0
+        for obj in objects:
+            extra = source.get(obj.get("GUID", ""))
+            if not extra:
+                continue
+            obj.setdefault("pset", {}).setdefault(pset_name, {}).update(extra)
+            joined += 1
+        logger.info("logic_view joined %d elements from %s", joined, self.external_data_source)
+        return objects
+
+
+def _round(value: Any, digits: str = "0") -> Any:
+    try:
+        result = round(float(value), int(digits))
+    except (TypeError, ValueError):
+        return value
+    return int(result) if int(digits) <= 0 else result
+
+
+def _scale(value: Any, factor: str = "1") -> Any:
+    try:
+        return float(value) * float(factor)
+    except (TypeError, ValueError):
+        return value
+
+
+# formattingOperation vocabulary: "name" or "name:arg[:arg]"
+FORMATTERS: Dict[str, Callable[..., Any]] = {
+    "upper": lambda v: str(v).upper(),
+    "lower": lambda v: str(v).lower(),
+    "title": lambda v: str(v).title(),
+    "strip": lambda v: str(v).strip(),
+    "round": _round,
+    "scale": _scale,
+    "prefix": lambda v, text="": f"{text}{v}",
+    "suffix": lambda v, text="": f"{v}{text}",
+    "replace": lambda v, old="", new="": str(v).replace(old, new),
+    "format": lambda v, spec="{}": spec.format(v),
+    "truncate": lambda v, n="20": str(v)[: int(n)],
+}
+
+
+def format_value(value: Any, operation: str) -> Any:
+    """Apply a ``formattingOperation`` string to a property value."""
+    if not operation:
+        return value
+    for step in str(operation).split("|"):
+        name, _, rest = step.strip().partition(":")
+        formatter = FORMATTERS.get(name)
+        if formatter is None:
+            raise KeyError(f"unknown formattingOperation: {name!r}; known: {sorted(FORMATTERS)}")
+        args = rest.split(":") if rest else []
+        value = formatter(value, *args)
+    return value
+
 
 class PD_property_style:  # noqa: N801 - ISO 19166 PD_property_style complexType
-    """Style rule ``{category, property, formattingOperation}`` (Table 4)."""
+    """Style rule ``{category, property, formattingOperation}`` (Table 4).
+
+    ``category``/``property`` are regular expressions matched against a property
+    set name and a property name; ``formattingOperation`` is a ``|``-separated
+    chain from :data:`FORMATTERS` (e.g. ``"round:1|suffix: m"``).
+    """
 
     def __init__(self, category: str = "", property: str = "", formattingOperation: str = ""):
         self.category = category
@@ -160,6 +274,13 @@ class PD_property_style:  # noqa: N801 - ISO 19166 PD_property_style complexType
         return {"category": self.category, "property": self.property,
                 "formattingOperation": self.formattingOperation}
 
+    def matches(self, category: str, prop: str) -> bool:
+        return (re.fullmatch(self.category or ".*", str(category)) is not None
+                and re.fullmatch(self.property or ".*", str(prop)) is not None)
+
+    def apply(self, value: Any) -> Any:
+        return format_value(value, self.formattingOperation)
+
 
 class PD_style_view:  # noqa: N801 - ISO 19166 PD_sytle_view complexType
     """Style view = a container of ``PD_property_style`` objects."""
@@ -169,6 +290,25 @@ class PD_style_view:  # noqa: N801 - ISO 19166 PD_sytle_view complexType
 
     def to_dict(self) -> Dict[str, Any]:
         return {"PD_property_style": [s.to_dict() for s in self.PD_property_style]}
+
+    def apply(self, obj: Dict[str, Any]) -> Dict[str, Any]:
+        """Format the element's property values in place; returns what changed."""
+        changed: Dict[str, Any] = {}
+        for category, props in (obj.get("pset") or {}).items():
+            for prop, value in list((props or {}).items()):
+                for style in self.PD_property_style:
+                    if not style.matches(category, prop):
+                        continue
+                    try:
+                        formatted = style.apply(value)
+                    except Exception as exc:
+                        logger.warning("style %s.%s failed: %s", category, prop, exc)
+                        continue
+                    if formatted != value:
+                        props[prop] = formatted
+                        changed[f"{category}.{prop}"] = formatted
+                    break
+        return changed
 
 
 class PerspectiveDefinition:
@@ -243,16 +383,48 @@ class PerspectiveDefinition:
                 return True
         return False
 
-    def select(self, objects: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Filter a list of BIM objects down to the perspective.
+    def style_selected(self, obj: Dict[str, Any]) -> bool:
+        """Return ``True`` when a style view claims this element's class."""
+        ifc_type = obj.get("ifc_type", obj.get("name", ""))
+        return any(sv.class_matches(ifc_type) for sv in self.style_view)
 
-        Also populates :attr:`PD_data_view` with a ``PD_element`` (carrying the
-        ``objectGUID`` primary key, per ISO 19166 requirement PD1) for every
-        selected element, so the schema-conformant data view reflects the result.
+    def apply_style(self, objects: List[Dict[str, Any]]) -> int:
+        """Run the style view's ``formattingOperation`` over the elements it claims."""
+        if not self.PD_style_view.PD_property_style:
+            return 0
+        styled = 0
+        for obj in objects:
+            if self.style_view and not self.style_selected(obj):
+                continue
+            changed = self.PD_style_view.apply(obj)
+            if changed:
+                obj["_style"] = changed
+                styled += 1
+        if styled:
+            logger.info("style_view formatted %d elements", styled)
+        return styled
+
+    def categories_of(self, obj: Dict[str, Any]) -> List[PD_category]:
+        """Build the ``PD_category`` list of an element from its property sets."""
+        categories = []
+        for name, props in (obj.get("pset") or {}).items():
+            categories.append(PD_category(name, [
+                PD_property(k, v, type(v).__name__) for k, v in (props or {}).items()
+            ]))
+        return categories
+
+    def select(self, objects: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Filter BIM objects down to the perspective and run the logic/style views.
+
+        :attr:`PD_data_view` is populated with a ``PD_element`` per selected
+        element, carrying the ``objectGUID`` primary key (ISO 19166 PD1) and its
+        ``PD_category`` groups.
         """
         selected = [o for o in objects if self.element_selected(o)]
+        selected = self.PD_logic_view.run(selected)
+        self.apply_style(selected)
         self.PD_data_view = PD_data_view(
-            [PD_element(objectGUID=o.get("GUID", "")) for o in selected]
+            [PD_element(o.get("GUID", ""), self.categories_of(o)) for o in selected]
         )
         return selected
 
