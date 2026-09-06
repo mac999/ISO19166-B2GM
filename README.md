@@ -1,5 +1,7 @@
 # ISO 19166 B2GM — BIM to GIS conceptual Mapping Tool
 
+Reference implementation by the ISO/TC 211 project leader for ISO/TS 19166.
+
 An implementation of the [ISO/TS 19166 B2GM](https://www.iso.org/standard/90943.html?__cf_chl_f_tk=kQzk7Sv.wtD0SW3l3_Je9LoXWNXBhLEQEXA6Hk0pKfI-1783160263-1.0.1.1-62DOANOnXh6FQ5oxYhj0y2uqeMqNkTNrxb_9_RSg8tY) conceptual framework: mapping a BIM model (IFC) into a GIS model (CityGML) through four well-defined stages. In fact, I thought there were issues with practical application because standards like ISO often only have standard documents without providing tools. Taking this into consideration, I plan to continue updating it whenever I have time. 
 
 <p align="center">
@@ -637,3 +639,5 @@ dependencies are skipped automatically when those are unavailable.
 
 # Author
 Taewook kang, Ph.D, laputa99999@gmail.com
+
+Project leader, ISO/TC 211 ISO/TS 19166
