@@ -26,6 +26,7 @@ import logging
 import mimetypes
 import os
 import re
+import sys
 import threading
 import webbrowser
 import xml.etree.ElementTree as ET
@@ -36,7 +37,20 @@ from urllib.parse import parse_qs, urlparse
 logger = logging.getLogger(__name__)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-STATIC_DIR = os.path.join(HERE, "web")
+
+
+def _static_dir() -> str:
+    """Locate the web assets: next to this module in a clone or editable
+    install, else under the prefix where the wheel puts its data files."""
+    for candidate in (os.path.join(HERE, "web"),
+                      os.path.join(sys.prefix, "share", "b2gm", "web"),
+                      os.path.join(os.path.dirname(HERE), "share", "b2gm", "web")):
+        if os.path.isfile(os.path.join(candidate, "index.html")):
+            return candidate
+    return os.path.join(HERE, "web")
+
+
+STATIC_DIR = _static_dir()
 
 MODEL_SUFFIXES = (".gml", ".json", ".obj")
 TEXT_SUFFIXES = (".json", ".gml", ".xml", ".csv", ".txt", ".md", ".ifc", ".obj")
