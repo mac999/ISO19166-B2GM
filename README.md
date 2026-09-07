@@ -1,6 +1,8 @@
 # ISO 19166 B2GM — BIM to GIS conceptual Mapping Tool
 
-Reference implementation by the ISO/TC 211 project leader for ISO/TS 19166.
+Written by the project leader of ISO/TS 19166. This is a personal
+implementation, not an official ISO or ISO/TC 211 deliverable and not a
+conformance certification.
 
 An implementation of the [ISO/TS 19166 B2GM](https://www.iso.org/standard/90943.html?__cf_chl_f_tk=kQzk7Sv.wtD0SW3l3_Je9LoXWNXBhLEQEXA6Hk0pKfI-1783160263-1.0.1.1-62DOANOnXh6FQ5oxYhj0y2uqeMqNkTNrxb_9_RSg8tY) conceptual framework: mapping a BIM model (IFC) into a GIS model (CityGML) through four well-defined stages. In fact, I thought there were issues with practical application because standards like ISO often only have standard documents without providing tools. Taking this into consideration, I plan to continue updating it whenever I have time. 
 
@@ -34,6 +36,36 @@ If you are interested in this project, please fork and join.
 <img src="./doc/fig2.JPG" height="270"> </img> 
 </p>
 
+## Scope
+
+What this implementation does, stated so it can be checked:
+
+- Every stage is driven by rules in a JSON config, and the rule vocabulary
+  follows the standard's UML: `PD_data_view` / `PD_logic_view` /
+  `PD_property_style`, `EM_rule.PSet_operation`, `LM_rule` operator chains.
+  Changing the config changes the output; nothing is hard-coded per IFC type.
+- All eleven ISO 19166 Table 8 LoD operators are implemented and callable from
+  the pipeline config, not only from Python.
+- The CM stage rewrites geometry into the destination CRS, so the output is
+  georeferenced rather than sitting at the project origin.
+- Output validates against the official OGC CityGML schemas, in 2.0 and in 3.0,
+  and the version is a config or CLI variable.
+- The conceptual model classes mirror the ISO 19166 XSDs, and
+  `tests/test_xsd_conformance.py` parses those XSDs to check it, so a renamed or
+  missing member fails the build.
+- Core dependencies are ifcopenshell, pyproj, shapely, numpy and tqdm. MIT.
+
+What it is **not**:
+
+- Not a general IFC to CityGML data translator. It implements the ISO 19166
+  conceptual mapping stages; geometry handling is deliberately simple.
+- Not a conformance test suite. The XSD check verifies this implementation, not
+  a third party's.
+- Geometry is triangulated B-rep. A mesh is written as `gml:Solid` only when it
+  actually closes, otherwise as `gml:MultiSurface`.
+- Boolean operators work on 2D geometry, or on 3D via `trimesh` when installed;
+  without it 3D booleans are limited to vertical prisms.
+
 ## Architecture
 
 | Module                    | Role |
@@ -57,7 +89,7 @@ Optional heavy dependencies (`xsdata`, `geopandas`, `pyvista`, `pydeck`,
 `meshio`) are imported lazily; the modules import and the core pipeline runs
 without them (a clear error is raised only if an optional feature is invoked).
 
-## ISO 19166 schema conformance
+## ISO 19166 schema alignment
 
 The conceptual classes mirror the ISO 19166 UML structures shipped as XSD
 schemas under [`XSD/`](XSD/). Every `xs:complexType` maps to an implementation
