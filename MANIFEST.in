@@ -2,6 +2,7 @@ include README.md
 include LICENSE
 include requirements.txt
 include pytest.ini
+include CITATION.cff
 
 # ISO 19166 conceptual schemas
 recursive-include XSD *.XSD

@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "ISO 19166 B2GM: BIM to GIS conceptual mapping"
+abstract: >-
+  An implementation of the ISO/TS 19166 BIM to GIS conceptual mapping (B2GM)
+  framework. An IFC model is mapped to CityGML through the four stages of the
+  standard, Perspective Definition, Coordinate Mapping, Element Mapping and LoD
+  Mapping, driven by rules in a configuration file. All eleven Table 8 LoD
+  operators are implemented, coordinates are transformed into the destination
+  CRS, and the output validates against the official OGC CityGML 2.0 and 3.0
+  schemas.
+type: software
+authors:
+  - family-names: Kang
+    given-names: Taewook
+    email: laputa99999@gmail.com
+    # Add your ORCID to make the citation resolvable:
+    # orcid: "https://orcid.org/0000-0000-0000-0000"
+repository-code: "https://github.com/mac999/ISO19166-B2GM"
+license: MIT
+version: 0.1.0
+date-released: "2026-09-07"
+keywords:
+  - ISO 19166
+  - B2GM
+  - BIM
+  - GIS
+  - IFC
+  - CityGML
+  - GeoBIM
+  - geospatial
+references:
+  - type: standard
+    title: "Geographic information - BIM to GIS conceptual mapping (B2GM)"
+    institution:
+      name: International Organization for Standardization
+    number: "ISO/TS 19166"
