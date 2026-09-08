@@ -63,8 +63,8 @@ What it is **not**:
   a third party's.
 - Geometry is triangulated B-rep. A mesh is written as `gml:Solid` only when it
   actually closes, otherwise as `gml:MultiSurface`.
-- Boolean operators work on 2D geometry, or on 3D via `trimesh` when installed;
-  without it 3D booleans are limited to vertical prisms.
+- Boolean operators work on 2D geometry, or on 3D via `manifold3d` when
+  installed; without it 3D booleans are limited to vertical prisms.
 
 ## Architecture
 
@@ -530,7 +530,7 @@ is represented with `shapely` polygons (2D) and a lightweight `Solid` (vertices
 | `extrude` | `extrude(g, v, height)` | plus `base_z`; MultiPolygon input yields one merged solid |
 | `exterior` / `interior` | `exterior(g)` / `interior(g)` | outer shell / inner shells |
 | `VOID` | `VOID(e)` | window/door/opening sub-elements |
-| `union` / `subtract` / `intersect` | `union(g1, g2)` … | 2D via shapely; 3D via `trimesh` when installed, otherwise on vertical prisms (the LOD1 case) |
+| `union` / `subtract` / `intersect` | `union(g1, g2)` … | 2D via shapely; 3D via `manifold3d` when installed (`pip install ".[mesh]"`), otherwise on vertical prisms (the LOD1 case) |
 
 ```python
 from shapely.geometry import Polygon
@@ -550,6 +550,13 @@ OP.void(wall_element)           # window/door/opening sub-elements
 Operators accept the flat `{'verts': [...], 'faces': [...]}` B-rep the IFC
 parser attaches to every element, a `Solid`, or a shapely geometry;
 `OP.from_brep()` / `OP.to_brep()` convert between the two.
+
+3D booleans go through `manifold3d`, which is a mesh library rather than a CAD
+kernel: it has no NURBS or filleting, but it guarantees a manifold result and is
+a 1.9 MB wheel with no dependency beyond numpy. The meshes are handed over as
+`Mesh64`, because after the CM stage the coordinates are in the destination CRS
+and single precision resolves to about a metre there, which would erase a 54 mm
+wall outright.
 
 ### Driving the operators from the pipeline
 

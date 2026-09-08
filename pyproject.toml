@@ -34,8 +34,9 @@ dependencies = [
 geo = ["geopandas"]                 # read GeoJSON in B2GM_LM_op_extrude
 viz = ["pyvista", "pydeck"]         # 3D viewers
 citygml = ["xsdata"]               # typed CityGML output (B2GM_simple_mapping)
-mesh = ["meshio"]
-all = ["geopandas", "pyvista", "pydeck", "xsdata", "meshio"]
+mesh = ["manifold3d"]                # 3D boolean operators
+meshio = ["meshio"]
+all = ["geopandas", "pyvista", "pydeck", "xsdata", "manifold3d", "meshio"]
 dev = ["pytest"]
 
 [project.urls]
