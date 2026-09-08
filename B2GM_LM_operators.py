@@ -124,10 +124,18 @@ class Solid:
         return self.vertices.min(axis=0), self.vertices.max(axis=0)
 
     def volume(self) -> float:
-        """Signed volume via the divergence theorem (triangulated fan per face)."""
+        """Signed volume via the divergence theorem (triangulated fan per face).
+
+        Coordinates are taken relative to the centroid first: after the CM stage
+        they run to 1e7, and the triple products would then cancel away most of
+        the significant digits.
+        """
+        if len(self.vertices) == 0:
+            return 0.0
+        origin = self.vertices.mean(axis=0)
         vol = 0.0
         for face in self.faces:
-            pts = self.face_coords(face)
+            pts = self.face_coords(face) - origin
             if len(pts) < 3:
                 continue
             v0 = pts[0]
@@ -380,7 +388,8 @@ def _prism_boolean(s1: Solid, s2: Solid, op: str) -> Solid:
     p1, p2 = _prism_of(s1), _prism_of(s2)
     if p1 is None or p2 is None:
         raise NotImplementedError(
-            "3D boolean needs a mesh backend (install trimesh) or two vertical prisms"
+            "3D boolean needs a mesh backend (pip install manifold3d) "
+            "or two vertical prisms"
         )
     (f1, lo1, hi1), (f2, lo2, hi2) = p1, p2
     if op == "intersect":
@@ -402,21 +411,41 @@ def _prism_boolean(s1: Solid, s2: Solid, op: str) -> Solid:
     return extrude(area, (0.0, 0.0, 1.0), hi - lo, base_z=lo)
 
 
+def _as_manifold(solid: Solid):
+    """Wrap a Solid as a manifold3d.Manifold.
+
+    Mesh64 rather than Mesh: after the CM stage the coordinates are in the
+    destination CRS, and float32 resolves to about a metre at that magnitude,
+    which erases building detail entirely.
+    """
+    import manifold3d
+
+    mesh = _triangulated(solid)
+    return manifold3d.Manifold(manifold3d.Mesh64(
+        vert_properties=np.asarray(mesh["vertices"], dtype=np.float64),
+        tri_verts=np.asarray(mesh["faces"], dtype=np.uint32),
+    ))
+
+
 def _mesh_boolean(s1: Solid, s2: Solid, op: str) -> Optional[Solid]:
-    """Mesh boolean through trimesh when it is installed."""
+    """Mesh boolean through manifold3d when it is installed."""
     try:
-        import trimesh
+        import manifold3d  # noqa: F401
     except Exception:
         return None
     try:
-        meshes = [trimesh.Trimesh(**_triangulated(s)) for s in (s1, s2)]
-        name = {"union": "union", "subtract": "difference", "intersect": "intersection"}[op]
-        result = getattr(trimesh.boolean, name)(meshes)
+        a, b = _as_manifold(s1), _as_manifold(s2)
+        result = {"union": a + b, "subtract": a - b, "intersect": a ^ b}[op]
+        if result.is_empty():
+            return Solid(np.zeros((0, 3)), [])
+        mesh = result.to_mesh64()
     except Exception:
         return None
-    if result is None or len(result.faces) == 0:
+    vertices = np.asarray(mesh.vert_properties, dtype=float)[:, :3]
+    faces = [list(map(int, tri)) for tri in np.asarray(mesh.tri_verts)]
+    if not faces:
         return Solid(np.zeros((0, 3)), [])
-    return Solid(np.asarray(result.vertices), [list(map(int, f)) for f in result.faces])
+    return Solid(vertices, faces)
 
 
 def _boolean(g1: Any, g2: Any, op: str) -> Any:

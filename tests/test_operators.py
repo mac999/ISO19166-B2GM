@@ -150,3 +150,74 @@ def test_apply_operator_registry(square):
     assert fp.area == pytest.approx(200.0)
     with pytest.raises(KeyError):
         OP.apply_operator("nonexistent", square)
+
+
+# --- 3D booleans at projected coordinates -----------------------------------
+PROJECTED = (-9755973.4149, 5142153.8439)   # the sample's EPSG:3857 origin
+
+
+def _shift(solid, dx, dy):
+    verts = solid.vertices.copy()
+    verts[:, 0] += dx
+    verts[:, 1] += dy
+    return OP.Solid(verts, solid.faces)
+
+
+@pytest.fixture
+def thin_wall():
+    """A wall at the sample's real size: 1.135 x 0.054 x 2.6 m."""
+    return OP.extrude(Polygon([(0, 0), (1.135, 0), (1.135, 0.054), (0, 0.054)]),
+                      (0, 0, 1), 2.6)
+
+
+@pytest.fixture
+def opening():
+    return OP.extrude(Polygon([(0.3, -0.1), (0.8, -0.1), (0.8, 0.154), (0.3, 0.154)]),
+                      (0, 0, 1), 1.2)
+
+
+def test_boolean_survives_projected_coordinates(thin_wall, opening):
+    """float32 resolves to about a metre at EPSG:3857 magnitudes and would erase
+    a 54 mm wall, so the mesh backend has to carry doubles through."""
+    pytest.importorskip("manifold3d")
+    expected = 1.135 * 0.054 * 2.6 - 0.5 * 0.054 * 1.2
+    local = OP.subtract(thin_wall, opening)
+    projected = OP.subtract(_shift(thin_wall, *PROJECTED), _shift(opening, *PROJECTED))
+    assert local.volume() == pytest.approx(expected, rel=1e-6)
+    assert projected.volume() == pytest.approx(expected, rel=1e-6)
+
+
+def test_volume_is_translation_invariant(thin_wall):
+    """The divergence-theorem sum loses its significant digits at 1e7 unless the
+    coordinates are centred first. Centring leaves a residual around 1e-8
+    relative, against 2e-2 without it."""
+    here = thin_wall.volume()
+    there = _shift(thin_wall, *PROJECTED).volume()
+    assert there == pytest.approx(here, rel=1e-7)
+
+
+def test_mesh_backend_handles_non_prisms(block):
+    """The prism fallback refuses these; the mesh backend does not."""
+    pytest.importorskip("manifold3d")
+    tetra = OP.Solid([[20, 20, 0], [21, 20, 0], [20, 21, 0], [20, 20, 1]],
+                     [[0, 2, 1], [0, 1, 3], [1, 2, 3], [2, 0, 3]])
+    assert OP.union(block, tetra).volume() == pytest.approx(2400 + 1 / 6, rel=1e-6)
+
+
+def test_disjoint_intersection_is_empty(block):
+    pytest.importorskip("manifold3d")
+    far = OP.extrude(Polygon([(100, 100), (110, 100), (110, 110), (100, 110)]),
+                     (0, 0, 1), 5.0)
+    result = OP.intersect(block, far)
+    assert len(result.faces) == 0 and result.volume() == 0.0
+
+
+def test_boolean_result_stays_closed(block):
+    """CityGML 3.0 writes gml:Solid only for a closed shell, so a boolean result
+    must keep that property."""
+    pytest.importorskip("manifold3d")
+    import B2GM_citygml3
+
+    other = OP.extrude(Polygon([(5, 5), (15, 5), (15, 15), (5, 15)]), (0, 0, 1), 12.0)
+    brep = OP.to_brep(OP.union(block, other))
+    assert B2GM_citygml3.is_closed_shell(brep)
