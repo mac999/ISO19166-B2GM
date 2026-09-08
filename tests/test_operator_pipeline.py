@@ -18,7 +18,9 @@ def box_element():
     """A 4x3x2.5 box as the flat B-rep the BIM parser produces."""
     v = [0, 0, 0, 4, 0, 0, 4, 3, 0, 0, 3, 0,
          0, 0, 2.5, 4, 0, 2.5, 4, 3, 2.5, 0, 3, 2.5]
-    f = [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7,
+    # the two bottom triangles are wound the other way round so every face
+    # normal points out of the box
+    f = [0, 2, 1, 0, 3, 2, 4, 5, 6, 4, 6, 7,
          0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5,
          2, 3, 7, 2, 7, 6, 3, 0, 4, 3, 4, 7]
     return {"ifc_type": "IfcSpace", "name": "Room", "GUID": "g1",
