@@ -3,6 +3,7 @@ include LICENSE
 include requirements.txt
 include pytest.ini
 include CITATION.cff
+include run_pipeline.sh run_pipeline.bat run_web.sh run_web.bat
 
 # ISO 19166 conceptual schemas
 recursive-include XSD *.XSD
