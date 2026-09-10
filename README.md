@@ -215,6 +215,26 @@ bare command runs the shipped example end to end:
 python B2GM_main.py
 ```
 
+From a clone you can also use the launcher scripts, which find a Python, install
+the core dependencies on first use and pass any extra arguments through:
+
+| | Windows | Linux / macOS |
+|---|---------|---------------|
+| pipeline | `run_pipeline.bat` | `./run_pipeline.sh` |
+| web view | `run_web.bat` | `./run_web.sh` |
+
+```powershell
+run_pipeline.bat --citygml-version 3.0
+```
+
+```bash
+./run_pipeline.sh --citygml-version 3.0
+PYTHON=/path/to/python ./run_web.sh --port 9000
+```
+
+Set `PYTHON` to pick a specific interpreter; otherwise `py -3` / `python3` is
+used.
+
 Equivalent explicit form:
 
 ```powershell
@@ -628,6 +648,8 @@ dependency.
 
 ```powershell
 python B2GM_main.py --web          # or: python B2GM_web.py / b2gm-web
+run_web.bat                        # Windows launcher
+./run_web.sh                       # Linux / macOS launcher
 ```
 
 Opens a three panel workspace at `http://127.0.0.1:8000` on the stdlib HTTP
