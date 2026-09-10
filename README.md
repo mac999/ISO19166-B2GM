@@ -656,6 +656,10 @@ Opens a three panel workspace at `http://127.0.0.1:8000` on the stdlib HTTP
 server — no web framework, no CDN, nothing to install beyond the core
 dependencies.
 
+<p align="center">
+  <img src="./doc/webview.png" width="900" alt="B2GM web view: input tree and pipeline stages, 3D canvas, output tree"></img>
+</p>
+
 | Panel | Contents |
 |-------|----------|
 | Left | input folder tree, and the PD/CM/EM/LM stage properties read from the pipeline JSON (collapsible per stage) |
@@ -669,6 +673,14 @@ the canvas.
 
 `.gml` (CityGML), `.json` (`bim_model.json` / `gis_model.json`) and `.obj` files
 render in the canvas; everything else opens in the preview pane.
+
+Clicking a class in the legend hides it, which is how you look inside the model.
+Here the building block and the wall surfaces are switched off, leaving the LOD1
+room solids the LM operators produced, plus the windows and doors:
+
+<p align="center">
+  <img src="./doc/webview_rooms.png" width="900" alt="The same model with the building block and wall surfaces hidden, showing the LOD1 room solids"></img>
+</p>
 
 The theme (dark / light) and language (English / 한국어) toggles are in the
 header and persist. Both can also be set from the URL, which makes a view
