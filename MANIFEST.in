@@ -3,6 +3,7 @@ include LICENSE
 include requirements.txt
 include pytest.ini
 include CITATION.cff
+include Dockerfile fly.toml
 include run_pipeline.sh run_pipeline.bat run_web.sh run_web.bat
 
 # ISO 19166 conceptual schemas
@@ -13,7 +14,7 @@ include input_data/B2GM_example.json
 include input_data/B2GM_EM.json
 include input_data/LoD1_mapping_example.json
 include input_data/duplex_apartment.ifc
-include input_data/GY_PICK_20240603a.geojson
+include input_data/goyang_footprint_sample.geojson
 
 # Web view assets
 recursive-include web *.html *.css *.js

@@ -2,10 +2,14 @@
     "CRS": "EPSG:4326",
     "geometry": [
         {
-            "input": "input_data/GY_PICK_20240603a.geojson",
-            "base_offset": [0.0, 0.0, 0.0],
-            "ground_storey": "GRD_FL",
-            "underground_storey": "UGR_FL",
+            "input": "input_data/goyang_footprint_sample.geojson",
+            "base_offset": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "ground_storey": "GRO_FLO_CO",
+            "underground_storey": "UND_FLO_CO",
             "storey_height": 3.0,
             "transform_utm": true,
             "height_scale": 1.0,
@@ -13,7 +17,23 @@
         }
     ],
     "style": [
-        {"property": "BLDG_NM", "match": "Terminal", "color": [1.0, 0.2, 0.2]},
-        {"property": "BLDG_NM", "match": "Sports", "color": [0.2, 1.0, 0.2]}
+        {
+            "property": "BULD_NM",
+            "match": "강선마을",
+            "color": [
+                0.85,
+                0.35,
+                0.3
+            ]
+        },
+        {
+            "property": "BULD_NM",
+            "match": "문촌마을",
+            "color": [
+                0.35,
+                0.65,
+                0.85
+            ]
+        }
     ]
 }
