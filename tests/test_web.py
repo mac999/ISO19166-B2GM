@@ -1,6 +1,7 @@
 """Web view: workspace paths, folder tree, pipeline panel, model readers, HTTP."""
 import json
 import os
+import tempfile
 import threading
 import urllib.error
 import urllib.request
@@ -208,3 +209,83 @@ def test_missing_file_is_404(server):
 def test_web_assets_exist():
     for name in ("index.html", "style.css", "app.js"):
         assert os.path.isfile(os.path.join(ROOT, "web", name))
+
+
+# --- uploading a model (and optionally a config) to convert ------------------
+def multipart(fields):
+    """Build a multipart body: {name: (filename, bytes)}."""
+    boundary = "----b2gmtest"
+    out = b""
+    for name, (filename, content) in fields.items():
+        out += f"--{boundary}\r\n".encode()
+        disposition = f'form-data; name="{name}"'
+        if filename:
+            disposition += f'; filename="{filename}"'
+        out += f"Content-Disposition: {disposition}\r\n\r\n".encode()
+        out += content + b"\r\n"
+    out += f"--{boundary}--\r\n".encode()
+    return f"multipart/form-data; boundary={boundary}", out
+
+
+def post(base, path, content_type, body):
+    request = urllib.request.Request(base + path, data=body, method="POST")
+    request.add_header("Content-Type", content_type)
+    try:
+        with urllib.request.urlopen(request) as response:
+            return response.status, json.loads(response.read())
+    except urllib.error.HTTPError as error:
+        return error.code, json.loads(error.read())
+
+
+def test_parse_multipart_reads_both_parts():
+    content_type, body = multipart({
+        "ifc": ("a.ifc", b"ISO-10303-21;"),
+        "pipeline": ("p.json", b"{}"),
+    })
+    parts = WEB.parse_multipart(content_type, body)
+    assert parts["ifc"] == ("a.ifc", b"ISO-10303-21;")
+    assert parts["pipeline"][1] == b"{}"
+
+
+def test_safe_name_cannot_escape_a_directory():
+    assert WEB._safe_name("../../etc/passwd", "x.ifc") == "passwd"
+    assert WEB._safe_name("a/b/model.ifc", "x.ifc") == "model.ifc"
+    assert WEB._safe_name("", "x.ifc") == "x.ifc"
+    assert WEB._safe_name("...", "x.ifc") == "x.ifc"
+
+
+def test_convert_needs_an_ifc(server):
+    content_type, body = multipart({"pipeline": ("p.json", b"{}")})
+    status, payload = post(server, "/api/convert", content_type, body)
+    assert status == 400 and "ifc" in payload["error"]
+
+
+def test_convert_rejects_other_extensions(server):
+    content_type, body = multipart({"ifc": ("model.txt", b"nope")})
+    status, payload = post(server, "/api/convert", content_type, body)
+    assert status == 400 and ".ifc" in payload["error"]
+
+
+def test_convert_rejects_a_plain_json_post(server):
+    status, payload = post(server, "/api/convert", "application/json", b"{}")
+    assert status == 400 and "multipart" in payload["error"]
+
+
+def test_convert_reports_a_broken_pipeline_config(server):
+    content_type, body = multipart({
+        "ifc": ("m.ifc", b"ISO-10303-21;"),
+        "pipeline": ("p.json", b"{ not json"),
+    })
+    status, payload = post(server, "/api/convert", content_type, body)
+    assert payload["ok"] is False
+    assert "not valid JSON" in payload["log"][0]
+
+
+def test_convert_leaves_no_temporary_directory(server, tmp_path):
+    import glob
+
+    before = set(glob.glob(os.path.join(tempfile.gettempdir(), "b2gm-upload-*")))
+    content_type, body = multipart({"ifc": ("m.ifc", b"not really an ifc")})
+    post(server, "/api/convert", content_type, body)
+    after = set(glob.glob(os.path.join(tempfile.gettempdir(), "b2gm-upload-*")))
+    assert after == before

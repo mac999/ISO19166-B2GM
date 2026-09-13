@@ -226,6 +226,21 @@ ul.tree ul { padding-left: 13px; }
   pointer-events: none;
 }
 
+.dropzone {
+  position: absolute;
+  inset: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--accent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-size: 14px;
+  text-align: center;
+  pointer-events: none;
+}
+
 .overlay {
   position: absolute;
   inset: 0;

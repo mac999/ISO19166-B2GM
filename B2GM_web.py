@@ -20,13 +20,17 @@ Date:
 from __future__ import annotations
 
 import argparse
-import io
+import email
+import email.policy
 import json
 import logging
 import mimetypes
 import os
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
 import threading
 import webbrowser
 import xml.etree.ElementTree as ET
@@ -55,6 +59,9 @@ STATIC_DIR = _static_dir()
 MODEL_SUFFIXES = (".gml", ".json", ".obj")
 TEXT_SUFFIXES = (".json", ".gml", ".xml", ".csv", ".txt", ".md", ".ifc", ".obj")
 PREVIEW_BYTES = 64 * 1024
+MAX_BODY_BYTES = 64 * 1024           # JSON requests
+MAX_UPLOAD_BYTES = 50 * 1024 * 1024  # an uploaded IFC plus its pipeline config
+CONVERT_TIMEOUT = 180                # one conversion must not wedge the view
 
 # GIS class -> RGB, so the canvas colours features the way a CityGML viewer does
 CLASS_COLORS = {
@@ -353,29 +360,96 @@ def read_model(path: str) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 # HTTP layer
 # ---------------------------------------------------------------------------
-def run_pipeline(workspace: Workspace, input_file: str) -> Dict[str, Any]:
-    """Run the mapping pipeline and capture its log for the browser."""
-    import B2GM_main
+def run_b2gm(input_file: str, pipeline: str, output_dir: str,
+             version: Optional[str] = None,
+             timeout: int = CONVERT_TIMEOUT) -> Dict[str, Any]:
+    """Run the mapping pipeline and capture its log for the browser.
 
-    buffer = io.StringIO()
-    handler = logging.StreamHandler(buffer)
-    handler.setFormatter(logging.Formatter("%(levelname)s %(message)s"))
-    root = logging.getLogger()
-    root.addHandler(handler)
+    B2GM_main runs as a separate process: a large or malformed model then times
+    out instead of wedging the view, which a call in this process could not do.
+    """
+    command = [sys.executable, os.path.join(HERE, "B2GM_main.py"),
+               "--input", input_file, "--pipeline", pipeline,
+               "--output-dir", output_dir]
+    if version:
+        command += ["--citygml-version", version]
     try:
-        B2GM_main.mapping_ifc_to_target(input_file, workspace.output,
-                                        workspace.pipeline, workspace.output_dir)
-        ok = True
-    except Exception as exc:
-        logger.exception("pipeline failed")
-        buffer.write(f"ERROR {exc}\n")
-        ok = False
+        proc = subprocess.run(command, capture_output=True, text=True,
+                              timeout=timeout, cwd=HERE)
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "log": [f"the pipeline timed out after {timeout}s"]}
+    # the stage log goes to stderr; tqdm redraws are noise in a browser
+    log = [line for line in (proc.stderr or "").splitlines() if "it/s]" not in line]
+    if proc.returncode != 0:
+        return {"ok": False, "log": log or [(proc.stdout or "").strip()]}
+    return {"ok": True, "log": log}
+
+
+def _safe_name(name: str, default: str) -> str:
+    """Keep only the basename, and only characters that cannot escape a path."""
+    base = os.path.basename(str(name or "").replace("\\", "/"))
+    cleaned = re.sub(r"[^A-Za-z0-9._-]", "_", base).lstrip(".")
+    return cleaned or default
+
+
+def parse_multipart(content_type: str, body: bytes) -> Dict[str, Tuple[str, bytes]]:
+    """Return ``{field: (filename, content)}`` from a multipart body."""
+    raw = b"Content-Type: " + content_type.encode() + b"\r\n\r\n" + body
+    message = email.message_from_bytes(raw, policy=email.policy.default)
+    parts: Dict[str, Tuple[str, bytes]] = {}
+    if not message.is_multipart():
+        return parts
+    for part in message.iter_parts():
+        name = part.get_param("name", header="content-disposition")
+        if not name:
+            continue
+        parts[name] = (part.get_filename() or "", part.get_payload(decode=True) or b"")
+    return parts
+
+
+def convert_upload(ifc: Tuple[str, bytes], pipeline: Optional[Tuple[str, bytes]],
+                   version: Optional[str], fallback_pipeline: str) -> Dict[str, Any]:
+    """Run the pipeline over an uploaded IFC and return the rendered result.
+
+    The work happens in a throwaway directory and in a separate process, so a
+    huge or malformed model times out instead of wedging the view, and nothing
+    is left behind afterwards.
+    """
+    work = tempfile.mkdtemp(prefix="b2gm-upload-")
+    try:
+        input_dir = os.path.join(work, "input")
+        output_dir = os.path.join(work, "output")
+        os.makedirs(input_dir)
+        ifc_path = os.path.join(input_dir, _safe_name(ifc[0], "model.ifc"))
+        with open(ifc_path, "wb") as f:
+            f.write(ifc[1])
+
+        if pipeline and pipeline[1].strip():
+            pipeline_path = os.path.join(input_dir, _safe_name(pipeline[0], "pipeline.json"))
+            with open(pipeline_path, "wb") as f:
+                f.write(pipeline[1])
+            try:
+                json.loads(pipeline[1].decode("utf-8"))
+            except Exception as exc:
+                return {"ok": False, "log": [f"pipeline config is not valid JSON: {exc}"]}
+        else:
+            pipeline_path = fallback_pipeline
+
+        result = run_b2gm(ifc_path, pipeline_path, output_dir, version)
+        if not result["ok"]:
+            return result
+
+        produced = sorted(
+            (n for n in os.listdir(output_dir) if n.lower().endswith(".gml")),
+            key=lambda n: os.path.getmtime(os.path.join(output_dir, n)))
+        if not produced:
+            return {"ok": False,
+                    "log": result["log"] + ["the pipeline produced no CityGML"]}
+        final = produced[-1]
+        return {"ok": True, "log": result["log"], "name": final,
+                "model": read_model(os.path.join(output_dir, final))}
     finally:
-        root.removeHandler(handler)
-    return {"ok": ok, "log": buffer.getvalue().splitlines()}
-
-
-MAX_BODY_BYTES = 64 * 1024
+        shutil.rmtree(work, ignore_errors=True)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -466,6 +540,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         url = urlparse(self.path)
+        if url.path == "/api/convert":
+            return self._convert()
         if url.path != "/api/run":
             return self._error("not found", 404)
         length = int(self.headers.get("Content-Length") or 0)
@@ -478,7 +554,42 @@ class Handler(BaseHTTPRequestHandler):
             return self._error(str(exc))
         if not os.path.isfile(path) or not path.lower().endswith(".ifc"):
             return self._error("select an .ifc file in the input tree")
-        self._json(run_pipeline(self.workspace, path))
+        self._json(run_b2gm(path, self.workspace.pipeline, self.workspace.output_dir))
+
+
+    def _convert(self):
+        """Run the pipeline over an uploaded IFC (and optional pipeline config)."""
+        length = int(self.headers.get("Content-Length") or 0)
+        if length > MAX_UPLOAD_BYTES:
+            return self._error(
+                f"upload too large (limit {MAX_UPLOAD_BYTES // (1024 * 1024)} MB)", 413)
+        content_type = self.headers.get("Content-Type") or ""
+        if "multipart/form-data" not in content_type:
+            return self._error("expected a multipart upload")
+        try:
+            parts = parse_multipart(content_type, self.rfile.read(length))
+        except Exception as exc:
+            return self._error(f"could not read the upload: {exc}")
+
+        ifc = parts.get("ifc")
+        if not ifc or not ifc[1]:
+            return self._error("attach an .ifc file as the 'ifc' field")
+        if not ifc[0].lower().endswith(".ifc"):
+            return self._error("the model must be an .ifc file")
+
+        version = None
+        if "version" in parts:
+            try:
+                import B2GM_GIS
+
+                version = B2GM_GIS.normalise_version(parts["version"][1].decode() or None)
+            except Exception as exc:
+                return self._error(str(exc))
+
+        logger.info("converting upload %s (%.1f MB)", ifc[0], len(ifc[1]) / 1048576)
+        result = convert_upload(ifc, parts.get("pipeline"), version,
+                                self.workspace.pipeline)
+        self._json(result)
 
 
 def serve(workspace: Workspace, host: str = "127.0.0.1", port: int = 8000,

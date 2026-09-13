@@ -22,6 +22,8 @@ const TEXT = {
     loading: 'Loading model...', empty: 'No geometry in this file',
     features: 'features', triangles: 'triangles', selectIfc: 'Select an .ifc file first',
     legend: 'Feature classes', toggle: 'Click to show or hide',
+    dropTitle: 'Drop to convert', dropHint: 'an .ifc model, optionally with a pipeline .json',
+    converting: 'Converting...', needIfc: 'Attach an .ifc file',
     theme: 'Dark', themeLight: 'Light',
   },
   ko: {
@@ -34,6 +36,8 @@ const TEXT = {
     loading: '모델 읽는 중...', empty: '이 파일에는 형상이 없습니다',
     features: '피처', triangles: '삼각형', selectIfc: '먼저 .ifc 파일을 선택하세요',
     legend: '피처 클래스', toggle: '클릭하면 표시/숨김',
+    dropTitle: '놓으면 변환합니다', dropHint: '.ifc 모델, 원하면 파이프라인 .json 함께',
+    converting: '변환 중...', needIfc: '.ifc 파일이 필요합니다',
     theme: '다크', themeLight: '라이트',
   },
 };
@@ -558,6 +562,71 @@ async function loadPreview(side, path) {
   } catch (error) {
     preview.textContent = error.message;
   }
+}
+
+/* --- drop an ifc (and optionally a pipeline config) to convert ------------ */
+const canvasWrap = document.querySelector('.canvas-wrap');
+let dragDepth = 0;
+
+['dragenter', 'dragover'].forEach((type) => {
+  canvasWrap.addEventListener(type, (event) => {
+    event.preventDefault();
+    if (type === 'dragenter') dragDepth += 1;
+    $('dropzone').hidden = false;
+  });
+});
+['dragleave', 'drop'].forEach((type) => {
+  canvasWrap.addEventListener(type, (event) => {
+    event.preventDefault();
+    dragDepth = type === 'drop' ? 0 : Math.max(0, dragDepth - 1);
+    if (!dragDepth) $('dropzone').hidden = true;
+  });
+});
+
+canvasWrap.addEventListener('drop', async (event) => {
+  const files = [...event.dataTransfer.files];
+  const ifc = files.find((f) => f.name.toLowerCase().endsWith('.ifc'));
+  const pipeline = files.find((f) => f.name.toLowerCase().endsWith('.json'));
+  if (!ifc) {
+    $('console').hidden = false;
+    $('log').textContent = t('needIfc');
+    renderer.resize();
+    return;
+  }
+
+  const body = new FormData();
+  body.append('ifc', ifc, ifc.name);
+  if (pipeline) body.append('pipeline', pipeline, pipeline.name);
+  const version = pipelineVersion();
+  if (version) body.append('version', version);
+
+  busy(true, `${t('converting')} ${ifc.name}`);
+  $('console').hidden = false;
+  $('log').textContent = '';
+  renderer.resize();
+  try {
+    const result = await api('/api/convert', { method: 'POST', body });
+    $('log').textContent = result.log.join('\n');
+    if (!result.ok) return;
+    $('model-title').textContent = `${ifc.name} -> ${result.name}`;
+    hiddenClasses.clear();
+    renderer.load(result.model, hiddenClasses);
+    renderLegend();
+    updateStats();
+  } catch (error) {
+    $('log').textContent = error.message;
+  } finally {
+    busy(false);
+  }
+});
+
+/* The header shows which CityGML version the loaded pipeline asks for. */
+function pipelineVersion() {
+  for (const stage of pipeline.stages || []) {
+    const hit = (stage.properties || []).find((p) => p.key === 'citygml_version');
+    if (hit) return String(hit.value).replace(/"/g, '').trim();
+  }
+  return null;
 }
 
 /* --- run ------------------------------------------------------------------ */
