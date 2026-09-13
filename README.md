@@ -654,17 +654,18 @@ dependencies.
 
 | Panel | Contents |
 |-------|----------|
-| Left | input folder tree, and the PD/CM/EM/LM stage properties read from the pipeline JSON (collapsible per stage) |
-| Middle | WebGL canvas — drag to orbit, wheel to zoom, right drag to pan; a legend lists the CityGML feature classes with counts and toggles each on or off |
-| Right | output folder tree plus a text preview of the selected file |
+| Left | input folder tree, and the PD/CM/EM/LM stage properties as editable fields (scalars as one-line inputs, rule sets as JSON) |
+| Middle | WebGL canvas — drag to orbit, wheel to zoom, right drag to pan; an opacity slider and view reset; a legend lists the feature classes with counts and toggles each on or off |
+| Right | output folder tree, and a tabbed pane with the file preview and the stage log |
 
 Both side panels are resized by dragging the splitters (the widths are
 remembered). **Run pipeline** executes PD → CM → EM → LM on the IFC selected in
 the input tree and streams the stage log back, then reloads the output tree and
 the canvas.
 
-`.gml` (CityGML), `.json` (`bim_model.json` / `gis_model.json`) and `.obj` files
-render in the canvas; everything else opens in the preview pane.
+Clicking a file renders it: `.ifc` (the source model, coloured by IFC type),
+`.gml` (CityGML), `.json` (`bim_model.json` / `gis_model.json`) and `.obj`.
+Everything else opens in the preview pane.
 
 **Drop an `.ifc` on the canvas** to convert it, optionally together with a
 pipeline `.json`. The model runs through PD → CM → EM → LM and the result is
@@ -678,9 +679,14 @@ Sending your own config is the point of it — change an `EM_rule` destination a
 the feature classes in the result change with it, which is what the standard is
 actually about. Without a config the bundled example rules are used.
 
-The conversion runs in a throwaway directory and in a separate process, so a
-large or malformed model times out (180 s) rather than wedging the view, and
-nothing is left on disk afterwards. Uploads are capped at 50 MB.
+The upload lands in the input tree under `uploads/` and the result under
+`output/<model>/`, so both show up where you look for them; a repeated name gets
+a `_2` suffix rather than overwriting. Editing a stage field in the left panel
+and pressing **Apply & run** sends the edited config the same way, which is the
+quickest way to see a rule change move features between classes.
+
+The conversion runs in a separate process, so a large or malformed model times
+out (180 s) rather than wedging the view. Uploads are capped at 50 MB.
 
 Clicking a class in the legend hides it, which is how you look inside the model.
 Here the building block and the wall surfaces are switched off, leaving the LOD1
