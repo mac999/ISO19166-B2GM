@@ -410,6 +410,29 @@ function parseColor(value) {
 
 const renderer = new Renderer($('scene'));
 
+/* --- narrow screens: one panel at a time ---------------------------------- */
+function showView(name) {
+  const workspace = $('workspace');
+  workspace.classList.remove('show-left', 'show-middle', 'show-right');
+  workspace.classList.add(`show-${name}`);
+  document.querySelectorAll('.mtab').forEach((tab) => {
+    tab.classList.toggle('on', tab.dataset.view === name);
+  });
+  // the canvas was display:none, so it needs its size back
+  if (name === 'middle') requestAnimationFrame(() => renderer.resize());
+}
+
+document.querySelectorAll('.mtab').forEach((tab) => {
+  tab.onclick = () => showView(tab.dataset.view);
+});
+showView(params.get('view') || 'middle');
+
+const isNarrow = () => window.matchMedia('(max-width: 900px)').matches;
+
+// during boot the trees auto-select a file; jumping to the canvas then would
+// override an explicit ?view=, so the automatic switch waits until boot is done
+let booted = false;
+
 /* --- right panel tabs ----------------------------------------------------- */
 document.querySelectorAll('.tabs .tab').forEach((tab) => {
   tab.onclick = () => showPanel(tab.dataset.panel);
@@ -471,7 +494,10 @@ function renderTree(node, container, side) {
       row.classList.add('on');
       if (side === 'input') selectedInput = item.path;
       loadPreview(side, item.path);
-      if (item.viewable) loadModel(side, item.path, item.name);
+      if (item.viewable) {
+        loadModel(side, item.path, item.name);
+        if (booted && isNarrow()) showView('middle');
+      }
     };
   };
   walk(node, container, 0);
@@ -706,6 +732,7 @@ canvasWrap.addEventListener('drop', async (event) => {
 /* The upload and its result live in the workspace, so both trees are reloaded
    and the produced CityGML is selected. */
 async function showConverted(result) {
+  if (isNarrow()) showView('middle');
   $('model-title').textContent = result.path;
   hiddenClasses.clear();
   renderer.load(result.model, hiddenClasses);
@@ -825,6 +852,7 @@ function selectInput(name) {
     renderTree(await api('/api/tree?side=input'), $('input-tree'), 'input');
     await refreshOutputs(lodOutput(pipeline) || config.output);
     selectInput(config.input_default);
+    booted = true;
   } catch (error) {
     writeLog(error.message);
   }

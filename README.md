@@ -659,7 +659,9 @@ dependencies.
 | Right | output folder tree, and a tabbed pane with the file preview and the stage log |
 
 Both side panels are resized by dragging the splitters (the widths are
-remembered). **Run pipeline** executes PD → CM → EM → LM on the IFC selected in
+remembered). Below 900 px the three panels do not fit side by side and a drag
+splitter is no use on touch, so the layout becomes one panel at a time behind a
+tab bar; `?view=left|middle|right` opens a particular one. **Run pipeline** executes PD → CM → EM → LM on the IFC selected in
 the input tree and streams the stage log back, then reloads the output tree and
 the canvas.
 

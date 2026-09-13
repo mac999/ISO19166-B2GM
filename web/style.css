@@ -228,7 +228,7 @@ ul.tree ul { padding-left: 13px; }
 [hidden] { display: none !important; }
 
 .canvas-wrap { position: relative; flex: 1; min-height: 0; }
-#scene { display: block; width: 100%; height: 100%; }
+#scene { display: block; width: 100%; height: 100%; touch-action: none; }
 
 .legend {
   position: absolute;
@@ -337,3 +337,49 @@ ul.tree ul { padding-left: 13px; }
 .preview { max-height: 360px; color: var(--muted); }
 #runlog { color: var(--text); }
 .err { color: #e5484d; }
+
+
+/* --- narrow screens -------------------------------------------------------
+   Three side-by-side panels do not fit a phone, and a drag splitter is no use
+   on touch, so the panels become one at a time behind a tab bar. */
+.mobile-tabs { display: none; }
+
+@media (max-width: 900px) {
+  .bar { height: auto; padding: 8px 10px; gap: 10px; flex-wrap: wrap; }
+  .sub, .stages { display: none; }
+  .actions { margin-left: auto; }
+  button { padding: 6px 10px; }
+
+  .mobile-tabs {
+    display: flex;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+  }
+  .mtab {
+    flex: 1;
+    border: 0;
+    border-radius: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    padding: 9px 4px;
+    font-size: 12px;
+  }
+  .mtab.on { color: var(--accent); border-bottom-color: var(--accent); }
+
+  #workspace { height: calc(100% - 96px); }
+  .splitter { display: none; }
+
+  /* one panel at a time, full width */
+  #left, #right, .panel.center { display: none; width: 100% !important; flex: 1 1 auto; }
+  #workspace.show-left #left,
+  #workspace.show-right #right,
+  #workspace.show-middle .panel.center { display: flex; }
+
+  .legend { max-width: 55%; font-size: 10px; }
+  .viewtools { top: auto; bottom: 8px; right: 8px; font-size: 10px; }
+  .viewtools input[type="range"] { width: 74px; }
+  .hint { display: none; }
+  .prop-val { max-height: 130px; }
+  .preview { max-height: 45vh; }
+}
