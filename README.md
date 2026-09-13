@@ -630,8 +630,9 @@ by the config file — footprint attribute names, storey height, base offset,
 CRS transform and per-building colouring are all parameters, nothing is
 hard-coded. It follows the same convention as the main pipeline: the config
 lives under `input_data/` and results are written under `output/`, so a bare
-command runs the shipped example (`input_data/GY_PICK_20240603a.geojson` →
-`output/lod1_buildings/`):
+command runs the shipped example — 2,005 building footprints from Goyang,
+Korea (`input_data/goyang_footprint_sample.geojson` → `output/lod1_buildings/`,
+about four seconds):
 
 ```powershell
 python B2GM_LM_op_extrude.py                                              # extrude + export
@@ -695,6 +696,33 @@ shareable: `?theme=light&lang=ko&hide=WallSurface,CityModel.Building`.
 
 File access is confined to the two workspace roots — a path that escapes them is
 refused.
+
+### Deploying the web view
+
+`Dockerfile` and `fly.toml` deploy the view to [Fly.io](https://fly.io). The
+image converts the bundled sample at build time, so the first visitor lands on a
+model rather than an empty canvas:
+
+```bash
+fly launch --no-deploy --copy-config   # first time: pick the app name and region
+fly deploy
+fly open
+```
+
+The container reads `B2GM_HOST` and `PORT` from the environment, which is why the
+local default stays on loopback: running the tool on a laptop is not exposed to
+the network unless you ask for it.
+
+`fly.toml` sets `auto_stop_machines` with `min_machines_running = 0`, so the
+machine sleeps between visitors, and `max_machines_running = 1`, which caps what
+the unauthenticated pipeline endpoint can cost. A `shared-cpu-1x` with 512 MB is
+enough — the pipeline peaks around 196 MB.
+
+> The view has no authentication and `POST /api/run` executes the pipeline, so
+> treat a public deployment as a demo, not as a service. It runs on the stdlib
+> `http.server`, which is not a hardened production server; request bodies are
+> capped and connections time out, but that is the extent of it. Fly.io has no
+> free tier, so a deployed machine costs money even while idle-stopped.
 
 ## Tests
 
