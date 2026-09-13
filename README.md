@@ -80,7 +80,7 @@ What it is **not**:
 | `B2GM_LM_operators.py`    | **B2G LM operator library** (ISO 19166 Table 8): `footprint`, `OBB`, `projection`, `boundary`, `extrude`, `exterior`, `interior`, `VOID`, `union`, `subtract`, `intersect` — numpy + shapely only |
 | `B2GM_main.py`            | Pipeline orchestrator — runs PD → CM → EM → LM with a shared context |
 | `B2GM_property.py`        | Property helpers over the conceptual model |
-| `B2GM_LM_op_extrude.py`   | Footprint → LOD1 solid extrusion + OBJ/CSV export (config-driven); optional geopandas (read GeoJSON) / pyvista (view) |
+| `B2GM_LM_op_extrude.py`   | Side utility: bulk GeoJSON footprint → LOD1 extrusion, outside the B2GM stages |
 | `B2GM_simple_mapping.py`  | Optional: strongly-typed CityGML output via xsdata dataclasses |
 | `B2GM_citygml3.py`        | CityGML **3.0** writer — restructured building model (real `bldg:Storey`, `con:fillingSurface` openings, GML 3.2), element names read from `citygml_parser.py` |
 | `B2GM_web.py` + `web/`    | Web view — input tree + stage properties, WebGL 3D canvas, output tree (stdlib HTTP server, no extra dependency) |
@@ -625,25 +625,16 @@ uses `IfcWall.*` rather than also taking `IfcSlab`, because the sample's entranc
 terraces are slabs reaching 6 m beyond each end of the building and would stretch
 the LOD1 block from 23.96 m to 35.76 m.
 
-Footprint extrusion for whole cities (GeoJSON in, OBJ/CSV out) is driven entirely
-by the config file — footprint attribute names, storey height, base offset,
-CRS transform and per-building colouring are all parameters, nothing is
-hard-coded. It follows the same convention as the main pipeline: the config
-lives under `input_data/` and results are written under `output/`, so a bare
-command runs the shipped example — 2,005 building footprints from Goyang,
-Korea (`input_data/goyang_footprint_sample.geojson` → `output/lod1_buildings/`,
-about four seconds):
+### Side utility: bulk footprint extrusion
+
+`B2GM_LM_op_extrude.py` reuses the `extrude` operator over a set of GeoJSON
+footprints (GeoJSON in, OBJ/CSV out), configured the same way as the pipeline.
+It is a convenience script, not one of the B2GM stages.
 
 ```powershell
-python B2GM_LM_op_extrude.py                                              # extrude + export
-python B2GM_LM_op_extrude.py --config input_data/LoD1_mapping_example.json
-python B2GM_LM_op_extrude.py --show                                       # + 3D viewer (pyvista)
+python B2GM_LM_op_extrude.py          # runs the bundled 100-footprint sample
+python B2GM_LM_op_extrude.py --help   # every config key
 ```
-
-`python B2GM_LM_op_extrude.py --help` documents every config key. GeoJSON is read
-with `geopandas` when installed, otherwise via the stdlib `json` reader plus
-`shapely` (both already required), so the example runs without any optional
-dependency.
 
 ## Web view
 
@@ -674,6 +665,22 @@ the canvas.
 
 `.gml` (CityGML), `.json` (`bim_model.json` / `gis_model.json`) and `.obj` files
 render in the canvas; everything else opens in the preview pane.
+
+**Drop an `.ifc` on the canvas** to convert it, optionally together with a
+pipeline `.json`. The model runs through PD → CM → EM → LM and the result is
+rendered straight away:
+
+```
+POST /api/convert     multipart: ifc=<model.ifc> [pipeline=<config.json>] [version=2.0|3.0]
+```
+
+Sending your own config is the point of it — change an `EM_rule` destination and
+the feature classes in the result change with it, which is what the standard is
+actually about. Without a config the bundled example rules are used.
+
+The conversion runs in a throwaway directory and in a separate process, so a
+large or malformed model times out (180 s) rather than wedging the view, and
+nothing is left on disk afterwards. Uploads are capped at 50 MB.
 
 Clicking a class in the legend hides it, which is how you look inside the model.
 Here the building block and the wall surfaces are switched off, leaving the LOD1
@@ -718,11 +725,13 @@ machine sleeps between visitors, and `max_machines_running = 1`, which caps what
 the unauthenticated pipeline endpoint can cost. A `shared-cpu-1x` with 512 MB is
 enough — the pipeline peaks around 196 MB.
 
-> The view has no authentication and `POST /api/run` executes the pipeline, so
-> treat a public deployment as a demo, not as a service. It runs on the stdlib
-> `http.server`, which is not a hardened production server; request bodies are
-> capped and connections time out, but that is the extent of it. Fly.io has no
-> free tier, so a deployed machine costs money even while idle-stopped.
+> The view has no authentication, and both `/api/run` and `/api/convert` execute
+> the pipeline, so treat a public deployment as a demo rather than a service. A
+> pipeline config is executable input — `PD_logic_view.ETL_module` imports and
+> calls what it names, and `external_data_source` reads the path it is given — so
+> treat one the way you would treat code. Fly.io runs each machine as its own
+> microVM, which is what makes accepting uploads on a throwaway demo reasonable;
+> it has no free tier, so a deployed machine costs money even while idle-stopped.
 
 ## Tests
 
