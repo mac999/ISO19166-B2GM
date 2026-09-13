@@ -18,12 +18,15 @@ const TEXT = {
     inputPanel: 'Input', inputFiles: 'Input files', pipeline: 'Pipeline stages',
     outputPanel: 'Output', outputFiles: 'Output files',
     canvas: '3D view', preview: 'File preview', previewEmpty: 'Select a file',
-    log: 'Log', hint: 'Drag to orbit, wheel to zoom, right drag to pan',
+    log: 'Log', logEmpty: 'Drop an .ifc on the canvas, or press Run pipeline',
+    hint: 'Drag to orbit, wheel to zoom, right drag to pan',
     loading: 'Loading model...', empty: 'No geometry in this file',
     features: 'features', triangles: 'triangles', selectIfc: 'Select an .ifc file first',
     legend: 'Feature classes', toggle: 'Click to show or hide',
     dropTitle: 'Drop to convert', dropHint: 'an .ifc model, optionally with a pipeline .json',
     converting: 'Converting...', needIfc: 'Attach an .ifc file',
+    opacity: 'Opacity', resetView: 'Reset view',
+    applyConfig: 'Apply & run', needInput: 'Select an .ifc in the input tree first',
     theme: 'Dark', themeLight: 'Light',
   },
   ko: {
@@ -32,12 +35,15 @@ const TEXT = {
     inputPanel: '입력', inputFiles: '입력 파일', pipeline: '파이프라인 단계',
     outputPanel: '출력', outputFiles: '출력 파일',
     canvas: '3차원 뷰', preview: '파일 미리보기', previewEmpty: '파일을 선택하세요',
-    log: '로그', hint: '드래그 회전, 휠 확대, 우클릭 드래그 이동',
+    log: '로그', logEmpty: '캔버스에 .ifc 를 놓거나 파이프라인 실행을 누르세요',
+    hint: '드래그 회전, 휠 확대, 우클릭 드래그 이동',
     loading: '모델 읽는 중...', empty: '이 파일에는 형상이 없습니다',
     features: '피처', triangles: '삼각형', selectIfc: '먼저 .ifc 파일을 선택하세요',
     legend: '피처 클래스', toggle: '클릭하면 표시/숨김',
     dropTitle: '놓으면 변환합니다', dropHint: '.ifc 모델, 원하면 파이프라인 .json 함께',
     converting: '변환 중...', needIfc: '.ifc 파일이 필요합니다',
+    opacity: '투명도', resetView: '뷰 초기화',
+    applyConfig: '적용 후 실행', needInput: '입력 트리에서 .ifc 를 먼저 선택하세요',
     theme: '다크', themeLight: '라이트',
   },
 };
@@ -135,11 +141,12 @@ precision mediump float;
 varying vec3 vNormal;
 varying vec3 vColor;
 uniform vec3 uLight;
+uniform float uAlpha;
 void main() {
   vec3 n = normalize(vNormal);
   float diffuse = max(dot(n, normalize(uLight)), 0.0);
   float ambient = 0.42;
-  gl_FragColor = vec4(vColor * (ambient + 0.75 * diffuse), 1.0);
+  gl_FragColor = vec4(vColor * (ambient + 0.75 * diffuse), uAlpha);
 }`;
 
 const mat4 = {
@@ -203,6 +210,7 @@ class Renderer {
     this.pitch = 0.5;
     this.distance = 30;
     this.pan = [0, 0];
+    this.alpha = 1;
     if (!this.gl) return;
     this.initProgram();
     this.readThemeColors();
@@ -237,8 +245,10 @@ class Renderer {
       mvp: gl.getUniformLocation(program, 'uMVP'),
       model: gl.getUniformLocation(program, 'uModel'),
       light: gl.getUniformLocation(program, 'uLight'),
+      alpha: gl.getUniformLocation(program, 'uAlpha'),
     };
     gl.enable(gl.DEPTH_TEST);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     this.buffer = gl.createBuffer();
   }
 
@@ -370,6 +380,11 @@ class Renderer {
     gl.uniformMatrix4fv(this.uniform.mvp, false, mat4.multiply(projection, panned));
     gl.uniformMatrix4fv(this.uniform.model, false, model);
     gl.uniform3f(this.uniform.light, 0.4, 0.6, 0.9);
+    gl.uniform1f(this.uniform.alpha, this.alpha);
+    // a translucent model must not write depth, or the faces behind vanish
+    const translucent = this.alpha < 0.999;
+    if (translucent) { gl.enable(gl.BLEND); gl.depthMask(false); }
+    else { gl.disable(gl.BLEND); gl.depthMask(true); }
 
     const stride = 9 * 4;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
@@ -381,6 +396,7 @@ class Renderer {
     bind(this.attr.normal, 12);
     bind(this.attr.color, 24);
     gl.drawArrays(gl.TRIANGLES, 0, this.count);
+    gl.depthMask(true);
   }
 }
 
@@ -393,6 +409,35 @@ function parseColor(value) {
 }
 
 const renderer = new Renderer($('scene'));
+
+/* --- right panel tabs ----------------------------------------------------- */
+document.querySelectorAll('.tabs .tab').forEach((tab) => {
+  tab.onclick = () => showPanel(tab.dataset.panel);
+});
+
+function showPanel(name) {
+  document.querySelectorAll('.tabs .tab').forEach((tab) => {
+    tab.classList.toggle('on', tab.dataset.panel === name);
+  });
+  $('preview').hidden = name !== 'preview';
+  $('runlog').hidden = name !== 'runlog';
+}
+
+/* Write the stage log where the user can see it, and bring it to the front. */
+function writeLog(lines) {
+  $('runlog').textContent = Array.isArray(lines) ? lines.join('\n') : String(lines);
+  showPanel('runlog');
+}
+
+/* --- view tools ----------------------------------------------------------- */
+$('opacity').addEventListener('input', (event) => {
+  const percent = Number(event.target.value);
+  $('opacity-val').textContent = `${percent}%`;
+  renderer.alpha = percent / 100;
+  renderer.draw();
+});
+
+$('reset-view').onclick = () => renderer.resetView();
 
 /* --- trees ---------------------------------------------------------------- */
 let selectedInput = null;
@@ -424,13 +469,9 @@ function renderTree(node, container, side) {
     row.onclick = () => {
       container.querySelectorAll('.node.on').forEach((n) => n.classList.remove('on'));
       row.classList.add('on');
-      if (side === 'input') {
-        selectedInput = item.path;
-        loadPreview(side, item.path);
-      } else {
-        loadPreview(side, item.path);
-        if (item.viewable) loadModel(side, item.path, item.name);
-      }
+      if (side === 'input') selectedInput = item.path;
+      loadPreview(side, item.path);
+      if (item.viewable) loadModel(side, item.path, item.name);
     };
   };
   walk(node, container, 0);
@@ -464,19 +505,69 @@ function renderPipeline() {
     box.innerHTML = `<div class="stage-head"><span class="tag">${stage.type}</span>`
       + `<span class="stage-name">${title}</span></div><div class="stage-body"></div>`;
     const body = box.querySelector('.stage-body');
+
     stage.properties.forEach((property) => {
       const row = document.createElement('div');
       row.className = 'prop';
-      row.innerHTML = `<div class="prop-key">${property.key}</div>`;
-      const value = document.createElement('pre');
-      value.className = 'prop-val';
-      value.textContent = property.value;
-      row.appendChild(value);
+      const key = document.createElement('label');
+      key.className = 'prop-key';
+      key.textContent = property.key;
+      row.appendChild(key);
+
+      // a scalar is a one-line field; a rule set stays JSON, which is the shape
+      // the standard defines
+      const field = document.createElement(property.scalar ? 'input' : 'textarea');
+      field.className = property.scalar ? 'prop-input' : 'prop-val';
+      field.value = property.value;
+      if (property.scalar) field.type = 'text';
+      field.dataset.stage = index;
+      field.dataset.key = property.key;
+      field.dataset.scalar = property.scalar ? '1' : '';
+      field.oninput = () => markEdited(field);
+      row.appendChild(field);
       body.appendChild(row);
     });
+
     box.querySelector('.stage-head').onclick = () => box.classList.toggle('open');
     host.appendChild(box);
   });
+  updateApplyState();
+}
+
+let pipelineEdited = false;
+
+function markEdited(field) {
+  field.classList.add('edited');
+  pipelineEdited = true;
+  updateApplyState();
+}
+
+function updateApplyState() {
+  const apply = $('apply-config');
+  if (apply) apply.disabled = !pipelineEdited;
+}
+
+/* Rebuild the pipeline document from the fields, so an edit is sent as a whole
+   config rather than a patch. */
+function editedPipeline() {
+  const document_ = JSON.parse(JSON.stringify(pipeline.document || {}));
+  const stages = document_['BIM_GIS_mapping.pipeline'] || [];
+  document.querySelectorAll('[data-stage]').forEach((field) => {
+    const stage = stages[Number(field.dataset.stage)];
+    if (!stage) return;
+    if (field.dataset.scalar) {
+      const raw = field.value;
+      const asNumber = raw.trim() !== '' && !Number.isNaN(Number(raw));
+      stage[field.dataset.key] = asNumber ? Number(raw) : raw;
+    } else {
+      try {
+        stage[field.dataset.key] = JSON.parse(field.value);
+      } catch (error) {
+        throw new Error(`${field.dataset.key}: ${error.message}`);
+      }
+    }
+  });
+  return document_;
 }
 
 function markStage(type) {
@@ -588,9 +679,7 @@ canvasWrap.addEventListener('drop', async (event) => {
   const ifc = files.find((f) => f.name.toLowerCase().endsWith('.ifc'));
   const pipeline = files.find((f) => f.name.toLowerCase().endsWith('.json'));
   if (!ifc) {
-    $('console').hidden = false;
-    $('log').textContent = t('needIfc');
-    renderer.resize();
+    writeLog(t('needIfc'));
     return;
   }
 
@@ -601,24 +690,65 @@ canvasWrap.addEventListener('drop', async (event) => {
   if (version) body.append('version', version);
 
   busy(true, `${t('converting')} ${ifc.name}`);
-  $('console').hidden = false;
-  $('log').textContent = '';
-  renderer.resize();
+  writeLog(`${t('converting')} ${ifc.name}${pipeline ? ' + ' + pipeline.name : ''}`);
   try {
     const result = await api('/api/convert', { method: 'POST', body });
-    $('log').textContent = result.log.join('\n');
+    writeLog(result.log);
     if (!result.ok) return;
-    $('model-title').textContent = `${ifc.name} -> ${result.name}`;
-    hiddenClasses.clear();
-    renderer.load(result.model, hiddenClasses);
-    renderLegend();
-    updateStats();
+    await showConverted(result);
   } catch (error) {
-    $('log').textContent = error.message;
+    writeLog(error.message);
   } finally {
     busy(false);
   }
 });
+
+/* The upload and its result live in the workspace, so both trees are reloaded
+   and the produced CityGML is selected. */
+async function showConverted(result) {
+  $('model-title').textContent = result.path;
+  hiddenClasses.clear();
+  renderer.load(result.model, hiddenClasses);
+  renderLegend();
+  updateStats();
+  renderTree(await api('/api/tree?side=input'), $('input-tree'), 'input');
+  renderTree(await api('/api/tree?side=output'), $('output-tree'), 'output');
+  if (result.input) selectedInput = result.input;
+}
+
+/* Send the edited config together with the selected input, so a rule change is
+   visible in the canvas straight away. */
+$('apply-config').onclick = async () => {
+  if (!selectedInput || !selectedInput.toLowerCase().endsWith('.ifc')) {
+    writeLog(t('needInput'));
+    return;
+  }
+  let edited;
+  try {
+    edited = editedPipeline();
+  } catch (error) {
+    writeLog(`invalid JSON in ${error.message}`);
+    return;
+  }
+
+  const body = new FormData();
+  body.append('input', selectedInput);
+  body.append('pipeline', new Blob([JSON.stringify(edited, null, 2)],
+                                   { type: 'application/json' }), 'pipeline.json');
+
+  busy(true, t('converting'));
+  writeLog(t('converting'));
+  try {
+    const result = await api('/api/convert', { method: 'POST', body });
+    writeLog(result.log);
+    if (!result.ok) return;
+    await showConverted(result);
+  } catch (error) {
+    writeLog(error.message);
+  } finally {
+    busy(false);
+  }
+};
 
 /* The header shows which CityGML version the loaded pipeline asks for. */
 function pipelineVersion() {
@@ -630,30 +760,25 @@ function pipelineVersion() {
 }
 
 /* --- run ------------------------------------------------------------------ */
-$('close-log').onclick = () => { $('console').hidden = true; renderer.resize(); };
-
 $('run').onclick = async () => {
   if (!selectedInput || !selectedInput.toLowerCase().endsWith('.ifc')) {
-    $('console').hidden = false;
-    $('log').textContent = t('selectIfc');
+    writeLog(t('selectIfc'));
     return;
   }
   const button = $('run');
   button.disabled = true;
   button.textContent = t('running');
-  $('console').hidden = false;
-  $('log').textContent = '';
-  renderer.resize();
+  writeLog('');
   try {
     const result = await api('/api/run', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path: selectedInput }),
     });
-    $('log').textContent = result.log.join('\n');
+    writeLog(result.log);
     await refreshOutputs(lodOutput(pipeline) || null);
   } catch (error) {
-    $('log').textContent = error.message;
+    writeLog(error.message);
   } finally {
     button.disabled = false;
     button.textContent = t('run');
@@ -701,8 +826,7 @@ function selectInput(name) {
     await refreshOutputs(lodOutput(pipeline) || config.output);
     selectInput(config.input_default);
   } catch (error) {
-    $('log').textContent = error.message;
-    $('console').hidden = false;
+    writeLog(error.message);
   }
 })();
 

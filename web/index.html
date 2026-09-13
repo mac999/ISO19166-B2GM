@@ -32,7 +32,10 @@
         <ul class="tree" id="input-tree"></ul>
       </div>
       <div class="block">
-        <div class="block-head" data-i18n="pipeline">Pipeline stages</div>
+        <div class="block-head split">
+          <span data-i18n="pipeline">Pipeline stages</span>
+          <button id="apply-config" class="ghost" disabled data-i18n="applyConfig">Apply &amp; run</button>
+        </div>
         <div id="stage-list"></div>
       </div>
     </div>
@@ -48,11 +51,16 @@
     <div class="canvas-wrap">
       <canvas id="scene"></canvas>
       <div class="legend" id="legend"></div>
+      <div class="viewtools" id="viewtools">
+        <label><span data-i18n="opacity">Opacity</span>
+          <input type="range" id="opacity" min="15" max="100" value="100"></label>
+        <span class="val" id="opacity-val">100%</span>
+        <button id="reset-view" class="ghost" data-i18n="resetView">Reset view</button>
+      </div>
       <div class="hint" id="hint" data-i18n="hint">Drag to orbit, wheel to zoom, right drag to pan</div>
       <div class="overlay" id="overlay" hidden><div class="spinner"></div><span id="overlay-text"></span></div>
       <div class="dropzone" id="dropzone" hidden><div><strong data-i18n="dropTitle">Drop to convert</strong><br><span data-i18n="dropHint">an .ifc model, optionally with a pipeline .json</span></div></div>
     </div>
-    <div class="console" id="console" hidden><div class="console-head"><span data-i18n="log">Log</span><button id="close-log" class="ghost">x</button></div><pre id="log"></pre></div>
   </section>
 
   <div class="splitter" data-target="right"></div>
@@ -68,8 +76,12 @@
         <ul class="tree" id="output-tree"></ul>
       </div>
       <div class="block">
-        <div class="block-head" data-i18n="preview">File preview</div>
+        <div class="block-head tabs">
+          <button class="tab on" data-panel="preview" data-i18n="preview">File preview</button>
+          <button class="tab" data-panel="runlog" data-i18n="log">Log</button>
+        </div>
         <pre class="preview" id="preview" data-i18n="previewEmpty">Select a file</pre>
+        <pre class="preview" id="runlog" hidden data-i18n="logEmpty">Drop an .ifc on the canvas, or press Run pipeline</pre>
       </div>
     </div>
   </section>

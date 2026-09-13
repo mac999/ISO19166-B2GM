@@ -135,10 +135,28 @@ def test_read_obj(tmp_path):
 
 
 def test_read_model_rejects_other_types(tmp_path):
-    path = tmp_path / "a.ifc"
+    path = tmp_path / "notes.txt"
     path.write_text("x", encoding="utf-8")
     with pytest.raises(ValueError):
         WEB.read_model(str(path))
+
+
+def test_ifc_is_viewable_so_the_source_can_be_inspected():
+    """Clicking an IFC in the input tree renders it, so it must be listed as
+    viewable and read by the model reader."""
+    assert ".ifc" in WEB.MODEL_SUFFIXES
+
+
+def test_read_ifc_returns_coloured_features():
+    root = os.path.join(ROOT, "input_data", "duplex_apartment.ifc")
+    if not os.path.isfile(root):
+        pytest.skip("sample IFC not available")
+    model = WEB.read_model(root)
+    assert model["triangles"] > 0
+    classes = {f["gis_class"] for f in model["features"]}
+    assert "IfcWallStandardCase" in classes
+    wall = next(f for f in model["features"] if f["gis_class"] == "IfcWallStandardCase")
+    assert wall["color"] == WEB.IFC_COLORS["IfcWallStandardCase"]
 
 
 def test_read_model_json_roundtrip(tmp_path):
@@ -281,11 +299,26 @@ def test_convert_reports_a_broken_pipeline_config(server):
     assert "not valid JSON" in payload["log"][0]
 
 
-def test_convert_leaves_no_temporary_directory(server, tmp_path):
-    import glob
+def test_unique_path_avoids_collisions(tmp_path):
+    first = WEB._unique_path(str(tmp_path), "model.ifc")
+    open(first, "w").close()
+    second = WEB._unique_path(str(tmp_path), "model.ifc")
+    assert os.path.basename(second) == "model_2.ifc"
 
-    before = set(glob.glob(os.path.join(tempfile.gettempdir(), "b2gm-upload-*")))
-    content_type, body = multipart({"ifc": ("m.ifc", b"not really an ifc")})
-    post(server, "/api/convert", content_type, body)
-    after = set(glob.glob(os.path.join(tempfile.gettempdir(), "b2gm-upload-*")))
-    assert after == before
+
+def test_upload_lands_in_the_input_tree(workspace):
+    """A dropped file has to show up where the user looks for it."""
+    result = WEB.convert_upload(workspace, ("dropped.ifc", b"not an ifc"), None, None)
+    assert result["ok"] is False          # the content is nonsense, but ...
+    stored = os.path.join(workspace.input_dir, "uploads", "dropped.ifc")
+    assert os.path.isfile(stored)         # ... the upload was kept
+
+
+def test_uploaded_config_is_kept_too(workspace):
+    WEB.convert_upload(workspace, ("m.ifc", b"x"), ("rules.json", b"{}"), None)
+    assert os.path.isfile(os.path.join(workspace.input_dir, "uploads", "rules.json"))
+
+
+def test_a_broken_config_is_reported_before_anything_runs(workspace):
+    result = WEB.convert_upload(workspace, ("m.ifc", b"x"), ("p.json", b"{ bad"), None)
+    assert result["ok"] is False and "not valid JSON" in result["log"][0]

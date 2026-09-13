@@ -27,10 +27,8 @@ import logging
 import mimetypes
 import os
 import re
-import shutil
 import subprocess
 import sys
-import tempfile
 import threading
 import webbrowser
 import xml.etree.ElementTree as ET
@@ -56,7 +54,7 @@ def _static_dir() -> str:
 
 STATIC_DIR = _static_dir()
 
-MODEL_SUFFIXES = (".gml", ".json", ".obj")
+MODEL_SUFFIXES = (".gml", ".json", ".obj", ".ifc")
 TEXT_SUFFIXES = (".json", ".gml", ".xml", ".csv", ".txt", ".md", ".ifc", ".obj")
 PREVIEW_BYTES = 64 * 1024
 MAX_BODY_BYTES = 64 * 1024           # JSON requests
@@ -80,6 +78,24 @@ CLASS_COLORS = {
     "GenericCityObject": [0.60, 0.60, 0.60],
 }
 DEFAULT_COLOR = [0.65, 0.65, 0.65]
+
+# IFC type -> RGB, so a source model reads like the mapped one
+IFC_COLORS = {
+    "IfcWall": [0.80, 0.78, 0.72],
+    "IfcWallStandardCase": [0.80, 0.78, 0.72],
+    "IfcSlab": [0.62, 0.60, 0.56],
+    "IfcRoof": [0.78, 0.32, 0.28],
+    "IfcWindow": [0.35, 0.66, 0.86],
+    "IfcDoor": [0.72, 0.50, 0.28],
+    "IfcSpace": [0.42, 0.72, 0.55],
+    "IfcCovering": [0.70, 0.74, 0.80],
+    "IfcBeam": [0.58, 0.52, 0.70],
+    "IfcColumn": [0.52, 0.48, 0.64],
+    "IfcStair": [0.66, 0.58, 0.44],
+    "IfcRailing": [0.60, 0.60, 0.66],
+    "IfcMember": [0.56, 0.54, 0.62],
+    "IfcFurnishingElement": [0.74, 0.64, 0.52],
+}
 
 
 class Workspace:
@@ -169,11 +185,14 @@ def describe_pipeline(path: str) -> Dict[str, Any]:
         for key, value in stage.items():
             if key == "type":
                 continue
+            # scalars get a plain field; rules and views stay as JSON because
+            # their shape is what the standard defines
+            scalar = isinstance(value, (str, int, float, bool)) or value is None
             properties.append({
                 "key": key,
-                "value": value if isinstance(value, str) else json.dumps(
+                "value": ("" if value is None else value) if scalar else json.dumps(
                     value, ensure_ascii=False, indent=1),
-                "structured": not isinstance(value, str),
+                "scalar": scalar,
             })
         stages.append({
             "type": kind,
@@ -183,7 +202,7 @@ def describe_pipeline(path: str) -> Dict[str, Any]:
             "output": stage.get("output", ""),
             "properties": properties,
         })
-    return {"path": path, "stages": stages}
+    return {"path": path, "stages": stages, "document": document}
 
 
 # ---------------------------------------------------------------------------
@@ -332,6 +351,28 @@ def read_obj(path: str) -> List[Dict[str, Any]]:
     return [_feature(os.path.basename(path), "GenericCityObject", "", verts, faces)] if faces else []
 
 
+def read_ifc(path: str) -> List[Dict[str, Any]]:
+    """Read the source IFC so it can be inspected before it is mapped."""
+    import B2GM_BIM
+
+    features = []
+    for obj in B2GM_BIM.BIM().parse(path):
+        geometry = obj.get("geometry") or {}
+        if not geometry.get("faces"):
+            continue
+        ifc_type = obj.get("ifc_type", "")
+        features.append({
+            "name": obj.get("name", "") or ifc_type,
+            "gis_class": ifc_type,
+            "lod": "",
+            "verts": [float(c) for c in geometry["verts"]],
+            "faces": [int(i) for i in geometry["faces"]],
+            "color": IFC_COLORS.get(ifc_type, DEFAULT_COLOR),
+            "attributes": {"GUID": obj.get("GUID", ""), "ifc_type": ifc_type},
+        })
+    return features
+
+
 def read_model(path: str) -> Dict[str, Any]:
     suffix = os.path.splitext(path)[1].lower()
     if suffix == ".json":
@@ -340,6 +381,8 @@ def read_model(path: str) -> Dict[str, Any]:
         features = read_citygml(path)
     elif suffix == ".obj":
         features = read_obj(path)
+    elif suffix == ".ifc":
+        features = read_ifc(path)
     else:
         raise ValueError(f"cannot display {suffix} in the 3D view")
     lo = [float("inf")] * 3
@@ -407,49 +450,73 @@ def parse_multipart(content_type: str, body: bytes) -> Dict[str, Tuple[str, byte
     return parts
 
 
-def convert_upload(ifc: Tuple[str, bytes], pipeline: Optional[Tuple[str, bytes]],
-                   version: Optional[str], fallback_pipeline: str) -> Dict[str, Any]:
-    """Run the pipeline over an uploaded IFC and return the rendered result.
+def _unique_path(directory: str, name: str) -> str:
+    """``model.ifc`` -> ``model.ifc``, then ``model_2.ifc`` and so on."""
+    stem, suffix = os.path.splitext(name)
+    candidate, counter = name, 2
+    while os.path.exists(os.path.join(directory, candidate)):
+        candidate = f"{stem}_{counter}{suffix}"
+        counter += 1
+    return os.path.join(directory, candidate)
 
-    The work happens in a throwaway directory and in a separate process, so a
-    huge or malformed model times out instead of wedging the view, and nothing
-    is left behind afterwards.
+
+def convert_upload(workspace: "Workspace", ifc: Optional[Tuple[str, bytes]],
+                   pipeline: Optional[Tuple[str, bytes]],
+                   version: Optional[str],
+                   keep_input: Optional[str] = None) -> Dict[str, Any]:
+    """Run the pipeline over a dropped IFC and keep everything in the workspace.
+
+    The upload lands in the input tree and the result in the output tree, so
+    both show up where the user expects instead of vanishing into a temporary
+    directory.  ``keep_input`` names a file already in the input tree, which is
+    how the config editor re-runs an existing model.
     """
-    work = tempfile.mkdtemp(prefix="b2gm-upload-")
-    try:
-        input_dir = os.path.join(work, "input")
-        output_dir = os.path.join(work, "output")
-        os.makedirs(input_dir)
-        ifc_path = os.path.join(input_dir, _safe_name(ifc[0], "model.ifc"))
+    uploads = os.path.join(workspace.input_dir, "uploads")
+    os.makedirs(uploads, exist_ok=True)
+
+    if keep_input:
+        ifc_path = keep_input
+    else:
+        ifc_path = _unique_path(uploads, _safe_name(ifc[0], "model.ifc"))
         with open(ifc_path, "wb") as f:
             f.write(ifc[1])
 
-        if pipeline and pipeline[1].strip():
-            pipeline_path = os.path.join(input_dir, _safe_name(pipeline[0], "pipeline.json"))
-            with open(pipeline_path, "wb") as f:
-                f.write(pipeline[1])
-            try:
-                json.loads(pipeline[1].decode("utf-8"))
-            except Exception as exc:
-                return {"ok": False, "log": [f"pipeline config is not valid JSON: {exc}"]}
-        else:
-            pipeline_path = fallback_pipeline
+    if pipeline and pipeline[1].strip():
+        try:
+            json.loads(pipeline[1].decode("utf-8"))
+        except Exception as exc:
+            return {"ok": False, "log": [f"pipeline config is not valid JSON: {exc}"]}
+        pipeline_path = _unique_path(uploads, _safe_name(pipeline[0], "pipeline.json"))
+        with open(pipeline_path, "wb") as f:
+            f.write(pipeline[1])
+    else:
+        pipeline_path = workspace.pipeline
 
-        result = run_b2gm(ifc_path, pipeline_path, output_dir, version)
-        if not result["ok"]:
-            return result
+    stem = os.path.splitext(os.path.basename(ifc_path))[0]
+    output_dir = _unique_path(workspace.output_dir, stem)
+    os.makedirs(output_dir, exist_ok=True)
 
-        produced = sorted(
-            (n for n in os.listdir(output_dir) if n.lower().endswith(".gml")),
-            key=lambda n: os.path.getmtime(os.path.join(output_dir, n)))
-        if not produced:
-            return {"ok": False,
-                    "log": result["log"] + ["the pipeline produced no CityGML"]}
-        final = produced[-1]
-        return {"ok": True, "log": result["log"], "name": final,
-                "model": read_model(os.path.join(output_dir, final))}
-    finally:
-        shutil.rmtree(work, ignore_errors=True)
+    result = run_b2gm(ifc_path, pipeline_path, output_dir, version)
+    if not result["ok"]:
+        return result
+
+    produced = sorted(
+        (n for n in os.listdir(output_dir) if n.lower().endswith(".gml")),
+        key=lambda n: os.path.getmtime(os.path.join(output_dir, n)))
+    if not produced:
+        return {"ok": False,
+                "log": result["log"] + ["the pipeline produced no CityGML"]}
+
+    final = produced[-1]
+    relative = os.path.relpath(os.path.join(output_dir, final), workspace.output_dir)
+    return {
+        "ok": True,
+        "log": result["log"],
+        "name": final,
+        "path": relative.replace(os.sep, "/"),
+        "input": os.path.relpath(ifc_path, workspace.input_dir).replace(os.sep, "/"),
+        "model": read_model(os.path.join(output_dir, final)),
+    }
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -572,9 +639,20 @@ class Handler(BaseHTTPRequestHandler):
             return self._error(f"could not read the upload: {exc}")
 
         ifc = parts.get("ifc")
+        keep_input = None
         if not ifc or not ifc[1]:
-            return self._error("attach an .ifc file as the 'ifc' field")
-        if not ifc[0].lower().endswith(".ifc"):
+            # no upload: run a model already in the input tree, which is how the
+            # config editor re-runs an edited pipeline
+            chosen = parts.get("input")
+            if not chosen:
+                return self._error("attach an .ifc file as the 'ifc' field")
+            try:
+                keep_input = self.workspace.resolve("input", chosen[1].decode("utf-8"))
+            except ValueError as exc:
+                return self._error(str(exc))
+            if not os.path.isfile(keep_input) or not keep_input.lower().endswith(".ifc"):
+                return self._error("select an .ifc file in the input tree")
+        elif not ifc[0].lower().endswith(".ifc"):
             return self._error("the model must be an .ifc file")
 
         version = None
@@ -586,10 +664,10 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as exc:
                 return self._error(str(exc))
 
-        logger.info("converting upload %s (%.1f MB)", ifc[0], len(ifc[1]) / 1048576)
-        result = convert_upload(ifc, parts.get("pipeline"), version,
-                                self.workspace.pipeline)
-        self._json(result)
+        label = os.path.basename(keep_input) if keep_input else ifc[0]
+        logger.info("converting %s", label)
+        self._json(convert_upload(self.workspace, ifc, parts.get("pipeline"),
+                                  version, keep_input))
 
 
 def serve(workspace: Workspace, host: str = "127.0.0.1", port: int = 8000,
