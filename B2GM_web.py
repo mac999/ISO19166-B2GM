@@ -24,6 +24,7 @@ import email
 import email.policy
 import json
 import logging
+import math
 import mimetypes
 import os
 import re
@@ -259,8 +260,11 @@ FEATURE_TAGS = {
     "Room", "BuildingRoom",
     "BuildingInstallation", "IntBuildingInstallation",
     "LandUse", "GenericCityObject",
-    # CityGML 3.0 additions
-    "Storey", "BuildingUnit", "BuildingConstructiveElement", "GenericLogicalSpace",
+    # CityGML 3.0 additions. WindowSurface/DoorSurface are what con:fillingSurface
+    # holds; without them an opening is absorbed into the wall that hosts it.
+    "Storey", "BuildingUnit", "BuildingConstructiveElement",
+    "WindowSurface", "DoorSurface",
+    "GenericLogicalSpace", "GenericOccupiedSpace", "GenericThematicSurface",
 }
 
 GML_NAME = "{http://www.opengis.net/gml}name"
@@ -373,6 +377,41 @@ def read_ifc(path: str) -> List[Dict[str, Any]]:
     return features
 
 
+def read_srs(path: str) -> Optional[str]:
+    """Pull the srsName off the first element that carries one."""
+    try:
+        for _event, element in ET.iterparse(path, events=("start",)):
+            srs = element.get("srsName")
+            if srs:
+                return srs
+            if _tag(element) not in ("CityModel", "boundedBy", "Envelope"):
+                return None
+    except Exception:
+        return None
+    return None
+
+
+def ground_scale(srs: Optional[str], bounds: Dict[str, List[float]]) -> float:
+    """Factor that turns projected units back into ground metres for display.
+
+    Web Mercator stretches x and y by 1/cos(latitude) but leaves z alone, so a
+    building drawn straight from EPSG:3857 looks too wide for its height.  The
+    model is shown at true proportions instead, and the viewer says so.
+    """
+    if not srs or not srs.strip().upper().endswith(("3857", "900913", "102100")):
+        return 1.0
+    try:
+        from pyproj import Transformer
+
+        centre_x = (bounds["min"][0] + bounds["max"][0]) / 2
+        centre_y = (bounds["min"][1] + bounds["max"][1]) / 2
+        _lon, lat = Transformer.from_crs(
+            "EPSG:3857", "EPSG:4326", always_xy=True).transform(centre_x, centre_y)
+        return math.cos(math.radians(lat))
+    except Exception:
+        return 1.0
+
+
 def read_model(path: str) -> Dict[str, Any]:
     suffix = os.path.splitext(path)[1].lower()
     if suffix == ".json":
@@ -396,7 +435,10 @@ def read_model(path: str) -> Dict[str, Any]:
                 hi[axis] = max(hi[axis], max(column))
     if lo[0] == float("inf"):
         lo, hi = [0.0] * 3, [1.0] * 3
-    return {"features": features, "bounds": {"min": lo, "max": hi},
+    bounds = {"min": lo, "max": hi}
+    srs = read_srs(path) if suffix == ".gml" else None
+    return {"features": features, "bounds": bounds,
+            "crs": srs, "xy_scale": ground_scale(srs, bounds),
             "triangles": sum(len(f["faces"]) // 3 for f in features)}
 
 

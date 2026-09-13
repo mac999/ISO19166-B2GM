@@ -27,6 +27,7 @@ const TEXT = {
     converting: 'Converting...', needIfc: 'Attach an .ifc file',
     opacity: 'Opacity', resetView: 'Reset view',
     applyConfig: 'Apply & run', needInput: 'Select an .ifc in the input tree first',
+    trueScale: 'drawn at true ground scale',
     theme: 'Dark', themeLight: 'Light',
   },
   ko: {
@@ -44,6 +45,7 @@ const TEXT = {
     converting: '변환 중...', needIfc: '.ifc 파일이 필요합니다',
     opacity: '투명도', resetView: '뷰 초기화',
     applyConfig: '적용 후 실행', needInput: '입력 트리에서 .ifc 를 먼저 선택하세요',
+    trueScale: '실제 지상 비율로 표시',
     theme: '다크', themeLight: '라이트',
   },
 };
@@ -304,6 +306,9 @@ class Renderer {
     // buffer holds offsets from the model centre and the camera works there too.
     const { min, max } = model.bounds;
     const origin = [0, 1, 2].map((k) => (min[k] + max[k]) / 2);
+    // Web Mercator stretches x and y but not z, so the model is drawn at true
+    // ground proportions; the header says which CRS it came from
+    const sx = model.xy_scale || 1;
     const data = new Float32Array(triangles * 3 * 9);
     let at = 0;
     for (const feature of features) {
@@ -311,7 +316,8 @@ class Renderer {
       for (let i = 0; i < faces.length; i += 3) {
         const p = [0, 1, 2].map((k) => {
           const index = faces[i + k] * 3;
-          return [verts[index] - origin[0], verts[index + 1] - origin[1],
+          return [(verts[index] - origin[0]) * sx,
+                  (verts[index + 1] - origin[1]) * sx,
                   verts[index + 2] - origin[2]];
         });
         const u = [p[1][0] - p[0][0], p[1][1] - p[0][1], p[1][2] - p[0][2]];
@@ -334,7 +340,9 @@ class Renderer {
     const keepView = this.model === model;
     this.origin = origin;
     this.center = [0, 0, 0];   // the buffer is already centred on `origin`
-    this.radius = Math.max(1e-3, Math.hypot(max[0] - min[0], max[1] - min[1], max[2] - min[2]) / 2);
+    this.radius = Math.max(1e-3, Math.hypot((max[0] - min[0]) * sx,
+                                            (max[1] - min[1]) * sx,
+                                            max[2] - min[2]) / 2);
     this.model = model;
     if (keepView) this.draw(); else this.resetView();
   }
@@ -635,9 +643,14 @@ function renderLegend() {
 
 function updateStats() {
   const model = renderer.model;
-  $('model-stats').textContent = model
-    ? `${model.features.length} ${t('features')} / ${model.triangles} ${t('triangles')}`
-    : '';
+  if (!model) { $('model-stats').textContent = ''; return; }
+  const parts = [`${model.features.length} ${t('features')}`,
+                 `${model.triangles} ${t('triangles')}`];
+  if (model.crs) {
+    parts.push(model.xy_scale && Math.abs(model.xy_scale - 1) > 1e-6
+      ? `${model.crs} (${t('trueScale')})` : model.crs);
+  }
+  $('model-stats').textContent = parts.join(' / ');
 }
 
 function busy(on, message) {

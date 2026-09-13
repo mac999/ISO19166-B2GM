@@ -669,6 +669,11 @@ Clicking a file renders it: `.ifc` (the source model, coloured by IFC type),
 `.gml` (CityGML), `.json` (`bim_model.json` / `gis_model.json`) and `.obj`.
 Everything else opens in the preview pane.
 
+A CityGML file placed in Web Mercator is drawn at true ground proportions:
+EPSG:3857 stretches x and y by 1/cos(latitude) but leaves z alone, so a building
+taken straight from it looks too wide for its height and does not line up with
+the IFC it came from. The header names the CRS when a correction is applied.
+
 **Drop an `.ifc` on the canvas** to convert it, optionally together with a
 pipeline `.json`. The model runs through PD → CM → EM → LM and the result is
 rendered straight away:

@@ -322,3 +322,46 @@ def test_uploaded_config_is_kept_too(workspace):
 def test_a_broken_config_is_reported_before_anything_runs(workspace):
     result = WEB.convert_upload(workspace, ("m.ifc", b"x"), ("p.json", b"{ bad"), None)
     assert result["ok"] is False and "not valid JSON" in result["log"][0]
+
+
+# --- projected coordinates are shown at true proportions --------------------
+def test_filling_surfaces_are_their_own_features():
+    """CityGML 3.0 nests openings as con:WindowSurface / con:DoorSurface; if the
+    reader does not track them they get absorbed into the wall that hosts them."""
+    assert "WindowSurface" in WEB.FEATURE_TAGS
+    assert "DoorSurface" in WEB.FEATURE_TAGS
+
+
+def test_ground_scale_undoes_web_mercator():
+    """EPSG:3857 stretches x and y by 1/cos(lat) but not z, so a building drawn
+    straight from it looks too wide for its height."""
+    import math
+
+    bounds = {"min": [-9755973.0, 5142153.0, 0.0], "max": [-9755961.0, 5142189.0, 9.0]}
+    scale = WEB.ground_scale("EPSG:3857", bounds)
+    assert scale == pytest.approx(math.cos(math.radians(41.8744)), abs=1e-3)
+
+
+def test_ground_scale_leaves_other_crs_alone():
+    bounds = {"min": [0, 0, 0], "max": [1, 1, 1]}
+    assert WEB.ground_scale("EPSG:5186", bounds) == 1.0
+    assert WEB.ground_scale(None, bounds) == 1.0
+
+
+def test_read_model_reports_the_crs(workspace):
+    """The fixture carries no envelope, so there is no CRS to report."""
+    model = WEB.read_model(os.path.join(workspace.output_dir, "sub", "city.gml"))
+    assert model["crs"] is None and model["xy_scale"] == 1.0
+
+
+def test_read_srs_picks_up_the_envelope(tmp_path):
+    path = tmp_path / "c.gml"
+    path.write_text(
+        '<?xml version="1.0"?>'
+        '<core:CityModel xmlns:core="http://www.opengis.net/citygml/2.0"'
+        ' xmlns:gml="http://www.opengis.net/gml">'
+        '<gml:boundedBy><gml:Envelope srsName="EPSG:3857" srsDimension="3">'
+        '<gml:lowerCorner>0 0 0</gml:lowerCorner>'
+        '<gml:upperCorner>1 1 1</gml:upperCorner>'
+        '</gml:Envelope></gml:boundedBy></core:CityModel>', encoding="utf-8")
+    assert WEB.read_srs(str(path)) == "EPSG:3857"
