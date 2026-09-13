@@ -1,0 +1,35 @@
+# Fly.io deployment for the B2GM web view.
+#   fly launch --no-deploy --copy-config   (first time, to pick app name and region)
+#   fly deploy
+app = "iso19166-b2gm"
+primary_region = "nrt"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  B2GM_HOST = "0.0.0.0"
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # the demo is stateless, so the machine can sleep between visitors and the
+  # bill follows actual use rather than uptime
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 0
+  # one machine is enough for a demo and caps what an unauthenticated
+  # /api/run can cost
+  max_machines_running = 1
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 20
+    hard_limit = 40
+
+[[vm]]
+  size = "shared-cpu-1x"
+  # the pipeline peaks at about 196 MB, so 512 MB leaves room for the parser
+  memory = "512mb"
+  cpus = 1

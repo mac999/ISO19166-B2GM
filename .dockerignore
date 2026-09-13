@@ -1,0 +1,17 @@
+.git
+.gitattributes
+.github
+dist
+build
+*.egg-info
+output
+output3
+doc
+tests
+sample_file
+UML
+citygml_parser.py
+progress.md
+__pycache__
+*.pyc
+.pytest_cache

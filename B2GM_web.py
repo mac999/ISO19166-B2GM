@@ -375,9 +375,16 @@ def run_pipeline(workspace: Workspace, input_file: str) -> Dict[str, Any]:
     return {"ok": ok, "log": buffer.getvalue().splitlines()}
 
 
+MAX_BODY_BYTES = 64 * 1024
+
+
 class Handler(BaseHTTPRequestHandler):
     workspace: Workspace
     server_version = "B2GM"
+    protocol_version = "HTTP/1.1"
+    # http.server keeps a thread per connection and has no timeout of its own,
+    # so a stalled client would hold one open indefinitely
+    timeout = 30
 
     def log_message(self, fmt, *args):  # keep the console readable
         logger.debug(fmt, *args)
@@ -462,6 +469,8 @@ class Handler(BaseHTTPRequestHandler):
         if url.path != "/api/run":
             return self._error("not found", 404)
         length = int(self.headers.get("Content-Length") or 0)
+        if length > MAX_BODY_BYTES:
+            return self._error("request body too large", 413)
         payload = json.loads(self.rfile.read(length) or b"{}")
         try:
             path = self.workspace.resolve("input", payload.get("path", ""))
@@ -491,8 +500,10 @@ def main():
     parser.add_argument("--output-dir", default="output", dest="output_dir")
     parser.add_argument("--pipeline", default=os.path.join("input_data", "B2GM_example.json"))
     parser.add_argument("--output", default="city.gml", help="final CityGML filename")
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8000)
+    # a container sets these through the environment; the local default stays
+    # loopback so running the tool on a laptop is not exposed to the network
+    parser.add_argument("--host", default=os.environ.get("B2GM_HOST", "127.0.0.1"))
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", "8000")))
     parser.add_argument("--no-browser", action="store_true", dest="no_browser")
     args = parser.parse_args()
 
