@@ -151,16 +151,25 @@ class Writer:
     def __init__(self, srs_name: Optional[str] = None):
         self.srs_name = srs_name
         self._used_ids: set = set()
+        self._id_counts: Dict[str, int] = {}
 
     # -- ids ---------------------------------------------------------------
     def _id(self, value: str, prefix: str) -> str:
+        """A gml:id unique within the document.
+
+        Every polygon and ring needs one, so the suffix is tracked per base
+        rather than rediscovered by scanning: the scan made this quadratic and
+        cost about ten seconds on the sample.
+        """
         import B2GM_GIS
 
         base = B2GM_GIS.gml_id(value, prefix=prefix)
-        candidate, counter = base, 2
+        count = self._id_counts.get(base, 0) + 1
+        candidate = base if count == 1 else f"{base}_{count}"
         while candidate in self._used_ids:
-            candidate = f"{base}_{counter}"
-            counter += 1
+            count += 1
+            candidate = f"{base}_{count}"
+        self._id_counts[base] = count
         self._used_ids.add(candidate)
         return candidate
 

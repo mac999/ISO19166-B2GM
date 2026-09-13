@@ -200,6 +200,7 @@ class GIS(B2GM_model.model):
         lower, upper = self._envelope(resolved)
 
         self._used_ids = set()
+        self._id_counts = {}
         with open(fname, "w", encoding="utf-8") as f:
             f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
             f.write("<core:CityModel")
@@ -506,16 +507,24 @@ class GIS(B2GM_model.model):
         f.write(f"{indent}</gml:MultiSurface>\n")
 
     def _id(self, value: str, prefix: str) -> str:
-        """A gml:id unique within the document (one element can yield several)."""
+        """A gml:id unique within the document (one element can yield several).
+
+        The suffix is tracked per base so repeated bases stay O(1) instead of
+        rescanning every id already handed out.
+        """
         base = gml_id(value, prefix=prefix)
         used = getattr(self, "_used_ids", None)
         if used is None:
             used = self._used_ids = set()
-        candidate = base
-        counter = 2
+        counts = getattr(self, "_id_counts", None)
+        if counts is None:
+            counts = self._id_counts = {}
+        count = counts.get(base, 0) + 1
+        candidate = base if count == 1 else f"{base}_{count}"
         while candidate in used:
-            candidate = f"{base}_{counter}"
-            counter += 1
+            count += 1
+            candidate = f"{base}_{count}"
+        counts[base] = count
         used.add(candidate)
         return candidate
 

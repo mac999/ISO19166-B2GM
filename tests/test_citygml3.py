@@ -282,3 +282,43 @@ def test_storey_contents_reads_both_relationship_kinds():
             {"name": "material", "related": {"guid": "c"}}]}, "BuildingStorey"),
     ]
     assert C3.storey_contents(resolved) == {"a": "s1", "b": "s1"}
+
+
+def test_repeated_ids_do_not_go_quadratic(tmp_path, objects):
+    """Every polygon and ring gets a gml:id from the same base, so allocating
+    them must stay linear. Scanning the issued ids made writing the sample take
+    ten seconds."""
+    import time
+
+    many = []
+    for index in range(400):
+        many.append({"name": f"W{index}", "GUID": f"w{index}",
+                     "_destination": "WallSurface", "_lod": "LOD2",
+                     "geometry": triangle(float(index)), "pset": {}})
+    path = str(tmp_path / "many.gml")
+
+    start = time.perf_counter()
+    B2GM_GIS.GIS().store(path, objects + many, {"rule": []}, version="3.0")
+    elapsed = time.perf_counter() - start
+
+    root = ET.parse(path).getroot()
+    ids = [e.get(f"{GML}id") for e in root.iter()]
+    ids = [i for i in ids if i]
+    assert len(ids) == len(set(ids))
+    assert elapsed < 5.0, f"writing 400 surfaces took {elapsed:.1f}s"
+
+
+def test_ids_stay_unique_when_bases_collide(tmp_path):
+    """Two elements with no GUID fall back to the same base name."""
+    objects = [
+        {"name": "A", "_destination": "WallSurface", "_lod": "LOD2",
+         "geometry": triangle(0.0), "pset": {}},
+        {"name": "B", "_destination": "WallSurface", "_lod": "LOD2",
+         "geometry": triangle(1.0), "pset": {}},
+    ]
+    path = str(tmp_path / "collide.gml")
+    B2GM_GIS.GIS().store(path, objects, {"rule": []}, version="3.0")
+    root = ET.parse(path).getroot()
+    ids = [e.get(f"{GML}id") for e in root.iter()]
+    ids = [i for i in ids if i]
+    assert len(ids) == len(set(ids))
