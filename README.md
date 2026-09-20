@@ -660,10 +660,6 @@ Opens a three panel workspace at `http://127.0.0.1:8000` on the stdlib HTTP
 server — no web framework, no CDN, nothing to install beyond the core
 dependencies.
 
-<p align="center">
-  <img src="./doc/webview.png" width="900" alt="B2GM web view: input tree and pipeline stages, 3D canvas, output tree"></img>
-</p>
-
 | Panel | Contents |
 |-------|----------|
 | Left | input folder tree, and the PD/CM/EM/LM stage properties as editable fields (scalars as one-line inputs, rule sets as JSON) |
@@ -708,12 +704,9 @@ The conversion runs in a separate process, so a large or malformed model times
 out (180 s) rather than wedging the view. Uploads are capped at 50 MB.
 
 Clicking a class in the legend hides it, which is how you look inside the model.
-Here the building block and the wall surfaces are switched off, leaving the LOD1
-room solids the LM operators produced, plus the windows and doors:
-
-<p align="center">
-  <img src="./doc/webview_rooms.png" width="900" alt="The same model with the building block and wall surfaces hidden, showing the LOD1 room solids"></img>
-</p>
+In the second screenshot at the top of this README the building block and the
+wall surfaces are switched off, leaving the LOD1 room solids the LM operators
+produced, plus the windows and doors.
 
 The theme (dark / light) and language (English / 한국어) toggles are in the
 header and persist. Both can also be set from the URL, which makes a view
