@@ -36,6 +36,18 @@ If you are interested in this project, please fork and join.
 <img src="./doc/fig2.JPG" height="270"> </img> 
 </p>
 
+The pipeline also ships with a browser workspace: the input tree and the
+PD/CM/EM/LM stage properties on the left, a WebGL canvas in the middle and the
+output tree on the right. Drop an IFC on the canvas to convert it, or edit a
+stage rule and run it again. Clicking a class in the legend hides it, which is
+how you look inside the result. See [Web view](#web-view).
+
+<p align="center">
+  <img src="./doc/webview.png" width="900" alt="B2GM web view: input tree and pipeline stages, 3D canvas, output tree"></img>
+  </br>
+  <img src="./doc/webview_rooms.png" width="900" alt="The same model with the building block and wall surfaces hidden, showing the LOD1 room solids"></img>
+</p>
+
 ## Scope
 
 What this implementation does, stated so it can be checked:
