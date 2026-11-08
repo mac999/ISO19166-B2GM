@@ -16,7 +16,7 @@ without a tool, which makes them hard to try out; this repository is meant to
 close that gap. If you are interested, fork and join.
 
 <p align="center">
-  <img src="./doc/webview.png" width="900" alt="B2GM web view: input tree and pipeline stages on the left, the mapped CityGML model in the middle, output tree and file preview on the right"></img>
+  <img src="./doc/webview.png" width="900" alt="B2GM web view: input tree and pipeline stages on the left, the mapped CityGML model drawn translucent with edges in the middle, output tree and file preview on the right"></img>
 </p>
 
 ## Contents
@@ -106,10 +106,6 @@ the web view. 3.0 keeps the building storeys as `bldg:Storey` features, which
 
 ## Web view
 
-<p align="center">
-  <img src="./doc/webview_rooms.png" width="900" alt="The same model with the building block and the wall, floor, ceiling and roof surfaces hidden from the legend, leaving the LOD1 room solids, windows and doors"></img>
-</p>
-
 `python B2GM_main.py --web` opens a three-panel workspace on the stdlib HTTP
 server, with no web framework and nothing to install beyond the core
 dependencies.
@@ -133,7 +129,7 @@ shared as a link. See [Web view](doc/web-view.md) for the routes and the
 Fly.io deployment.
 
 <p align="center">
-  <img src="./doc/webview_xray.png" width="900" alt="X-ray rendering of the LoD model in the light theme"></img>
+  <img src="./doc/webview_hidden.png" width="900" alt="The same model in hidden line mode and the light theme: faces block what is behind them and only the visible edges remain"></img>
 </p>
 
 ## Configuring the mapping
@@ -229,11 +225,19 @@ ones that cover that module, and run the suite before pushing.
 
 ## Revision history
 
+The code is older than the repository: the stage modules carry a first-written
+date of January 2024, the GitHub history starts in January 2025, and version
+numbers begin with the September 2026 release.
+
 | Version | Date | Changes |
 |---------|------|---------|
-| 0.2.1 | 2026-11-08 | The IFC parser reads every product instead of a fixed type list, so furniture, footings, the roof and stair flights now reach the PD stage; the example maps them. Openings whose host has no geometry of its own (skylights in an IfcRoof aggregate) are kept as installations instead of being lost. Files without geometry open as text in the middle panel. X-ray, flat + edges and hidden line rendering. `?select=` opens a given output file. README reorganised with current screenshots. |
-| 0.2.0 | 2026-11-08 | Web view reworked: right-drag pan follows the pointer and orbits around the panned centre, two-sided lighting, axis gizmo with snap views, shaded / edges / wireframe modes, rule sets edited as property grids with the standard's keys, CityGML version and JSON save in the header, pipeline choice from the input tree, stage chips open their stage and show its output, themed scrollbars. IFC4 input covered by a fixture and regression test. GitHub Actions runs the suite on Python 3.10, 3.12 and 3.13; the package now requires 3.10 or newer, which is the oldest ifcopenshell ships wheels for. README split into doc pages behind a quick start. |
-| 0.1.0 | 2026-09-07 | First release: rule-driven PD / CM / EM / LM pipeline with all eleven Table 8 LoD operators, CM georeferencing into the destination CRS, schema-valid CityGML 2.0 and 3.0 output, web view with upload and conversion, Fly.io deployment. |
+| 0.2.1 | 2026-11-08 | The IFC parser reads every product instead of a fixed type list, so furniture, footings, the roof and stair flights now reach the PD stage; the example maps them. Openings whose host has no geometry of its own (skylights in an IfcRoof aggregate) are kept as installations instead of being lost. Files without geometry open as text in the middle panel. X-ray, flat + edges and hidden line rendering. `?select=` and `?opacity=` preset a view. README reorganised with current screenshots. |
+| 0.2.0 | 2026-11-08 | Web view reworked: right-drag pan follows the pointer and orbits around the panned centre, two-sided lighting, axis gizmo with snap views, shaded / edges / wireframe modes, rule sets edited as property grids with the standard's keys, CityGML version and JSON save in the header, pipeline choice from the input tree, stage chips open their stage and show its output, themed scrollbars. IFC4 input covered by a fixture and regression test. GitHub Actions runs the suite on Python 3.10, 3.12 and 3.13; the package requires 3.10 or newer, which is the oldest ifcopenshell ships wheels for. README split into doc pages behind a quick start. |
+| 0.1.x | 2026-09-08 to 2026-09-20 | 3D booleans on manifold3d with double-precision meshes, after float32 collapsed a wall to zero volume at projected coordinates. Launcher scripts. Docker image and Fly.io deployment with a machine cap. The viewer reads CityGML 3.0 filling surfaces and draws Web Mercator models at true ground scale. |
+| 0.1.0 | 2026-09-07 | First numbered release: all four stages driven by the pipeline rules (PD logic and style views, CM geometry transformed into the destination CRS, EM `PSet_operation`, LM Table 8 operator chains with aggregation), CityGML 3.0 writer with storeys and filling surfaces, schema validation against the OGC schemas for 2.0 and 3.0, web view with upload and conversion, packaging and citation metadata, test suite grown from 84 to 188. |
+| unversioned | 2026-07-03 | The full pipeline sources uploaded to the repository: `B2GM_main`, the PD / CM / EM / LM modules, the conceptual model mirroring the ISO 19166 XSDs, the CityGML 2.0 writer and the first README with the concept figures. The module headers date the reconstruction to July 2026. |
+| unversioned | 2025-01-31 | Repository created on GitHub with the LOD1 footprint extrusion utility, the Goyang footprint sample and CityGML 3.0 schema and parser experiments; the schema working files were removed again in February 2025. |
+| unversioned | 2024-01-02 | First B2GM sources written: the stage pipeline, element and LoD mapping and the conceptual model, as dated in the module headers. The footprint extrusion utility followed on 2024-06-22. |
 
 ## Citation and author
 
