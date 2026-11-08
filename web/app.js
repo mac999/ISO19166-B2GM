@@ -68,7 +68,7 @@ const TEXT = {
   },
 };
 
-// ?lang=ko&theme=light&mode=wireframe&select=city.gml makes a view shareable and scriptable
+// ?lang=ko&theme=light&mode=wireframe&opacity=45&select=city.gml makes a view shareable and scriptable
 const params = new URLSearchParams(location.search);
 let lang = params.get('lang') || localStorage.getItem('b2gm.lang') || 'en';
 const t = (key) => (TEXT[lang][key] ?? TEXT.en[key] ?? key);
@@ -653,6 +653,12 @@ $('opacity').addEventListener('input', (event) => {
 });
 
 $('reset-view').onclick = () => renderer.resetView();
+
+// ?opacity=45 presets the slider, so a translucent view can be shared as a link
+if (params.get('opacity')) {
+  $('opacity').value = params.get('opacity');
+  $('opacity').dispatchEvent(new Event('input'));
+}
 
 $('mode').value = params.get('mode') || localStorage.getItem('b2gm.mode') || 'shaded';
 renderer.mode = $('mode').value;

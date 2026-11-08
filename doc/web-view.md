@@ -28,7 +28,7 @@ Both side panels are resized by dragging the splitters (the widths are
 remembered). Below 900 px the three panels do not fit side by side and a drag
 splitter is no use on touch, so the layout becomes one panel at a time behind a
 tab bar; `?view=left|middle|right` opens a particular one, and `?theme=`,
-`?lang=`, `?mode=shaded|edges|wireframe|xray|flat|hidden`, `?select=<output file>`, `?version=` and `?hide=` preset the
+`?lang=`, `?mode=shaded|edges|wireframe|xray|flat|hidden`, `?opacity=<15..100>`, `?select=<output file>`, `?version=` and `?hide=` preset the
 rest, so a view can be shared as a link. **Run pipeline** executes PD → CM → EM → LM on the IFC selected in
 the input tree and streams the stage log back, then reloads the output tree and
 the canvas.
@@ -65,10 +65,10 @@ quickest way to see a rule change move features between classes.
 The conversion runs in a separate process, so a large or malformed model times
 out (180 s) rather than wedging the view. Uploads are capped at 50 MB.
 
-Clicking a class in the legend hides it, which is how you look inside the model.
-In the second screenshot in the README the building block and the
-wall surfaces are switched off, leaving the LOD1 room solids the LM operators
-produced, plus the windows and doors.
+Clicking a class in the legend hides it, which is how you look inside the model:
+switch off the building block and the wall surfaces and what remains are the
+LOD1 room solids the LM operators produced, plus the windows and doors. The
+opacity slider and the x-ray mode do the same without hiding anything.
 
 The theme (dark / light) and language (English / 한국어) toggles are in the
 header and persist. Both can also be set from the URL, which makes a view
