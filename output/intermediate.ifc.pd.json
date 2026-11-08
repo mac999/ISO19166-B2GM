@@ -5,89 +5,9 @@
   },
   "selected": [
     {
-      "name": "IfcSite",
-      "ifc_type": "IfcSite",
-      "GUID": "1xS3BCk291UvhgP2a6eflN"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "3Y4YRln2r91vflHcHE5ITs"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "3Y4YRln2r91vflHcHE5ITm"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "3Y4YRln2r91vflHcHE5ITn"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "3Y4YRln2r91vflHcHE5ITp"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "3Y4YRln2r91vflHcHE5IVJ"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "3Y4YRln2r91vflHcHE5IVT"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "3Y4YRln2r91vflHcHE5IVI"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "3Y4YRln2r91vflHcHE5IVS"
-    },
-    {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "1CZILmCaHETO8tf3SgGEXu"
-    },
-    {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "1CZILmCaHETO8tf3SgGEWh"
-    },
-    {
       "name": "IfcBeam",
       "ifc_type": "IfcBeam",
-      "GUID": "2OrWItJ6zAwBNp0OUxK$Dw"
-    },
-    {
-      "name": "IfcBeam",
-      "ifc_type": "IfcBeam",
-      "GUID": "2OrWItJ6zAwBNp0OUxK$Dx"
-    },
-    {
-      "name": "IfcBeam",
-      "ifc_type": "IfcBeam",
-      "GUID": "2OrWItJ6zAwBNp0OUxK$Du"
-    },
-    {
-      "name": "IfcBeam",
-      "ifc_type": "IfcBeam",
-      "GUID": "2OrWItJ6zAwBNp0OUxK$Dv"
-    },
-    {
-      "name": "IfcBeam",
-      "ifc_type": "IfcBeam",
-      "GUID": "2OrWItJ6zAwBNp0OUxK$CR"
-    },
-    {
-      "name": "IfcBeam",
-      "ifc_type": "IfcBeam",
-      "GUID": "2OrWItJ6zAwBNp0OUxK$Bq"
+      "GUID": "2OrWItJ6zAwBNp0OUxK_l8"
     },
     {
       "name": "IfcBeam",
@@ -97,97 +17,62 @@
     {
       "name": "IfcBeam",
       "ifc_type": "IfcBeam",
-      "GUID": "2OrWItJ6zAwBNp0OUxK_l8"
+      "GUID": "2OrWItJ6zAwBNp0OUxK$Bq"
     },
     {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "1aj$VJZFn2TxepZUBcKphf"
+      "name": "IfcBeam",
+      "ifc_type": "IfcBeam",
+      "GUID": "2OrWItJ6zAwBNp0OUxK$CR"
     },
     {
-      "name": "IfcDoor",
-      "ifc_type": "IfcDoor",
-      "GUID": "1aj$VJZFn2TxepZUBcKpac"
+      "name": "IfcBeam",
+      "ifc_type": "IfcBeam",
+      "GUID": "2OrWItJ6zAwBNp0OUxK$Dv"
     },
     {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "1aj$VJZFn2TxepZUBcKpee"
+      "name": "IfcBeam",
+      "ifc_type": "IfcBeam",
+      "GUID": "2OrWItJ6zAwBNp0OUxK$Du"
     },
     {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "1aj$VJZFn2TxepZUBcKpZw"
+      "name": "IfcBeam",
+      "ifc_type": "IfcBeam",
+      "GUID": "2OrWItJ6zAwBNp0OUxK$Dx"
     },
     {
-      "name": "IfcDoor",
-      "ifc_type": "IfcDoor",
-      "GUID": "1aj$VJZFn2TxepZUBcKp$i"
-    },
-    {
-      "name": "IfcRailing",
-      "ifc_type": "IfcRailing",
-      "GUID": "21ldoMpbP4VfsJ0XGY_335"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "1aj$VJZFn2TxepZUBcKpvt"
-    },
-    {
-      "name": "IfcRailing",
-      "ifc_type": "IfcRailing",
-      "GUID": "21ldoMpbP4VfsJ0XGY_34P"
-    },
-    {
-      "name": "IfcMember",
-      "ifc_type": "IfcMember",
-      "GUID": "01KzA4SPn5IOODwLEb5RNY"
-    },
-    {
-      "name": "IfcMember",
-      "ifc_type": "IfcMember",
-      "GUID": "37Fy90kSD2PvviizyM7EKl"
-    },
-    {
-      "name": "IfcStair",
-      "ifc_type": "IfcStair",
-      "GUID": "21ldoMpbP4VfsJ0XGY_34d"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "0dxE1Sy6nDqfpDb5vIMNiA"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "0dxE1Sy6nDqfpDb5vIMN_Z"
+      "name": "IfcBeam",
+      "ifc_type": "IfcBeam",
+      "GUID": "2OrWItJ6zAwBNp0OUxK$Dw"
     },
     {
       "name": "IfcCovering",
       "ifc_type": "IfcCovering",
-      "GUID": "3bXiCStxP6Fgxdej$yc55m"
+      "GUID": "3bXiCStxP6Fgxdej$yc5T8"
     },
     {
       "name": "IfcCovering",
       "ifc_type": "IfcCovering",
-      "GUID": "3bXiCStxP6Fgxdej$yc55k"
+      "GUID": "3bXiCStxP6Fgxdej$yc503"
     },
     {
       "name": "IfcCovering",
       "ifc_type": "IfcCovering",
-      "GUID": "3bXiCStxP6Fgxdej$yc55c"
+      "GUID": "3bXiCStxP6Fgxdej$yc50B"
     },
     {
       "name": "IfcCovering",
       "ifc_type": "IfcCovering",
-      "GUID": "3bXiCStxP6Fgxdej$yc55U"
+      "GUID": "3bXiCStxP6Fgxdej$yc50U"
     },
     {
       "name": "IfcCovering",
       "ifc_type": "IfcCovering",
-      "GUID": "3bXiCStxP6Fgxdej$yc55M"
+      "GUID": "3bXiCStxP6Fgxdej$yc50n"
+    },
+    {
+      "name": "IfcCovering",
+      "ifc_type": "IfcCovering",
+      "GUID": "3bXiCStxP6Fgxdej$yc52o"
     },
     {
       "name": "IfcCovering",
@@ -202,197 +87,67 @@
     {
       "name": "IfcCovering",
       "ifc_type": "IfcCovering",
-      "GUID": "3bXiCStxP6Fgxdej$yc52o"
+      "GUID": "3bXiCStxP6Fgxdej$yc55M"
     },
     {
       "name": "IfcCovering",
       "ifc_type": "IfcCovering",
-      "GUID": "3bXiCStxP6Fgxdej$yc50n"
+      "GUID": "3bXiCStxP6Fgxdej$yc55U"
     },
     {
       "name": "IfcCovering",
       "ifc_type": "IfcCovering",
-      "GUID": "3bXiCStxP6Fgxdej$yc50U"
+      "GUID": "3bXiCStxP6Fgxdej$yc55c"
     },
     {
       "name": "IfcCovering",
       "ifc_type": "IfcCovering",
-      "GUID": "3bXiCStxP6Fgxdej$yc50B"
+      "GUID": "3bXiCStxP6Fgxdej$yc55k"
     },
     {
       "name": "IfcCovering",
       "ifc_type": "IfcCovering",
-      "GUID": "3bXiCStxP6Fgxdej$yc503"
-    },
-    {
-      "name": "IfcCovering",
-      "ifc_type": "IfcCovering",
-      "GUID": "3bXiCStxP6Fgxdej$yc5T8"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1Eo2$BaHX42AEkDvQQDoy2"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1Eo2$BaHX42AEkDvQQDocD"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "0jf0rYHfX3RAB3bSIRjmr1"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "0jf0rYHfX3RAB3bSIRjmoa"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "0jf0rYHfX3RAB3bSIRjmmy"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "0jf0rYHfX3RAB3bSIRjmpw"
-    },
-    {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "3ThA22djr8AQQ9eQMA5s7I"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1l0GAJtRTFv8$zmKJOH4ZZ"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1l0GAJtRTFv8$zmKJOH4hv"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1l0GAJtRTFv8$zmKJOH4aS"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1l0GAJtRTFv8$zmKJOH4gQ"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1l0GAJtRTFv8$zmKJOH4kJ"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1l0GAJtRTFv8$zmKJOH4pU"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1l0GAJtRTFv8$zmKJOH4qs"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1l0GAJtRTFv8$zmKJOH4oq"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1l0GAJtRTFv8$zmKJOH4u1"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1l0GAJtRTFv8$zmKJOH4$e"
+      "GUID": "3bXiCStxP6Fgxdej$yc55m"
     },
     {
       "name": "IfcDoor",
       "ifc_type": "IfcDoor",
-      "GUID": "1s1jVhK8z0pgKYcr9jt7AB"
+      "GUID": "1hOSvn6df7F8_7GcBWlRGQ"
     },
     {
       "name": "IfcDoor",
       "ifc_type": "IfcDoor",
-      "GUID": "1s1jVhK8z0pgKYcr9jt781"
+      "GUID": "1hOSvn6df7F8_7GcBWlRH8"
     },
     {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "2OBrcmyk58NupXoVOHUten"
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "1hOSvn6df7F8_7GcBWlS8Z"
     },
     {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "2OBrcmyk58NupXoVOHUtgP"
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "1hOSvn6df7F8_7GcBWlS9F"
     },
     {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "2OBrcmyk58NupXoVOHUtju"
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "1hOSvn6df7F8_7GcBWlSFK"
     },
     {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "2OBrcmyk58NupXoVOHUtoa"
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "1hOSvn6df7F8_7GcBWlSDm"
     },
     {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "2OBrcmyk58NupXoVOHUtjR"
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "2OBrcmyk58NupXoVOHUuXp"
     },
     {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "2OBrcmyk58NupXoVOHUtxr"
-    },
-    {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "2OBrcmyk58NupXoVOHUt0F"
-    },
-    {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "2OBrcmyk58NupXoVOHUt2f"
-    },
-    {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "2OBrcmyk58NupXoVOHUt5W"
-    },
-    {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "2OBrcmyk58NupXoVOHUt8s"
-    },
-    {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "2OBrcmyk58NupXoVOHUt8F"
-    },
-    {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "2OBrcmyk58NupXoVOHUtBP"
-    },
-    {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "2OBrcmyk58NupXoVOHUtDX"
-    },
-    {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "2OBrcmyk58NupXoVOHUtC0"
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "2OBrcmyk58NupXoVOHUvVV"
     },
     {
       "name": "IfcDoor",
@@ -407,22 +162,57 @@
     {
       "name": "IfcDoor",
       "ifc_type": "IfcDoor",
-      "GUID": "2OBrcmyk58NupXoVOHUvVV"
+      "GUID": "1s1jVhK8z0pgKYcr9jt781"
     },
     {
       "name": "IfcDoor",
       "ifc_type": "IfcDoor",
-      "GUID": "2OBrcmyk58NupXoVOHUuXp"
+      "GUID": "1s1jVhK8z0pgKYcr9jt7AB"
     },
     {
-      "name": "IfcRailing",
-      "ifc_type": "IfcRailing",
-      "GUID": "0wkEuT1wr1kOyafLY4v_PH"
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "1aj$VJZFn2TxepZUBcKp$i"
     },
     {
-      "name": "IfcRailing",
-      "ifc_type": "IfcRailing",
-      "GUID": "0wkEuT1wr1kOyafLY4v_PL"
+      "name": "IfcDoor",
+      "ifc_type": "IfcDoor",
+      "GUID": "1aj$VJZFn2TxepZUBcKpac"
+    },
+    {
+      "name": "IfcFooting",
+      "ifc_type": "IfcFooting",
+      "GUID": "0kF45Qs8L9PAM9kmb1lT5d"
+    },
+    {
+      "name": "IfcFooting",
+      "ifc_type": "IfcFooting",
+      "GUID": "0kF45Qs8L9PAM9kmb1lT5l"
+    },
+    {
+      "name": "IfcFooting",
+      "ifc_type": "IfcFooting",
+      "GUID": "0kF45Qs8L9PAM9kmb1lT5t"
+    },
+    {
+      "name": "IfcFooting",
+      "ifc_type": "IfcFooting",
+      "GUID": "0kF45Qs8L9PAM9kmb1lT5$"
+    },
+    {
+      "name": "IfcFooting",
+      "ifc_type": "IfcFooting",
+      "GUID": "0kF45Qs8L9PAM9kmb1lT2B"
+    },
+    {
+      "name": "IfcFooting",
+      "ifc_type": "IfcFooting",
+      "GUID": "0kF45Qs8L9PAM9kmb1lT2N"
+    },
+    {
+      "name": "IfcFooting",
+      "ifc_type": "IfcFooting",
+      "GUID": "0kF45Qs8L9PAM9kmb1lT2Z"
     },
     {
       "name": "IfcMember",
@@ -435,184 +225,44 @@
       "GUID": "34qUFGjJzFKwVWpXe2dTPt"
     },
     {
-      "name": "IfcStair",
-      "ifc_type": "IfcStair",
-      "GUID": "0wkEuT1wr1kOyafLY4v_O1"
+      "name": "IfcMember",
+      "ifc_type": "IfcMember",
+      "GUID": "01KzA4SPn5IOODwLEb5RNY"
     },
     {
-      "name": "IfcDoor",
-      "ifc_type": "IfcDoor",
-      "GUID": "1hOSvn6df7F8_7GcBWlSDm"
+      "name": "IfcMember",
+      "ifc_type": "IfcMember",
+      "GUID": "37Fy90kSD2PvviizyM7EKl"
     },
     {
-      "name": "IfcDoor",
-      "ifc_type": "IfcDoor",
-      "GUID": "1hOSvn6df7F8_7GcBWlSFK"
+      "name": "IfcRailing",
+      "ifc_type": "IfcRailing",
+      "GUID": "0wkEuT1wr1kOyafLY4v_PL"
     },
     {
-      "name": "IfcDoor",
-      "ifc_type": "IfcDoor",
-      "GUID": "1hOSvn6df7F8_7GcBWlS9F"
+      "name": "IfcRailing",
+      "ifc_type": "IfcRailing",
+      "GUID": "0wkEuT1wr1kOyafLY4v_PH"
     },
     {
-      "name": "IfcDoor",
-      "ifc_type": "IfcDoor",
-      "GUID": "1hOSvn6df7F8_7GcBWlS8Z"
+      "name": "IfcRailing",
+      "ifc_type": "IfcRailing",
+      "GUID": "21ldoMpbP4VfsJ0XGY_34P"
     },
     {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1hOSvn6df7F8_7GcBWlS4Q"
+      "name": "IfcRailing",
+      "ifc_type": "IfcRailing",
+      "GUID": "21ldoMpbP4VfsJ0XGY_335"
     },
     {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1hOSvn6df7F8_7GcBWlS1M"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1hOSvn6df7F8_7GcBWlS2V"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1hOSvn6df7F8_7GcBWlS_W"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1hOSvn6df7F8_7GcBWlSnC"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1hOSvn6df7F8_7GcBWlSp1"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1hOSvn6df7F8_7GcBWlSga"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1hOSvn6df7F8_7GcBWlSXO"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1hOSvn6df7F8_7GcBWlRRL"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1hOSvn6df7F8_7GcBWlRLx"
-    },
-    {
-      "name": "IfcDoor",
-      "ifc_type": "IfcDoor",
-      "GUID": "1hOSvn6df7F8_7GcBWlRH8"
-    },
-    {
-      "name": "IfcDoor",
-      "ifc_type": "IfcDoor",
-      "GUID": "1hOSvn6df7F8_7GcBWlRGQ"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1hOSvn6df7F8_7GcBWlRBU"
-    },
-    {
-      "name": "IfcWindow",
-      "ifc_type": "IfcWindow",
-      "GUID": "1hOSvn6df7F8_7GcBWlR72"
+      "name": "IfcRoof",
+      "ifc_type": "IfcRoof",
+      "GUID": "0jf0rYHfX3RAB3bSIRjmxl"
     },
     {
       "name": "IfcSlab",
       "ifc_type": "IfcSlab",
-      "GUID": "1hOSvn6df7F8_7GcBWlRrM"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLCm"
-    },
-    {
-      "name": "IfcSlab",
-      "ifc_type": "IfcSlab",
-      "GUID": "1hOSvn6df7F8_7GcBWlRqU"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLEJ"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FL96"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FL8v"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FL9r"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLKI"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLMr"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLJd"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLTF"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLIE"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLPP"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLOH"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLQD"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLR9"
-    },
-    {
-      "name": "IfcWall",
-      "ifc_type": "IfcWall",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FKau"
+      "GUID": "2O2Fr$t4X7Zf8NOew3FK4F"
     },
     {
       "name": "IfcSlab",
@@ -622,42 +272,142 @@
     {
       "name": "IfcSlab",
       "ifc_type": "IfcSlab",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FK4F"
+      "GUID": "1hOSvn6df7F8_7GcBWlRqU"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "1hOSvn6df7F8_7GcBWlRrM"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUtC0"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUtDX"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUtBP"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUt8F"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUt8s"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUt5W"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUt2f"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUt0F"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUtxr"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUtoa"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUtjR"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUtju"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUtgP"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "2OBrcmyk58NupXoVOHUten"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "3ThA22djr8AQQ9eQMA5s7I"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "1CZILmCaHETO8tf3SgGEWh"
+    },
+    {
+      "name": "IfcSlab",
+      "ifc_type": "IfcSlab",
+      "GUID": "1CZILmCaHETO8tf3SgGEXu"
+    },
+    {
+      "name": "IfcStair",
+      "ifc_type": "IfcStair",
+      "GUID": "0wkEuT1wr1kOyafLY4v_O1"
+    },
+    {
+      "name": "IfcStair",
+      "ifc_type": "IfcStair",
+      "GUID": "21ldoMpbP4VfsJ0XGY_34d"
+    },
+    {
+      "name": "IfcStairFlight",
+      "ifc_type": "IfcStairFlight",
+      "GUID": "1oKjKg9PD3fP1iIwXLh3lK"
+    },
+    {
+      "name": "IfcStairFlight",
+      "ifc_type": "IfcStairFlight",
+      "GUID": "3KMJUyUe9DfQ2FOCd5ZoiN"
+    },
+    {
+      "name": "IfcWall",
+      "ifc_type": "IfcWall",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FKau"
     },
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FK04"
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNld"
     },
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FK1b"
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNbT"
     },
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FK3E"
+      "GUID": "2O2Fr$t4X7Zf8NOew3FKRi"
     },
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FKEr"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FKE5"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FK9N"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FK80"
+      "GUID": "2O2Fr$t4X7Zf8NOew3FKRH"
     },
     {
       "name": "IfcWallStandardCase",
@@ -672,42 +422,57 @@
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FKST"
+      "GUID": "2O2Fr$t4X7Zf8NOew3FK80"
     },
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FKRH"
+      "GUID": "2O2Fr$t4X7Zf8NOew3FK9N"
     },
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FKRi"
+      "GUID": "2O2Fr$t4X7Zf8NOew3FKEr"
     },
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FNbT"
+      "GUID": "2O2Fr$t4X7Zf8NOew3FKE5"
     },
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FNau"
+      "GUID": "2O2Fr$t4X7Zf8NOew3FK3E"
     },
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FNld"
+      "GUID": "2O2Fr$t4X7Zf8NOew3FK04"
     },
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FNr2"
+      "GUID": "2O2Fr$t4X7Zf8NOew3FK1b"
     },
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FNhv"
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLMr"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLKI"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLEJ"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLCm"
     },
     {
       "name": "IfcWallStandardCase",
@@ -717,107 +482,112 @@
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNhv"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLQD"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLOH"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FKST"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNau"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLTF"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FL8v"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLJd"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FL96"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLIE"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FL9r"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
       "GUID": "2O2Fr$t4X7Zf8NOew3FNtn"
     },
     {
-      "name": "Roof",
-      "ifc_type": "IfcSpace",
-      "GUID": "0pNy6pOyf7JPmXRLgxs3sW"
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNr2"
     },
     {
-      "name": "Room",
-      "ifc_type": "IfcSpace",
-      "GUID": "10mjSDZJj9gPS2PrQaxa4o"
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLR9"
     },
     {
-      "name": "Stair",
-      "ifc_type": "IfcSpace",
-      "GUID": "10mjSDZJj9gPS2PrQaxa3z"
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLPP"
     },
     {
-      "name": "Utility",
-      "ifc_type": "IfcSpace",
-      "GUID": "2gRXFgjRn2HPE$YoDLX3FC"
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0jf0rYHfX3RAB3bSIRjmmy"
     },
     {
-      "name": "Utility",
-      "ifc_type": "IfcSpace",
-      "GUID": "2gRXFgjRn2HPE$YoDLX3FV"
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0jf0rYHfX3RAB3bSIRjmpw"
     },
     {
-      "name": "Bedroom 1",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dl_3A"
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0jf0rYHfX3RAB3bSIRjmoa"
     },
     {
-      "name": "Bedroom 2",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dl_39"
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0jf0rYHfX3RAB3bSIRjmr1"
     },
     {
-      "name": "Bathroom 2",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dl_3C"
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0iEHWY1$XA8eQeeULq4jZ1"
     },
     {
-      "name": "Hallway",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dl_3G"
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0iEHWY1$XA8eQeeULq4j_U"
     },
     {
-      "name": "Foyer",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dl_3Q"
-    },
-    {
-      "name": "Bathroom 1",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dl_3P"
-    },
-    {
-      "name": "Kitchen",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dl_3S"
-    },
-    {
-      "name": "Living Room",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dl_CZ"
-    },
-    {
-      "name": "Bedroom 1",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dlXrc"
-    },
-    {
-      "name": "Bedroom 2",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dlXrb"
-    },
-    {
-      "name": "Bathroom 2",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dlXre"
-    },
-    {
-      "name": "Hallway",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dlXri"
-    },
-    {
-      "name": "Foyer",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dlXrr"
-    },
-    {
-      "name": "Bathroom 1",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dlXru"
-    },
-    {
-      "name": "Kitchen",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dlXr$"
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "0iEHWY1$XA8eQeeULq4jpl"
     },
     {
       "name": "IfcWallStandardCase",
@@ -832,17 +602,497 @@
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "0iEHWY1$XA8eQeeULq4jpl"
-    },
-    {
-      "name": "Living Room",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dlXr2"
+      "GUID": "0dxE1Sy6nDqfpDb5vIMNiA"
     },
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "0iEHWY1$XA8eQeeULq4j_U"
+      "GUID": "0dxE1Sy6nDqfpDb5vIMN_Z"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "1aj$VJZFn2TxepZUBcKpvt"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "1aj$VJZFn2TxepZUBcKpZw"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "1aj$VJZFn2TxepZUBcKpee"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "1aj$VJZFn2TxepZUBcKphf"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "3Y4YRln2r91vflHcHE5IVS"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "3Y4YRln2r91vflHcHE5IVT"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "3Y4YRln2r91vflHcHE5IVI"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "3Y4YRln2r91vflHcHE5IVJ"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "3Y4YRln2r91vflHcHE5ITp"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "3Y4YRln2r91vflHcHE5ITm"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "3Y4YRln2r91vflHcHE5ITn"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "3Y4YRln2r91vflHcHE5ITs"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlR72"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlRBU"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlRLx"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlRRL"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlSXO"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlSga"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlSp1"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlSnC"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlS_W"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlS2V"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlS1M"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1hOSvn6df7F8_7GcBWlS4Q"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4$e"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4u1"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4qs"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4oq"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4pU"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4kJ"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4gQ"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4hv"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4aS"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1l0GAJtRTFv8$zmKJOH4ZZ"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1Eo2$BaHX42AEkDvQQDocD"
+    },
+    {
+      "name": "IfcWindow",
+      "ifc_type": "IfcWindow",
+      "GUID": "1Eo2$BaHX42AEkDvQQDoy2"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0wkEuT1wr1kOyafLY4vyu$"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0wkEuT1wr1kOyafLY4vy_8"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0wkEuT1wr1kOyafLY4vy3H"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0wkEuT1wr1kOyafLY4vy3G"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0wkEuT1wr1kOyafLY4vy4m"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0wkEuT1wr1kOyafLY4vy4F"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0wkEuT1wr1kOyafLY4vy6l"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0wkEuT1wr1kOyafLY4vy6k"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0wkEuT1wr1kOyafLY4vyMO"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0wkEuT1wr1kOyafLY4vyOn"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvGQ"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvH8"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUv88"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUv3h"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvup"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvuo"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvs2"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvsm"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvtA"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvqp"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvqo"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvqz"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvqy"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvq$"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvq_"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvqu"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvqx"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvqw"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvr5"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUvr4"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUshs"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUsc7"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUsab"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUsbY"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUtVQ"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUtOy"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUtO$"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUtO_"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUtOv"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUtOu"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUtM4"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUtI8"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUtHN"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2OBrcmyk58NupXoVOHUtEr"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0iEHWY1$XA8eQeeULq4j7w"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0iEHWY1$XA8eQeeULq4jOM"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0iEHWY1$XA8eQeeULq4jQJ"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0iEHWY1$XA8eQeeULq4jTB"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0iEHWY1$XA8eQeeULq4jJA"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0iEHWY1$XA8eQeeULq4jKO"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0iEHWY1$XA8eQeeULq4jMl"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "0iEHWY1$XA8eQeeULq4ien"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2gRXFgjRn2HPE$YoDLX0mp"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2gRXFgjRn2HPE$YoDLX0q2"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2gRXFgjRn2HPE$YoDLX0rb"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2gRXFgjRn2HPE$YoDLX0ra"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2gRXFgjRn2HPE$YoDLX0vP"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2kvhekJrnDjRw0CDkKW$UD"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2kvhekJrnDjRw0CDkKW$JW"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2kvhekJrnDjRw0CDkKW$KL"
+    },
+    {
+      "name": "IfcFurnishingElement",
+      "ifc_type": "IfcFurnishingElement",
+      "GUID": "2kvhekJrnDjRw0CDkKW$fQ"
     },
     {
       "name": "IfcBuilding",
@@ -870,9 +1120,114 @@
       "GUID": "1xS3BCk291UvhgP2dvNtSE"
     },
     {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "0iEHWY1$XA8eQeeULq4jZ1"
+      "name": "IfcSite",
+      "ifc_type": "IfcSite",
+      "GUID": "1xS3BCk291UvhgP2a6eflN"
+    },
+    {
+      "name": "Foyer",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXrr"
+    },
+    {
+      "name": "Hallway",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXri"
+    },
+    {
+      "name": "Bathroom 1",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_3P"
+    },
+    {
+      "name": "Foyer",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_3Q"
+    },
+    {
+      "name": "Hallway",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_3G"
+    },
+    {
+      "name": "Utility",
+      "ifc_type": "IfcSpace",
+      "GUID": "2gRXFgjRn2HPE$YoDLX3FV"
+    },
+    {
+      "name": "Utility",
+      "ifc_type": "IfcSpace",
+      "GUID": "2gRXFgjRn2HPE$YoDLX3FC"
+    },
+    {
+      "name": "Stair",
+      "ifc_type": "IfcSpace",
+      "GUID": "10mjSDZJj9gPS2PrQaxa3z"
+    },
+    {
+      "name": "Room",
+      "ifc_type": "IfcSpace",
+      "GUID": "10mjSDZJj9gPS2PrQaxa4o"
+    },
+    {
+      "name": "Roof",
+      "ifc_type": "IfcSpace",
+      "GUID": "0pNy6pOyf7JPmXRLgxs3sW"
+    },
+    {
+      "name": "Living Room",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_CZ"
+    },
+    {
+      "name": "Living Room",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXr2"
+    },
+    {
+      "name": "Kitchen",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXr$"
+    },
+    {
+      "name": "Kitchen",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_3S"
+    },
+    {
+      "name": "Bathroom 2",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_3C"
+    },
+    {
+      "name": "Bathroom 2",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXre"
+    },
+    {
+      "name": "Bathroom 1",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXru"
+    },
+    {
+      "name": "Bedroom 2",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_39"
+    },
+    {
+      "name": "Bedroom 1",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXrc"
+    },
+    {
+      "name": "Bedroom 1",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_3A"
+    },
+    {
+      "name": "Bedroom 2",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXrb"
     }
   ]
 }
