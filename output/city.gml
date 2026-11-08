@@ -216101,7 +216101,7 @@
         </bldg:WallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FNld">
+        <bldg:InteriorWallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FNld">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -216110,7 +216110,7 @@
             <gen:value>2O2Fr$t4X7Zf8NOew3FNld</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -216413,7 +216413,7 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
         <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FNbT">
@@ -217646,7 +217646,7 @@
         </bldg:WallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FKIu">
+        <bldg:InteriorWallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FKIu">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -217655,7 +217655,7 @@
             <gen:value>2O2Fr$t4X7Zf8NOew3FKIu</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -217958,10 +217958,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FKGS">
+        <bldg:InteriorWallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FKGS">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -217970,7 +217970,7 @@
             <gen:value>2O2Fr$t4X7Zf8NOew3FKGS</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -218273,7 +218273,7 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
         <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FK80">
@@ -220586,7 +220586,7 @@
         </bldg:WallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FLMr">
+        <bldg:InteriorWallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FLMr">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -220595,7 +220595,7 @@
             <gen:value>2O2Fr$t4X7Zf8NOew3FLMr</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PLUMBING (152MM STUD)</gen:value>
@@ -220898,10 +220898,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FLKI">
+        <bldg:InteriorWallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FLKI">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -220910,7 +220910,7 @@
             <gen:value>2O2Fr$t4X7Zf8NOew3FLKI</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -221213,10 +221213,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FLEJ">
+        <bldg:InteriorWallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FLEJ">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -221225,7 +221225,7 @@
             <gen:value>2O2Fr$t4X7Zf8NOew3FLEJ</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -221528,10 +221528,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FLCm">
+        <bldg:InteriorWallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FLCm">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -221540,7 +221540,7 @@
             <gen:value>2O2Fr$t4X7Zf8NOew3FLCm</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PLUMBING (152MM STUD)</gen:value>
@@ -221843,7 +221843,7 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
         <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FNqI">
@@ -238592,7 +238592,7 @@
         </bldg:WallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FKST">
+        <bldg:InteriorWallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FKST">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -238601,7 +238601,7 @@
             <gen:value>2O2Fr$t4X7Zf8NOew3FKST</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -239867,10 +239867,10 @@
               </bldg:lod3MultiSurface>
             </bldg:Door>
           </bldg:opening>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FNau">
+        <bldg:InteriorWallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FNau">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -239879,7 +239879,7 @@
             <gen:value>2O2Fr$t4X7Zf8NOew3FNau</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -241145,10 +241145,10 @@
               </bldg:lod3MultiSurface>
             </bldg:Door>
           </bldg:opening>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FLTF">
+        <bldg:InteriorWallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FLTF">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -241157,7 +241157,7 @@
             <gen:value>2O2Fr$t4X7Zf8NOew3FLTF</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -242459,10 +242459,10 @@
               </bldg:lod3MultiSurface>
             </bldg:Door>
           </bldg:opening>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FL8v">
+        <bldg:InteriorWallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FL8v">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -242471,7 +242471,7 @@
             <gen:value>2O2Fr$t4X7Zf8NOew3FL8v</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -243773,10 +243773,10 @@
               </bldg:lod3MultiSurface>
             </bldg:Door>
           </bldg:opening>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FLJd">
+        <bldg:InteriorWallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FLJd">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -243785,7 +243785,7 @@
             <gen:value>2O2Fr$t4X7Zf8NOew3FLJd</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -245051,10 +245051,10 @@
               </bldg:lod3MultiSurface>
             </bldg:Door>
           </bldg:opening>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FL96">
+        <bldg:InteriorWallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FL96">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -245063,7 +245063,7 @@
             <gen:value>2O2Fr$t4X7Zf8NOew3FL96</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -246329,10 +246329,10 @@
               </bldg:lod3MultiSurface>
             </bldg:Door>
           </bldg:opening>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FLIE">
+        <bldg:InteriorWallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FLIE">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -246341,7 +246341,7 @@
             <gen:value>2O2Fr$t4X7Zf8NOew3FLIE</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -247607,10 +247607,10 @@
               </bldg:lod3MultiSurface>
             </bldg:Door>
           </bldg:opening>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FL9r">
+        <bldg:InteriorWallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FL9r">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -247619,7 +247619,7 @@
             <gen:value>2O2Fr$t4X7Zf8NOew3FL9r</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -248885,7 +248885,7 @@
               </bldg:lod3MultiSurface>
             </bldg:Door>
           </bldg:opening>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
         <bldg:WallSurface gml:id="s_2O2Fr_t4X7Zf8NOew3FNtn">
@@ -270206,7 +270206,7 @@
         </bldg:WallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_0iEHWY1_XA8eQeeULq4jZ1">
+        <bldg:InteriorWallSurface gml:id="s_0iEHWY1_XA8eQeeULq4jZ1">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -270215,7 +270215,7 @@
             <gen:value>0iEHWY1$XA8eQeeULq4jZ1</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - FURRING (152 MM STUD)</gen:value>
@@ -270515,10 +270515,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_0iEHWY1_XA8eQeeULq4j_U">
+        <bldg:InteriorWallSurface gml:id="s_0iEHWY1_XA8eQeeULq4j_U">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -270527,7 +270527,7 @@
             <gen:value>0iEHWY1$XA8eQeeULq4j_U</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - FURRING (152 MM STUD)</gen:value>
@@ -270827,10 +270827,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_0iEHWY1_XA8eQeeULq4jpl">
+        <bldg:InteriorWallSurface gml:id="s_0iEHWY1_XA8eQeeULq4jpl">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -270839,7 +270839,7 @@
             <gen:value>0iEHWY1$XA8eQeeULq4jpl</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -271142,10 +271142,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_0iEHWY1_XA8eQeeULq4jDb">
+        <bldg:InteriorWallSurface gml:id="s_0iEHWY1_XA8eQeeULq4jDb">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -271154,7 +271154,7 @@
             <gen:value>0iEHWY1$XA8eQeeULq4jDb</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - FURRING (152 MM STUD)</gen:value>
@@ -271457,10 +271457,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_0iEHWY1_XA8eQeeULq4jE6">
+        <bldg:InteriorWallSurface gml:id="s_0iEHWY1_XA8eQeeULq4jE6">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -271469,7 +271469,7 @@
             <gen:value>0iEHWY1$XA8eQeeULq4jE6</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - FURRING (152 MM STUD)</gen:value>
@@ -271772,10 +271772,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_0dxE1Sy6nDqfpDb5vIMNiA">
+        <bldg:InteriorWallSurface gml:id="s_0dxE1Sy6nDqfpDb5vIMNiA">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -271784,7 +271784,7 @@
             <gen:value>0dxE1Sy6nDqfpDb5vIMNiA</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - FURRING (152 MM STUD)</gen:value>
@@ -272087,10 +272087,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_0dxE1Sy6nDqfpDb5vIMN_Z">
+        <bldg:InteriorWallSurface gml:id="s_0dxE1Sy6nDqfpDb5vIMN_Z">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -272099,7 +272099,7 @@
             <gen:value>0dxE1Sy6nDqfpDb5vIMN_Z</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - FURRING (152 MM STUD)</gen:value>
@@ -272402,10 +272402,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_1aj_VJZFn2TxepZUBcKpvt">
+        <bldg:InteriorWallSurface gml:id="s_1aj_VJZFn2TxepZUBcKpvt">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -272414,7 +272414,7 @@
             <gen:value>1aj$VJZFn2TxepZUBcKpvt</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -273680,10 +273680,10 @@
               </bldg:lod3MultiSurface>
             </bldg:Door>
           </bldg:opening>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_1aj_VJZFn2TxepZUBcKpZw">
+        <bldg:InteriorWallSurface gml:id="s_1aj_VJZFn2TxepZUBcKpZw">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -273692,7 +273692,7 @@
             <gen:value>1aj$VJZFn2TxepZUBcKpZw</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -274958,10 +274958,10 @@
               </bldg:lod3MultiSurface>
             </bldg:Door>
           </bldg:opening>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_1aj_VJZFn2TxepZUBcKpee">
+        <bldg:InteriorWallSurface gml:id="s_1aj_VJZFn2TxepZUBcKpee">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -274970,7 +274970,7 @@
             <gen:value>1aj$VJZFn2TxepZUBcKpee</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -275273,10 +275273,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_1aj_VJZFn2TxepZUBcKphf">
+        <bldg:InteriorWallSurface gml:id="s_1aj_VJZFn2TxepZUBcKphf">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -275285,7 +275285,7 @@
             <gen:value>1aj$VJZFn2TxepZUBcKphf</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - PARTITION (92MM STUD)</gen:value>
@@ -275588,10 +275588,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_3Y4YRln2r91vflHcHE5IVS">
+        <bldg:InteriorWallSurface gml:id="s_3Y4YRln2r91vflHcHE5IVS">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -275600,7 +275600,7 @@
             <gen:value>3Y4YRln2r91vflHcHE5IVS</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - FURRING (38 MM STUD)</gen:value>
@@ -275822,10 +275822,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_3Y4YRln2r91vflHcHE5IVT">
+        <bldg:InteriorWallSurface gml:id="s_3Y4YRln2r91vflHcHE5IVT">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -275834,7 +275834,7 @@
             <gen:value>3Y4YRln2r91vflHcHE5IVT</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - FURRING (38 MM STUD)</gen:value>
@@ -276056,10 +276056,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_3Y4YRln2r91vflHcHE5IVI">
+        <bldg:InteriorWallSurface gml:id="s_3Y4YRln2r91vflHcHE5IVI">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -276068,7 +276068,7 @@
             <gen:value>3Y4YRln2r91vflHcHE5IVI</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - FURRING (38 MM STUD)</gen:value>
@@ -276290,10 +276290,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_3Y4YRln2r91vflHcHE5IVJ">
+        <bldg:InteriorWallSurface gml:id="s_3Y4YRln2r91vflHcHE5IVJ">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -276302,7 +276302,7 @@
             <gen:value>3Y4YRln2r91vflHcHE5IVJ</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - FURRING (38 MM STUD)</gen:value>
@@ -276524,10 +276524,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_3Y4YRln2r91vflHcHE5ITp">
+        <bldg:InteriorWallSurface gml:id="s_3Y4YRln2r91vflHcHE5ITp">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -276536,7 +276536,7 @@
             <gen:value>3Y4YRln2r91vflHcHE5ITp</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - FURRING (38 MM STUD)</gen:value>
@@ -276758,10 +276758,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_3Y4YRln2r91vflHcHE5ITm">
+        <bldg:InteriorWallSurface gml:id="s_3Y4YRln2r91vflHcHE5ITm">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -276770,7 +276770,7 @@
             <gen:value>3Y4YRln2r91vflHcHE5ITm</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - FURRING (38 MM STUD)</gen:value>
@@ -276992,10 +276992,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_3Y4YRln2r91vflHcHE5ITn">
+        <bldg:InteriorWallSurface gml:id="s_3Y4YRln2r91vflHcHE5ITn">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -277004,7 +277004,7 @@
             <gen:value>3Y4YRln2r91vflHcHE5ITn</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - FURRING (38 MM STUD)</gen:value>
@@ -277226,10 +277226,10 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:boundedBy>
-        <bldg:WallSurface gml:id="s_3Y4YRln2r91vflHcHE5ITs">
+        <bldg:InteriorWallSurface gml:id="s_3Y4YRln2r91vflHcHE5ITs">
           <gml:name>IfcWallStandardCase</gml:name>
           <gen:stringAttribute name="ifc_type">
             <gen:value>IfcWallStandardCase</gen:value>
@@ -277238,7 +277238,7 @@
             <gen:value>3Y4YRln2r91vflHcHE5ITs</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="gis_class">
-            <gen:value>WallSurface</gen:value>
+            <gen:value>InteriorWallSurface</gen:value>
           </gen:stringAttribute>
           <gen:stringAttribute name="Pset_WallCommon.Reference">
             <gen:value>BASIC WALL:INTERIOR - FURRING (38 MM STUD)</gen:value>
@@ -277460,7 +277460,7 @@
               </gml:surfaceMember>
             </gml:MultiSurface>
           </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
+        </bldg:InteriorWallSurface>
       </bldg:boundedBy>
       <bldg:interiorRoom>
         <bldg:Room gml:id="f_0BTBFw6f90Nfh9rP1dlXrr">

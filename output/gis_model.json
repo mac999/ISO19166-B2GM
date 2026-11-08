@@ -92529,7 +92529,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -94887,7 +94887,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -95438,7 +95438,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -99840,7 +99840,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -100364,7 +100364,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -100888,7 +100888,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -101412,7 +101412,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -105825,7 +105825,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -106478,7 +106478,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -107140,7 +107140,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -107822,7 +107822,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -108504,7 +108504,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -109148,7 +109148,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -109792,7 +109792,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -110472,7 +110472,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -117453,7 +117453,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -117981,7 +117981,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -118500,7 +118500,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -119015,7 +119015,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -119539,7 +119539,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -120054,7 +120054,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -120578,7 +120578,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -121102,7 +121102,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -121746,7 +121746,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -122390,7 +122390,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -122905,7 +122905,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -123420,7 +123420,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -123818,7 +123818,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -124207,7 +124207,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -124596,7 +124596,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -124976,7 +124976,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -125374,7 +125374,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -125763,7 +125763,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {
@@ -126152,7 +126152,7 @@
       },
       {
         "runtime": {
-          "type": "WallSurface"
+          "type": "InteriorWallSurface"
         },
         "LOD": [
           {

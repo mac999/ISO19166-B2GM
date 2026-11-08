@@ -11,6 +11,7 @@
     "y": 5142183.701609074,
     "elevation": 0.0
   },
+  "georeference_source": "IfcSite",
   "true_north": [
     0.0,
     1.0

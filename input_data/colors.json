@@ -3,6 +3,7 @@
   "citygml": {
     "CityModel.Building": "#f2bd4c",
     "WallSurface": "#edcc8f",
+    "InteriorWallSurface": "#ccb2c7",
     "RoofSurface": "#db473d",
     "GroundSurface": "#755c42",
     "FloorSurface": "#9e8a70",

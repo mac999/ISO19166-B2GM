@@ -120,6 +120,16 @@
                 },
                 {
                     "source": "IfcWall.*",
+                    "filter": [
+                        {
+                            "name": "IsExternal",
+                            "value": "(?i)false"
+                        }
+                    ],
+                    "destination": "InteriorWallSurface"
+                },
+                {
+                    "source": "IfcWall.*",
                     "destination": "WallSurface"
                 },
                 {
