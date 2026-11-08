@@ -179,8 +179,20 @@
                     "destination": "BuildingInstallation"
                 },
                 {
-                    "source": "IfcStair",
+                    "source": "IfcStair.*",
                     "destination": "BuildingInstallation"
+                },
+                {
+                    "source": "IfcFurnishingElement",
+                    "destination": "BuildingInstallation"
+                },
+                {
+                    "source": "IfcRoof",
+                    "destination": "RoofSurface"
+                },
+                {
+                    "source": "IfcFooting",
+                    "destination": "GroundSurface"
                 },
                 {
                     "source": "IfcSite",

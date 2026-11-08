@@ -36,3 +36,15 @@ def test_ifc_type_not_overwritten_by_name_property(parsed):
     # ifc_type must remain the true IFC class.
     for obj in parsed:
         assert obj["ifc_type"].startswith("Ifc")
+
+
+def test_parser_keeps_every_product_type(sample_ifc):
+    """Furniture, footings and the roof were silently dropped by a type list in
+    the parser; the PD stage, not the parser, decides what is mapped."""
+    pytest.importorskip("ifcopenshell")
+    import B2GM_BIM
+
+    types = {o["ifc_type"] for o in B2GM_BIM.BIM().parse(sample_ifc)}
+    for wanted in ("IfcFurnishingElement", "IfcFooting", "IfcRoof", "IfcStairFlight"):
+        assert wanted in types
+    assert "IfcOpeningElement" not in types

@@ -358,6 +358,12 @@ def store(fname: str, resolved: List[Tuple[Dict[str, Any], str]],
     for obj, _ in storeys:
         buckets.setdefault(obj.get("GUID"), _empty_bucket())
 
+    # a host that is not written (an IfcRoof aggregate has no geometry of its
+    # own) would take its openings down with it
+    surfaces = {obj.get("GUID") for bucket in buckets.values() for obj, _ in bucket["boundary"]}
+    for host in [h for h in openings if h not in surfaces]:
+        loose_openings.extend(openings.pop(host))
+
     def write_boundaries(f, bucket, indent) -> int:
         count = 0
         for obj, destination in bucket["boundary"]:

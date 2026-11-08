@@ -11,32 +11,16 @@ class BIM(B2GM_model.model):
         # enumerate all the nodes in the dataset using ifcopenshell
         objects = []
 
-        element_types = [
-            "IfcSite",
-            "IfcSpace",
-            "IfcWall",
-            "IfcDoor",
-            "IfcWindow",
-            "IfcCovering",
-            "IfcBuildingElementPart",
-            "IfcSlab",
-            "IfcBeam",
-            "IfcColumn",
-            "IfcBuildingElementProxy",
-            "IfcBuildingStorey",
-            "IfcWallStandardCase",
-            "IfcMember",
-            "IfcSpace",
-            "IfcStair",
-            "IfcRailing",
-            "IfcColumn",
-            "IfcBuilding"
-        ]
+        # every IfcProduct is read; which of them reach the GIS side is the PD
+        # stage's decision, not the parser's.  Openings are the voids walls carry
+        # and would render as blocks, so they are the one exception
+        skipped_types = {"IfcOpeningElement", "IfcAnnotation", "IfcGrid",
+                         "IfcVirtualElement"}
 
         # products = dataset.by_type()
-        for product in self.model_data:
+        for product in self.model_data.by_type("IfcProduct"):
             obj_type = product.is_a()
-            if obj_type not in element_types:
+            if obj_type in skipped_types:
                 continue
 
             try:

@@ -390,6 +390,12 @@ class GIS(B2GM_model.model):
                 # unknown destination with geometry: never drop it
                 top.append((obj, destination))
 
+        # a host that is not written (an IfcRoof aggregate has no geometry of
+        # its own) would take its openings down with it
+        surfaces = {obj.get("GUID") for obj, _ in boundaries}
+        for host in [h for h in openings if h not in surfaces]:
+            loose_openings.extend(openings.pop(host))
+
         written = 1
         f.write("  <core:cityObjectMember>\n")
         f.write(f'    <bldg:Building gml:id="{self._id(b_guid or "building_1", "bldg")}">\n')

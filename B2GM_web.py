@@ -96,6 +96,8 @@ IFC_COLORS = {
     "IfcRailing": [0.60, 0.60, 0.66],
     "IfcMember": [0.56, 0.54, 0.62],
     "IfcFurnishingElement": [0.74, 0.64, 0.52],
+    "IfcFooting": [0.45, 0.42, 0.38],
+    "IfcStairFlight": [0.66, 0.58, 0.44],
 }
 
 
