@@ -68,6 +68,9 @@
           <option value="shaded" data-i18n="modeShaded">Shaded</option>
           <option value="edges" data-i18n="modeEdges">Shaded + edges</option>
           <option value="wireframe" data-i18n="modeWire">Wireframe</option>
+          <option value="xray" data-i18n="modeXray">X-ray</option>
+          <option value="flat" data-i18n="modeFlat">Flat + edges</option>
+          <option value="hidden" data-i18n="modeHidden">Hidden line</option>
         </select>
         <label><span data-i18n="opacity">Opacity</span>
           <input type="range" id="opacity" min="15" max="100" value="100"></label>
@@ -76,6 +79,7 @@
       </div>
       <div class="hint" id="hint" data-i18n="hint">Drag to orbit, wheel to zoom, right drag to pan</div>
       <canvas id="gizmo" class="gizmo" width="96" height="96"></canvas>
+      <pre class="docview" id="docview" hidden></pre>
       <div class="overlay" id="overlay" hidden><div class="spinner"></div><span id="overlay-text"></span></div>
       <div class="dropzone" id="dropzone" hidden><div><strong data-i18n="dropTitle">Drop to convert</strong><br><span data-i18n="dropHint">an .ifc model, optionally with a pipeline .json</span></div></div>
     </div>

@@ -31,6 +31,8 @@ const TEXT = {
     theme: 'Dark', themeLight: 'Light',
     saveJson: 'Save JSON', versionPipeline: 'CityGML: pipeline',
     modeShaded: 'Shaded', modeEdges: 'Shaded + edges', modeWire: 'Wireframe',
+    modeXray: 'X-ray', modeFlat: 'Flat + edges', modeHidden: 'Hidden line',
+    binary: 'binary file', truncated: 'preview cut at 64 KB',
     chipHint: 'click to open the stage and show its output',
     shown: 'shown in the 3D view',
     table: 'form', json: 'json', rule: 'rule', addRule: '+ rule', removeRule: 'remove rule',
@@ -56,6 +58,8 @@ const TEXT = {
     theme: '다크', themeLight: '라이트',
     saveJson: 'JSON 저장', versionPipeline: 'CityGML: 파이프라인 설정',
     modeShaded: '음영', modeEdges: '음영 + 모서리', modeWire: '와이어프레임',
+    modeXray: '엑스레이', modeFlat: '단색 + 모서리', modeHidden: '은선 제거',
+    binary: '이진 파일', truncated: '미리보기는 64 KB에서 잘림',
     chipHint: '클릭하면 단계를 열고 산출물을 3차원 뷰에 표시',
     shown: '3차원 뷰에 표시 중',
     table: '폼', json: 'json', rule: '규칙', addRule: '+ 규칙', removeRule: '규칙 삭제',
@@ -64,7 +68,7 @@ const TEXT = {
   },
 };
 
-// ?lang=ko&theme=light&mode=wireframe makes a view shareable and scriptable
+// ?lang=ko&theme=light&mode=wireframe&select=city.gml makes a view shareable and scriptable
 const params = new URLSearchParams(location.search);
 let lang = params.get('lang') || localStorage.getItem('b2gm.lang') || 'en';
 const t = (key) => (TEXT[lang][key] ?? TEXT.en[key] ?? key);
@@ -159,11 +163,15 @@ varying vec3 vNormal;
 varying vec3 vColor;
 uniform vec3 uLight;
 uniform float uAlpha;
-uniform float uEdge;
-uniform vec3 uEdgeColor;
+uniform float uPaint;      // 0 shaded, 1 flat vertex colour, 2 one uniform colour
+uniform vec3 uPaintColor;
 void main() {
-  if (uEdge > 0.5) {
-    gl_FragColor = vec4(uEdgeColor, uAlpha);
+  if (uPaint > 1.5) {
+    gl_FragColor = vec4(uPaintColor, uAlpha);
+    return;
+  }
+  if (uPaint > 0.5) {
+    gl_FragColor = vec4(vColor, uAlpha);
     return;
   }
   vec3 n = normalize(vNormal);
@@ -274,8 +282,8 @@ class Renderer {
       model: gl.getUniformLocation(program, 'uModel'),
       light: gl.getUniformLocation(program, 'uLight'),
       alpha: gl.getUniformLocation(program, 'uAlpha'),
-      edge: gl.getUniformLocation(program, 'uEdge'),
-      edgeColor: gl.getUniformLocation(program, 'uEdgeColor'),
+      paint: gl.getUniformLocation(program, 'uPaint'),
+      paintColor: gl.getUniformLocation(program, 'uPaintColor'),
     };
     gl.enable(gl.DEPTH_TEST);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -471,12 +479,18 @@ class Renderer {
     gl.uniformMatrix4fv(this.uniform.mvp, false, mat4.multiply(projection, view));
     gl.uniformMatrix4fv(this.uniform.model, false, model);
     gl.uniform3f(this.uniform.light, light[0], light[1], light[2]);
-    gl.uniform1f(this.uniform.alpha, this.alpha);
-    gl.uniform3f(this.uniform.edgeColor, this.edgeColor[0], this.edgeColor[1], this.edgeColor[2]);
+    const mode = this.mode;
+    // x-ray ignores the slider: faint faces, edges on top
+    const alpha = mode === 'xray' ? Math.min(this.alpha, 0.22) : this.alpha;
+    gl.uniform1f(this.uniform.alpha, alpha);
     // a translucent model must not write depth, or the faces behind vanish
-    const translucent = this.alpha < 0.999;
+    const translucent = alpha < 0.999;
     if (translucent) { gl.enable(gl.BLEND); gl.depthMask(false); }
     else { gl.disable(gl.BLEND); gl.depthMask(true); }
+    const paint = (kind, color) => {
+      gl.uniform1f(this.uniform.paint, kind);
+      if (color) gl.uniform3f(this.uniform.paintColor, color[0], color[1], color[2]);
+    };
 
     const stride = 9 * 4;
     const bindAll = (buffer) => {
@@ -490,9 +504,12 @@ class Renderer {
       bind(this.attr.color, 24);
     };
 
-    const edges = this.mode !== 'shaded';
-    if (this.mode !== 'wireframe') {
-      gl.uniform1f(this.uniform.edge, 0);
+    const edges = mode !== 'shaded';
+    if (mode !== 'wireframe') {
+      // hidden line: faces in the background colour only block what is behind them
+      if (mode === 'hidden') paint(2, this.background);
+      else if (mode === 'flat') paint(1);
+      else paint(0);
       // push the faces back a little so the edges drawn over them win the depth test
       if (edges) { gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1, 1); }
       bindAll(this.buffer);
@@ -501,7 +518,8 @@ class Renderer {
     }
     if (edges) {
       if (!this.edgeCount) this.buildEdges();
-      gl.uniform1f(this.uniform.edge, 1);
+      paint(2, this.edgeColor);
+      if (mode === 'xray') { gl.uniform1f(this.uniform.alpha, 0.55); gl.enable(gl.BLEND); }
       bindAll(this.edgeBuffer);
       gl.drawArrays(gl.LINES, 0, this.edgeCount);
     }
@@ -696,8 +714,10 @@ function renderTree(node, container, side) {
       }
       if (item.viewable) {
         loadModel(side, item.path, item.name);
-        if (booted && isNarrow()) showView('middle');
+      } else {
+        showDocument(side, item.path, item.name);
       }
+      if (booted && isNarrow()) showView('middle');
     };
   };
   walk(node, container, 0);
@@ -1095,7 +1115,9 @@ async function loadModel(side, path, label) {
       renderer.count = 0;
       renderer.draw();
       $('legend').innerHTML = `<div class="legend-row">${t('empty')}</div>`;
+      await showDocument(side, path, label);
     } else {
+      hideDocument();
       renderer.load(model, hiddenClasses);
       renderLegend();
     }
@@ -1106,6 +1128,36 @@ async function loadModel(side, path, label) {
   } finally {
     if (token === loadSeq) busy(false);
   }
+}
+
+/* A file with nothing to draw shows its text in the middle panel instead of
+   leaving an empty canvas; json is reformatted so a one-line file reads. */
+async function showDocument(side, path, label) {
+  const view = $('docview');
+  $('model-title').textContent = label || path;
+  $('model-stats').textContent = '';
+  canvasWrap.classList.add('doc');
+  view.hidden = false;
+  view.textContent = '';
+  try {
+    const file = await api(`/api/file?side=${side}&path=${encodeURIComponent(path)}`);
+    if (file.binary) {
+      view.textContent = `${path}\n${t('binary')}, ${formatSize(file.size)}`;
+      return;
+    }
+    let text = file.text;
+    if (/\.json$/i.test(path) && !file.truncated) {
+      try { text = JSON.stringify(JSON.parse(text), null, 2); } catch (error) { /* shown as is */ }
+    }
+    view.textContent = text + (file.truncated ? `\n...\n(${t('truncated')})` : '');
+  } catch (error) {
+    view.textContent = error.message;
+  }
+}
+
+function hideDocument() {
+  $('docview').hidden = true;
+  canvasWrap.classList.remove('doc');
 }
 
 async function loadPreview(side, path) {
@@ -1178,6 +1230,7 @@ canvasWrap.addEventListener('drop', async (event) => {
 async function showConverted(result) {
   if (isNarrow()) showView('middle');
   $('model-title').textContent = result.path;
+  hideDocument();
   hiddenClasses.clear();
   renderer.load(result.model, hiddenClasses);
   renderLegend();
@@ -1307,7 +1360,9 @@ function selectInput(name) {
     renderPipeline();
     renderTree(await api('/api/tree?side=input'), $('input-tree'), 'input');
     await refreshOutputs(lodOutput(pipeline) || config.output);
-    selectInput(config.input_default);
+    // ?select=<output file> opens that file instead of the default input
+    if (params.get('select')) selectOutput(params.get('select'));
+    else selectInput(config.input_default);
     booted = true;
   } catch (error) {
     writeLog(error.message);

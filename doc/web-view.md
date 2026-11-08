@@ -13,7 +13,7 @@ dependencies.
 | Panel | Contents |
 |-------|----------|
 | Left | input folder tree, and the PD/CM/EM/LM stage properties as editable fields: scalars as one-line inputs, each rule as a property grid listing the keys the standard defines for that stage, filled or not, with fixed choices (`lod`, `PSet_operation`) as drop-downs and nested values as json; a `json` toggle shows the raw form |
-| Middle | WebGL canvas — drag to orbit, wheel to zoom, right drag to pan; shaded, shaded + edges or wireframe rendering, an opacity slider and view reset; an axis gizmo whose X/Y/Z tips snap the camera (click again for the far side); a legend lists the feature classes with counts and toggles each on or off |
+| Middle | WebGL canvas — drag to orbit, wheel to zoom, right drag to pan; shaded, shaded + edges, wireframe, x-ray, flat + edges or hidden line rendering, an opacity slider and view reset; an axis gizmo whose X/Y/Z tips snap the camera (click again for the far side); a legend lists the feature classes with counts and toggles each on or off |
 | Right | output folder tree, and a tabbed pane with the file preview and the stage log |
 
 The header carries the pipeline flags that make sense in a browser: the CityGML
@@ -28,14 +28,14 @@ Both side panels are resized by dragging the splitters (the widths are
 remembered). Below 900 px the three panels do not fit side by side and a drag
 splitter is no use on touch, so the layout becomes one panel at a time behind a
 tab bar; `?view=left|middle|right` opens a particular one, and `?theme=`,
-`?lang=`, `?mode=shaded|edges|wireframe`, `?version=` and `?hide=` preset the
+`?lang=`, `?mode=shaded|edges|wireframe|xray|flat|hidden`, `?select=<output file>`, `?version=` and `?hide=` preset the
 rest, so a view can be shared as a link. **Run pipeline** executes PD → CM → EM → LM on the IFC selected in
 the input tree and streams the stage log back, then reloads the output tree and
 the canvas.
 
 Clicking a file renders it: `.ifc` (the source model, coloured by IFC type),
 `.gml` (CityGML), `.json` (`bim_model.json` / `gis_model.json`) and `.obj`.
-Everything else opens in the preview pane.
+Everything else, and a model file with nothing to draw, opens as text in the middle panel as well as in the preview pane.
 
 A CityGML file placed in Web Mercator is drawn at true ground proportions:
 EPSG:3857 stretches x and y by 1/cos(latitude) but leaves z alone, so a building

@@ -376,6 +376,24 @@ ul.tree ul { padding-left: 13px; }
   cursor: pointer;
 }
 
+/* a file without geometry shows its text where the model would be */
+.docview {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 12px 16px;
+  overflow: auto;
+  background: var(--panel);
+  color: var(--text);
+  font-family: ui-monospace, "Cascadia Mono", Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.canvas-wrap.doc .legend, .canvas-wrap.doc .viewtools,
+.canvas-wrap.doc .gizmo, .canvas-wrap.doc .hint { display: none; }
+
 .dropzone {
   position: absolute;
   inset: 12px;
