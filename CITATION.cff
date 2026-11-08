@@ -18,7 +18,7 @@ authors:
     # orcid: "https://orcid.org/0000-0000-0000-0000"
 repository-code: "https://github.com/mac999/ISO19166-B2GM"
 license: MIT
-version: 0.2.5
+version: 0.2.6
 date-released: "2026-11-08"
 keywords:
   - ISO 19166

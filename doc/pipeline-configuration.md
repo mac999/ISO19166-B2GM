@@ -53,10 +53,20 @@ split into 20 floors + 1 roof, and the 13 ceiling coverings into
 
 ## Coordinate mapping and georeferencing
 
-The CM stage reads the IFC georeferencing (`IfcSite.RefLatitude` /
-`RefLongitude` / `RefElevation` and the context `TrueNorth`) and **rewrites every
+The CM stage reads the georeferencing the IFC carries and **rewrites every
 element's coordinates into the destination CRS**, so the emitted CityGML is
-georeferenced rather than sitting at the project origin:
+georeferenced rather than sitting at the project origin. Three sources are
+recognised, in this order:
+
+| Source | Where it comes from | Notes |
+|--------|---------------------|-------|
+| `rule[].origin` | the pipeline file | wins over anything in the IFC |
+| `IfcMapConversion` + `IfcProjectedCRS` | IFC4 Add2 and later; in IFC2x3 the `ePSet_MapConversion` / `ePSet_ProjectedCRS` property sets of the buildingSMART guideline | eastings, northings, orthogonal height, the map-grid direction of the local X axis and a scale put the local metres straight into the named projected CRS (`EPSG:…`); that CRS replaces `rule[].source` |
+| `IfcSite.RefLatitude` / `RefLongitude` / `RefElevation` with the context `TrueNorth` | any IFC | the point belongs to the site's own placement, so a non-identity `IfcSite.ObjectPlacement` is undone before projecting |
+
+Lengths in the IFC (placements, eastings, heights) are in the project's unit
+and are scaled to metres; the sidecar `*.cm.json` records which source was
+used.
 
 ```json
 { "type": "CM", "output": "intermediate_CM.ifc",
@@ -66,12 +76,28 @@ georeferenced rather than sitting at the project origin:
   ] }
 ```
 
-The placement chain is: the stage's 4×4 `transform_matrix`, then the true-north
-rotation (IFC `+Y` is project north), then a transverse-Mercator CRS centred on
-the site origin — which makes the IFC's local metres directly usable as
-projected coordinates — and finally pyproj into `destination`. Any CRS pyproj
-knows works, so `EPSG:3857`, a UTM zone or a national grid such as `EPSG:5186`
-are all valid destinations.
+The placement chain is: the site placement inverse when needed, the stage's
+4×4 `transform_matrix`, then either the IFC's map conversion or the true-north
+rotation (IFC `+Y` is project north) followed by a transverse-Mercator CRS
+centred on the geographic origin — which makes the IFC's local metres directly
+usable as projected coordinates — and finally pyproj into `destination`. Any
+CRS pyproj knows works, so `EPSG:3857`, a UTM zone or a national grid such as
+`EPSG:5186` are all valid destinations.
+
+**Where CM sits in the sequence matters.** The shipped example runs
+PD → CM → EM → LM, so the LM operators measure in projected coordinates; in
+`EPSG:3857` at the sample's latitude that inflates areas by k² = 1.80 while
+heights stay in metres. Put the CM stage last instead and the operators work
+in the IFC's own metres; CM then projects the finished LoD geometry and, when
+its `output` ends in `.gml`, writes the final CityGML itself:
+
+```json
+[ { "type": "PD", "output": "intermediate.ifc", "...": "..." },
+  { "type": "EM", "output": "city.gml", "...": "..." },
+  { "type": "LM", "output": "city_LoD_local.gml", "...": "..." },
+  { "type": "CM", "output": "city_LoD.gml",
+    "rule": [{ "source": "EPSG:4326", "destination": "EPSG:3857" }] } ]
+```
 
 | Stage key | Meaning |
 |-----------|---------|
@@ -155,6 +181,25 @@ element when a rule defines its own `property_set`:
 | `Replace` | the source IFC property sets only — the rule's set is dropped |
 
 The chosen sets are what the CityGML `gen:stringAttribute` list is built from.
+
+### EM property filters
+
+An EM rule may carry a `filter`, the same `[{name, value, type}]` list the PD
+views use, and then matches only elements with a property that satisfies every
+entry. `name` is matched against `Pset.Property` and the bare property name,
+`value` against the value, `type` against the value's type. This is how the
+shipped rules tell interior walls from the building envelope, which CityGML
+keeps apart as `InteriorWallSurface` and `WallSurface`:
+
+```json
+{ "source": "IfcWall.*",
+  "filter": [{ "name": "IsExternal", "value": "(?i)false" }],
+  "destination": "InteriorWallSurface" },
+{ "source": "IfcWall.*", "destination": "WallSurface" }
+```
+
+`Pset_WallCommon.IsExternal` is the IFC property made for this, and most
+authoring tools write it; a wall without it falls through to the next rule.
 
 ## B2G LM geometry operators
 

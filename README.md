@@ -170,7 +170,12 @@ What this implementation does, stated so it can be checked:
 - All eleven ISO 19166 Table 8 LoD operators are implemented and callable from
   the pipeline config, not only from Python.
 - The CM stage rewrites geometry into the destination CRS, so the output is
-  georeferenced rather than sitting at the project origin.
+  georeferenced rather than sitting at the project origin. It reads
+  `IfcMapConversion` / `IfcProjectedCRS` (and the IFC2x3 `ePSet_MapConversion`
+  sets), else the `IfcSite` latitude and longitude with the site placement
+  undone, and can run after LM so the operators work in the IFC's own metres.
+- EM rules can filter on properties, so `Pset_WallCommon.IsExternal` separates
+  `WallSurface` from `InteriorWallSurface` in the output.
 - Output validates against the official OGC CityGML schemas, in 2.0 and in 3.0,
   and the version is a config or CLI variable.
 - The conceptual model classes mirror the ISO 19166 XSDs, and
@@ -235,6 +240,7 @@ after the fact from the module headers and the commit history.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.2.6 | 2026-11-08 | Georeferencing from `IfcMapConversion` + `IfcProjectedCRS` and the IFC2x3 `ePSet_MapConversion` sets, with lengths scaled from the project unit; a non-identity `IfcSite` placement is undone before projecting. The CM stage can run after LM and then writes the final CityGML, so the operators work in local metres. EM rules take PD-style property filters; the example maps interior walls to `InteriorWallSurface`, which both writers now place as a boundary surface. |
 | 0.2.5 | 2026-11-08 | The saved BIM and GIS model JSON carry the destination CRS as `srsName`, and the viewer reads it, so a Web Mercator model no longer looks squashed next to the CityGML written from the same objects. |
 | 0.2.4 | 2026-11-08 | Run pipeline writes under `output/<model>/` like a drop or Apply & run, re-runs overwrite that folder, and the result is shown and marked in the output tree straight away. |
 | 0.2.3 | 2026-11-08 | LoD chips above the canvas filter a CityGML model by level, and `?lod=` presets them. The opacity slider runs to 0 and x-ray edges follow it. |
