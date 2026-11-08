@@ -130,3 +130,53 @@ def test_pipeline_georeferences_the_output(tmp_path):
     lower = [float(v) for v in re.search(r"lowerCorner>([^<]+)<", text).group(1).split()]
     # the sample sits in Chicago, so EPSG:3857 easting must be far negative
     assert lower[0] < -9_000_000 and 5_000_000 < lower[1] < 5_300_000
+
+
+def test_cm_can_run_last_so_the_lod_geometry_is_built_in_local_metres(tmp_path):
+    """PD -> EM -> LM -> CM: the operators work in the IFC's metres and the CM
+    stage, placed last, projects the result and writes the final CityGML."""
+    pytest.importorskip("ifcopenshell")
+    pytest.importorskip("pyproj")
+    ifc = os.path.join(os.path.dirname(os.path.abspath(__file__)), "simple_ifc4.ifc")
+    pipeline = {"BIM_GIS_mapping.pipeline": [
+        {"type": "PD", "output": "intermediate.ifc",
+         "data_view": [{"class": "Ifc.*", "filter": [{"name": ".*", "value": ".*", "type": ".*"}]}],
+         "logic_view": "", "style_view": []},
+        {"type": "EM", "output": "city.gml",
+         "rule": [{"source": "IfcBuilding", "destination": "CityModel.Building"},
+                  {"source": "IfcWall", "destination": "WallSurface"}]},
+        {"type": "LM", "output": "city_LoD_local.gml",
+         "rule": [{"source": "IfcBuilding", "lod": "LOD1", "aggregate": "IfcWall.*",
+                   "operation": [{"op": "footprint"},
+                                 {"op": "extrude", "args": {"height": {"$extent": "z"}}}]},
+                  {"source": "IfcWall", "lod": "LOD2"}]},
+        {"type": "CM", "output": "city_LoD.gml",
+         "rule": [{"source": "EPSG:4326", "destination": "EPSG:3857"}]},
+    ]}
+    path = tmp_path / "pipeline.json"
+    path.write_text(json.dumps(pipeline), encoding="utf-8")
+    context = MAIN.mapping_ifc_to_target(ifc, "city.gml", str(path), output_dir=str(tmp_path))
+    assert context["final_output"].endswith("city_LoD.gml")
+
+    def local(tag):
+        return tag.split("}")[-1]
+
+    def first_pos(root):
+        text = next(el.text for el in root.iter() if local(el.tag) in ("posList", "pos"))
+        return [float(v) for v in text.split()[:3]]
+
+    # LM wrote its own output before CM ran: still in local metres, no CRS
+    local_root = ET.parse(tmp_path / "city_LoD_local.gml").getroot()
+    assert all(el.get("srsName") is None for el in local_root.iter())
+    assert abs(first_pos(local_root)[0]) < 100
+
+    # the CM stage wrote the final file, projected, same features
+    final_root = ET.parse(tmp_path / "city_LoD.gml").getroot()
+    assert any(el.get("srsName") == "EPSG:3857" for el in final_root.iter())
+    assert 1.41e7 < first_pos(final_root)[0] < 1.42e7
+    count = lambda root: sum(1 for el in root.iter() if local(el.tag) == "Polygon")
+    assert count(final_root) == count(local_root) > 0
+    # the LOD1 block keeps its local height: 3 m walls, z unscaled by the projection
+    zs = [float(v) for el in final_root.iter() if local(el.tag) == "posList"
+          for v in el.text.split()[2::3]]
+    assert 2.9 < max(zs) - min(zs) < 3.1

@@ -74,6 +74,7 @@ class ElementRule:
         pset_operation: str = PSET_APPEND,
         name: str = "",
         property_set: Optional[Dict[str, Any]] = None,
+        filters: Optional[List[Dict[str, Any]]] = None,
     ):
         self.name = name or f"{source}->{destination}"
         self.source = source
@@ -81,6 +82,10 @@ class ElementRule:
         self.child_node = child_node
         self.pset_operation = pset_operation
         self.property_set = property_set or {}
+        # PD-style property filters [{name, value, type}], every one of which
+        # must match some property of the element; how an interior wall
+        # (Pset_WallCommon.IsExternal = false) gets its own destination
+        self.filters = [f for f in (filters or []) if isinstance(f, dict)]
         # XSD EM_rule -> EM_source / EM_destination wrappers
         self.em_source = EM_source(source)
         self.em_destination = EM_destination(destination)
@@ -94,10 +99,11 @@ class ElementRule:
             d.get("PSet_operation", d.get("pset_operation", PSET_APPEND)),
             d.get("name", ""),
             d.get("property_set"),
+            d.get("filter"),
         )
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        out = {
             "name": self.name,
             "destination": self.destination,
             "PSet_operation": self.pset_operation,
@@ -105,6 +111,36 @@ class ElementRule:
             "EM_destination": self.em_destination.to_dict(),
             "property_set": self.property_set,
         }
+        if self.filters:
+            out["filter"] = self.filters
+        return out
+
+    def _filters_match(self, obj: Dict[str, Any]) -> bool:
+        if not self.filters:
+            return True
+        properties = []
+        for pset_name, props in (obj.get("pset") or {}).items():
+            if not isinstance(props, dict):
+                continue
+            for prop_name, value in props.items():
+                properties.append((f"{pset_name}.{prop_name}", prop_name, value))
+        for rule in self.filters:
+            name = rule.get("name") or ".*"
+            value = rule.get("value") or ".*"
+            kind = rule.get("type") or ".*"
+            hit = False
+            for full, short, prop_value in properties:
+                if not (re.search(name, full) or re.search(name, short)):
+                    continue
+                if not re.search(value, str(prop_value)):
+                    continue
+                if not re.search(kind, type(prop_value).__name__):
+                    continue
+                hit = True
+                break
+            if not hit:
+                return False
+        return True
 
     def matches(self, obj: Dict[str, Any]) -> bool:
         """Match the rule source against an object's IFC type / name / code.
@@ -126,7 +162,9 @@ class ElementRule:
             obj.get("name", ""),
             obj.get("code", ""),
         ]
-        return any(c and re.fullmatch(self.source, str(c)) for c in candidates)
+        if not any(c and re.fullmatch(self.source, str(c)) for c in candidates):
+            return False
+        return self._filters_match(obj)
 
 
 class EM_ruleset:  # noqa: N801 - ISO 19166 EM_ruleset complexType

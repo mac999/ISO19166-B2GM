@@ -114,10 +114,13 @@ def mapping_CM(input_file: str, output_file: str, stage: Dict[str, Any], context
 
     mapping = B2GM_CM.CoordinateMapping.from_stage(stage)
     summary: Dict[str, Any] = {"source_crs": mapping.source_crs, "dest_crs": mapping.dest_crs}
+    # placed after EM or LM the stage input is CityGML; the georeferencing is
+    # still read from the source IFC
+    source_ifc = input_file if input_file.lower().endswith(".ifc") else context.get("source_ifc", input_file)
     try:
         import ifcopenshell
 
-        ifc = ifcopenshell.open(input_file)
+        ifc = ifcopenshell.open(source_ifc)
         summary = B2GM_CM.apply_to_ifc(ifc, mapping)
     except Exception as exc:
         logger.warning("CM could not read IFC georeferencing: %s", exc)
@@ -126,10 +129,16 @@ def mapping_CM(input_file: str, output_file: str, stage: Dict[str, Any], context
     objects = context.get("objects")
     if placement is not None and objects is None:
         # CM may run before any stage has parsed the model
-        objects = B2GM_BIM.BIM().parse(input_file)
+        objects = B2GM_BIM.BIM().parse(source_ifc)
         context["objects"] = objects
     if placement is not None and objects:
-        moved = B2GM_CM.apply_placement(objects, placement)
+        # a CM stage placed after EM or LM georeferences the mapped copies and
+        # the operator geometry too; the shared dicts are projected once
+        seen: set = set()
+        moved = B2GM_CM.apply_placement(objects, placement, seen)
+        for key in ("em_mapped", "lm_mapped"):
+            if context.get(key):
+                B2GM_CM.apply_placement(context[key], placement, seen)
         context["srs_name"] = placement.dest_crs
         summary["placement"] = placement.to_dict()
         summary["elements_transformed"] = moved
@@ -144,6 +153,14 @@ def mapping_CM(input_file: str, output_file: str, stage: Dict[str, Any], context
     _write_sidecar(output_file, "cm", summary)
     _carry_objects(context, output_file)
 
+    mapped = context.get("lm_mapped") or context.get("em_mapped")
+    if mapped and output_file.lower().endswith(".gml"):
+        # CM ran last: the LoD geometry was built in local metres and is now
+        # placed, so this stage writes the georeferenced CityGML itself
+        version = B2GM_GIS.version_from_stage(stage, context.get("citygml_version"))
+        B2GM_GIS.GIS().store(output_file, mapped, stage,
+                             srs_name=context.get("srs_name"), version=version)
+        return output_file
     if os.path.abspath(input_file) != os.path.abspath(output_file):
         shutil.copy(input_file, output_file)
     return output_file
@@ -235,7 +252,7 @@ def mapping_ifc_to_target(input_file: str, output_file: str, pipeline_file: str,
         citygml_version or pipelines.get("citygml_version") or B2GM_GIS.DEFAULT_VERSION)
     logger.info("CityGML output version: %s", version)
 
-    context: Dict[str, Any] = {"citygml_version": version}
+    context: Dict[str, Any] = {"citygml_version": version, "source_ifc": input_file}
     current_input = input_file
     final_output = os.path.join(output_dir, os.path.basename(output_file))
 
@@ -253,7 +270,8 @@ def mapping_ifc_to_target(input_file: str, output_file: str, pipeline_file: str,
             continue
 
         current_output = func(current_input, current_output, stage, context)
-        if stage_type in ("EM", "LM"):
+        if stage_type in ("EM", "LM") or current_output.lower().endswith(".gml"):
+            # a CM placed after LM writes the georeferenced CityGML itself
             final_output = current_output
         current_input = current_output
 

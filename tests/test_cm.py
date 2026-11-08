@@ -131,3 +131,130 @@ def test_placement_works_for_a_projected_national_crs():
     origin = place.point(0, 0, 0)
     east = place.point(100.0, 0, 0)
     assert east[0] - origin[0] == pytest.approx(100.0, rel=1e-3)
+
+
+# --- georeferencing sources beyond IfcSite ----------------------------------
+def _ifc4_with_site(site_offset=(0.0, 0.0, 0.0)):
+    import numpy as np
+    ifcopenshell = pytest.importorskip("ifcopenshell")
+    import ifcopenshell.api
+    import ifcopenshell.api.aggregate
+    import ifcopenshell.api.context
+    import ifcopenshell.api.geometry
+    import ifcopenshell.api.project
+    import ifcopenshell.api.root
+    import ifcopenshell.api.unit
+
+    f = ifcopenshell.api.project.create_file(version="IFC4")
+    project = ifcopenshell.api.root.create_entity(f, ifc_class="IfcProject", name="p")
+    ifcopenshell.api.unit.assign_unit(f, length={"is_metric": True, "raw": "METERS"})
+    context = ifcopenshell.api.context.add_context(f, context_type="Model")
+    site = ifcopenshell.api.root.create_entity(f, ifc_class="IfcSite", name="s")
+    site.RefLatitude = (37, 33, 0, 0)
+    site.RefLongitude = (126, 58, 0, 0)
+    site.RefElevation = 0.0
+    ifcopenshell.api.aggregate.assign_object(f, products=[site], relating_object=project)
+    m = np.eye(4)
+    m[:3, 3] = site_offset
+    ifcopenshell.api.geometry.edit_object_placement(f, product=site, matrix=m)
+    return f, context
+
+
+def test_ifc4_map_conversion_places_local_metres_on_the_named_grid():
+    f, context = _ifc4_with_site()
+    crs = f.createIfcProjectedCRS("EPSG:25832")
+    # local +X points along map north: abscissa 0, ordinate 1
+    f.createIfcMapConversion(context, crs, 500000.0, 5600000.0, 100.0, 0.0, 1.0, 1.0)
+
+    found = CM.read_map_conversion(f)
+    assert found and found["crs"] == "EPSG:25832" and found["source"] == "IfcMapConversion"
+
+    summary = CM.apply_to_ifc(f, CM.CoordinateMapping("EPSG:4326", "EPSG:25832"))
+    assert summary["georeference_source"] == "IfcMapConversion"
+    assert summary["source_crs"] == "EPSG:25832"
+    placement = summary["placement"]
+    x, y, z = placement.point(10.0, 0.0, 2.0)
+    assert abs(x - 500000.0) < 1e-6 and abs(y - 5600010.0) < 1e-6 and abs(z - 102.0) < 1e-9
+    x, y, _ = placement.point(0.0, 10.0, 0.0)
+    assert abs(x - 499990.0) < 1e-6 and abs(y - 5600000.0) < 1e-6
+
+    # and on to a different destination through pyproj
+    to_geo = CM.apply_to_ifc(f, CM.CoordinateMapping("EPSG:4326", "EPSG:4326"))["placement"]
+    lon, lat, _ = to_geo.point(0.0, 0.0, 0.0)
+    assert 8.9 < lon < 9.1 and 50.4 < lat < 50.6
+
+
+def test_epset_map_conversion_is_read_too():
+    """IFC2x3 files carry the conversion in ePSet_* property sets; the reader
+    only looks at the set names, so an IFC4 file serves to exercise it."""
+    ifcopenshell = pytest.importorskip("ifcopenshell")
+    f, _ = _ifc4_with_site()
+
+    def single(name, value, kind):
+        return f.createIfcPropertySingleValue(name, None, f.create_entity(kind, value), None)
+
+    f.createIfcPropertySet(ifcopenshell.guid.new(), None, "ePSet_MapConversion", None, [
+        single("Eastings", 300000.0, "IfcLengthMeasure"),
+        single("Northings", 4000000.0, "IfcLengthMeasure"),
+        single("OrthogonalHeight", 20.0, "IfcLengthMeasure"),
+        single("XAxisAbscissa", 1.0, "IfcReal"),
+        single("XAxisOrdinate", 0.0, "IfcReal"),
+        single("Scale", 1.0, "IfcReal"),
+    ])
+    f.createIfcPropertySet(ifcopenshell.guid.new(), None, "ePSet_ProjectedCRS", None, [
+        single("Name", "EPSG:32652", "IfcLabel"),
+    ])
+    found = CM.read_map_conversion(f)
+    assert found["source"] == "ePSet_MapConversion"
+    assert found["eastings"] == 300000.0 and found["crs"] == "EPSG:32652"
+
+
+def test_map_conversion_lengths_follow_the_project_unit():
+    ifcopenshell = pytest.importorskip("ifcopenshell")
+    import ifcopenshell.api.unit
+    f, context = _ifc4_with_site()
+    ifcopenshell.api.unit.assign_unit(f)            # millimetres
+    crs = f.createIfcProjectedCRS("EPSG:25832")
+    f.createIfcMapConversion(context, crs, 500000000.0, 5600000000.0, 100000.0, 1.0, 0.0, 1.0)
+    found = CM.read_map_conversion(f)
+    assert abs(found["eastings"] - 500000.0) < 1e-6 and abs(found["height"] - 100.0) < 1e-9
+
+
+def test_unresolvable_projected_crs_is_ignored():
+    f, context = _ifc4_with_site()
+    crs = f.createIfcProjectedCRS("EPSG:999999")
+    f.createIfcMapConversion(context, crs, 1.0, 2.0, 0.0, 1.0, 0.0, 1.0)
+    assert CM.read_map_conversion(f) is None
+    # so the site georeferencing is used instead
+    assert CM.apply_to_ifc(f, CM.CoordinateMapping())["georeference_source"] == "IfcSite"
+
+
+def test_site_placement_is_undone_before_projecting():
+    pytest.importorskip("pyproj")
+    f_at_origin, _ = _ifc4_with_site()
+    f_offset, _ = _ifc4_with_site(site_offset=(100.0, 50.0, 0.0))
+
+    plain = CM.apply_to_ifc(f_at_origin, CM.CoordinateMapping("EPSG:4326", "EPSG:3857"))
+    moved = CM.apply_to_ifc(f_offset, CM.CoordinateMapping("EPSG:4326", "EPSG:3857"))
+    assert "site_placement" not in plain
+    assert moved["site_placement"][0][3] == 100.0
+    assert moved["placement"].to_dict()["site_placement_undone"] is True
+
+    # the world point at the offset site's origin lands where the site says it is
+    x0, y0, _ = plain["placement"].point(0.0, 0.0, 0.0)
+    x1, y1, _ = moved["placement"].point(100.0, 50.0, 0.0)
+    assert abs(x0 - x1) < 1e-6 and abs(y0 - y1) < 1e-6
+
+
+def test_apply_placement_projects_a_shared_geometry_once():
+    pytest.importorskip("pyproj")
+    placement = CM.Placement((126.97, 37.55, 0.0), "EPSG:3857")
+    geometry = {"verts": [0.0, 0.0, 0.0], "faces": [0, 0, 0]}
+    source = {"geometry": geometry}
+    copy = dict(source)                      # what EM hands on
+    copy["_lod_geometry"] = {"verts": [0.0, 0.0, 5.0], "faces": [0, 0, 0]}
+    seen = set()
+    CM.apply_placement([source], placement, seen)
+    CM.apply_placement([copy], placement, seen)
+    assert 1.41e7 < geometry["verts"][0] < 1.42e7       # projected exactly once
+    assert 1.41e7 < copy["_lod_geometry"]["verts"][0] < 1.42e7

@@ -92,3 +92,15 @@ def test_config_has_catch_all_em_rule():
     assert ".*" in sources, "EM rules lack a '.*' catch-all; some elements could be dropped"
     # the catch-all must be last (rules are first-match-wins)
     assert sources[-1] == ".*", "the '.*' catch-all must be the last EM rule"
+
+
+def test_shipped_rules_split_interior_from_exterior_walls(full_pipeline):
+    context, city_gml = full_pipeline
+    mapped = context.get("lm_mapped") or context.get("em_mapped")
+    walls = [o for o in mapped if str(o.get("ifc_type", "")).startswith("IfcWall")]
+    by_class = {}
+    for o in walls:
+        by_class[o["_destination"]] = by_class.get(o["_destination"], 0) + 1
+    # the duplex carries Pset_WallCommon.IsExternal on every wall
+    assert by_class == {"WallSurface": 23, "InteriorWallSurface": 34}
+    assert "bldg:InteriorWallSurface" in city_gml

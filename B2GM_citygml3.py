@@ -62,6 +62,7 @@ SCHEMA_LOCATION = " ".join([
 # closes, so it is not part of the table.
 PLACEMENT: Dict[str, Tuple[str, str, str]] = {
     "WallSurface": ("boundary", "con:WallSurface", "core:boundary"),
+    "InteriorWallSurface": ("boundary", "con:InteriorWallSurface", "core:boundary"),
     "RoofSurface": ("boundary", "con:RoofSurface", "core:boundary"),
     "GroundSurface": ("boundary", "con:GroundSurface", "core:boundary"),
     "FloorSurface": ("boundary", "con:FloorSurface", "core:boundary"),

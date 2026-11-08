@@ -118,3 +118,30 @@ def test_merge_psets_append_and_replace():
 
     replaced = EM.merge_psets(dest, src, EM.PSET_REPLACE)
     assert replaced == src
+
+
+# --- EM property filters -----------------------------------------------------
+def test_em_rule_filter_separates_interior_walls():
+    import B2GM_element as EM
+
+    interior = {"ifc_type": "IfcWall", "name": "w1", "GUID": "a",
+                "pset": {"Pset_WallCommon": {"IsExternal": False}}}
+    exterior = {"ifc_type": "IfcWall", "name": "w2", "GUID": "b",
+                "pset": {"Pset_WallCommon": {"IsExternal": True}}}
+    unknown = {"ifc_type": "IfcWall", "name": "w3", "GUID": "c", "pset": {}}
+    rules = EM.rules_from_stage({"rule": [
+        {"source": "IfcWall.*", "filter": [{"name": "IsExternal", "value": "(?i)false"}],
+         "destination": "InteriorWallSurface"},
+        {"source": "IfcWall.*", "destination": "WallSurface"},
+    ]})
+    assert EM.map_element(interior, rules) == "InteriorWallSurface"
+    assert EM.map_element(exterior, rules) == "WallSurface"
+    assert EM.map_element(unknown, rules) == "WallSurface"      # no property: the filter fails
+
+    # the pset-qualified name and the type pattern work too
+    rules = EM.rules_from_stage({"rule": [
+        {"source": "IfcWall.*", "destination": "InteriorWallSurface",
+         "filter": [{"name": "Pset_WallCommon\\.IsExternal", "value": "False", "type": "bool"}]}]})
+    assert EM.map_element(interior, rules) == "InteriorWallSurface"
+    assert EM.map_element(exterior, rules) is None
+    assert "filter" in rules[0].to_dict()

@@ -58,6 +58,7 @@ SCHEMA_LOCATION = " ".join([
 # EM destinations that are CityGML 2.0 thematic boundary surfaces.
 BOUNDARY_SURFACES = {
     "WallSurface",
+    "InteriorWallSurface",
     "RoofSurface",
     "GroundSurface",
     "FloorSurface",

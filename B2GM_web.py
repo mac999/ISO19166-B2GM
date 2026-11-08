@@ -68,6 +68,7 @@ CONVERT_TIMEOUT = 180                # one conversion must not wedge the view
 CLASS_COLORS = {
     "CityModel.Building": [0.95, 0.74, 0.30],
     "WallSurface": [0.93, 0.80, 0.56],
+    "InteriorWallSurface": [0.80, 0.70, 0.78],
     "RoofSurface": [0.86, 0.28, 0.24],
     "GroundSurface": [0.46, 0.36, 0.26],
     "FloorSurface": [0.62, 0.54, 0.44],
@@ -156,6 +157,7 @@ def load_palette(path: Optional[str]) -> Dict[str, Any]:
 # ``options``), choice (``options`` plus free text) or json (nested value).
 _LOD_LEVELS = ["LOD0", "LOD1", "LOD2", "LOD3", "LOD4"]
 _CITYGML_CLASSES = ["CityModel.Building", "BuildingStorey", "Room", "WallSurface",
+                    "InteriorWallSurface",
                     "RoofSurface", "GroundSurface", "FloorSurface", "CeilingSurface",
                     "Window", "Door", "BuildingInstallation", "LandUse",
                     "GenericCityObject"]
@@ -188,6 +190,7 @@ RULE_FIELDS: Dict[Tuple[str, str], List[Dict[str, Any]]] = {
         {"key": "source", "kind": "text", "hint": "IFC type regex, full match"},
         {"key": "destination", "kind": "choice", "options": _CITYGML_CLASSES,
          "hint": "CityGML feature class"},
+        {"key": "filter", "kind": "json", "hint": "[{name, value, type}] property filters, e.g. IsExternal"},
         {"key": "child_node", "kind": "text", "hint": "regex over child element types"},
         {"key": "PSet_operation", "kind": "enum", "options": ["Append", "Replace"],
          "hint": "how the rule's property_set combines with the IFC ones"},

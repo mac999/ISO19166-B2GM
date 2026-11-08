@@ -131,3 +131,23 @@ def test_schema_location_is_declared(tmp_path):
     text = open(path, encoding="utf-8").read()
     assert "schemaLocation" in text
     assert "citygml/2.0/cityGMLBase.xsd" in text
+
+
+def test_interior_wall_surface_is_a_boundary_surface_in_both_versions(tmp_path):
+    import B2GM_GIS
+    import B2GM_citygml3
+
+    wall = {"name": "w", "GUID": "iw1", "ifc_type": "IfcWall", "_destination": "InteriorWallSurface",
+            "_lod": "LOD2", "pset": {},
+            "geometry": {"verts": [0, 0, 0, 4, 0, 0, 4, 0, 3], "faces": [0, 1, 2]}}
+    building = {"name": "b", "GUID": "b1", "ifc_type": "IfcBuilding",
+                "_destination": "CityModel.Building", "_lod": "LOD1", "pset": {}}
+    path = str(tmp_path / "v2.gml")
+    B2GM_GIS.GIS().store(path, [building, wall], {"rule": []}, version="2.0")
+    text = open(path, encoding="utf-8").read()
+    assert "<bldg:InteriorWallSurface" in text and "bldg:boundedBy" in text
+
+    path = str(tmp_path / "v3.gml")
+    B2GM_GIS.GIS().store(path, [building, wall], {"rule": []}, version="3.0")
+    text = open(path, encoding="utf-8").read()
+    assert "<con:InteriorWallSurface" in text and "core:boundary" in text
