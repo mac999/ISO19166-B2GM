@@ -7,7 +7,7 @@ name = "iso19166-b2gm"
 version = "0.1.0"
 description = "ISO/TS 19166 B2GM: BIM (IFC) to GIS (CityGML) conceptual mapping pipeline"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [{ name = "Taewook Kang", email = "laputa99999@gmail.com" }]
 keywords = ["ISO19166", "BIM", "GIS", "IFC", "CityGML", "B2GM", "GeoBIM", "OGC", "geospatial"]

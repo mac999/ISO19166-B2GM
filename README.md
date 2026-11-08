@@ -62,7 +62,7 @@ python B2GM_main.py --web                     # browser workspace on localhost
 python -m pytest
 ```
 
-Results land under `output/`. Python 3.10 and 3.12 are exercised in CI; the
+Results land under `output/`. Python 3.10 to 3.13 are exercised in CI; the
 sample is IFC2X3 and the test suite also runs an IFC4 model through every stage.
 A live copy of the web view runs at https://iso19166-b2gm-mac999.fly.dev.
 
