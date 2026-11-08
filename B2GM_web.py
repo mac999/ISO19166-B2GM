@@ -178,6 +178,8 @@ def describe_pipeline(path: str) -> Dict[str, Any]:
         return {"path": path, "stages": []}
     with open(path, encoding="utf-8") as f:
         document = json.load(f)
+    if not isinstance(document, dict):
+        document = {}
     stages = []
     for stage in document.get("BIM_GIS_mapping.pipeline", []):
         kind = stage.get("type", "?")
@@ -203,7 +205,8 @@ def describe_pipeline(path: str) -> Dict[str, Any]:
             "output": stage.get("output", ""),
             "properties": properties,
         })
-    return {"path": path, "stages": stages, "document": document}
+    return {"path": path, "name": os.path.basename(path), "stages": stages,
+            "document": document}
 
 
 # ---------------------------------------------------------------------------
@@ -446,7 +449,7 @@ def read_model(path: str) -> Dict[str, Any]:
 # HTTP layer
 # ---------------------------------------------------------------------------
 def run_b2gm(input_file: str, pipeline: str, output_dir: str,
-             version: Optional[str] = None,
+             version: Optional[str] = None, save_json: bool = False,
              timeout: int = CONVERT_TIMEOUT) -> Dict[str, Any]:
     """Run the mapping pipeline and capture its log for the browser.
 
@@ -458,6 +461,8 @@ def run_b2gm(input_file: str, pipeline: str, output_dir: str,
                "--output-dir", output_dir]
     if version:
         command += ["--citygml-version", version]
+    if save_json:
+        command.append("--save-json")
     try:
         proc = subprocess.run(command, capture_output=True, text=True,
                               timeout=timeout, cwd=HERE)
@@ -505,7 +510,8 @@ def _unique_path(directory: str, name: str) -> str:
 def convert_upload(workspace: "Workspace", ifc: Optional[Tuple[str, bytes]],
                    pipeline: Optional[Tuple[str, bytes]],
                    version: Optional[str],
-                   keep_input: Optional[str] = None) -> Dict[str, Any]:
+                   keep_input: Optional[str] = None,
+                   save_json: bool = False) -> Dict[str, Any]:
     """Run the pipeline over a dropped IFC and keep everything in the workspace.
 
     The upload lands in the input tree and the result in the output tree, so
@@ -538,7 +544,7 @@ def convert_upload(workspace: "Workspace", ifc: Optional[Tuple[str, bytes]],
     output_dir = _unique_path(workspace.output_dir, stem)
     os.makedirs(output_dir, exist_ok=True)
 
-    result = run_b2gm(ifc_path, pipeline_path, output_dir, version)
+    result = run_b2gm(ifc_path, pipeline_path, output_dir, version, save_json)
     if not result["ok"]:
         return result
 
@@ -612,6 +618,7 @@ class Handler(BaseHTTPRequestHandler):
                     "output_dir": self.workspace.output_dir,
                     "pipeline": self.workspace.pipeline,
                     "output": self.workspace.output,
+                    "pipeline_name": os.path.basename(self.workspace.pipeline),
                     "input_default": self.workspace.default_input(),
                 })
             if route == "/api/tree":
@@ -621,7 +628,15 @@ class Handler(BaseHTTPRequestHandler):
                     return self._error("unknown side")
                 return self._json(build_tree(root))
             if route == "/api/pipeline":
-                return self._json(describe_pipeline(self.workspace.pipeline))
+                # ?path= describes a .json from the input tree, which is how a
+                # pipeline other than the default gets loaded into the panel
+                chosen = query.get("path")
+                if not chosen:
+                    return self._json(describe_pipeline(self.workspace.pipeline))
+                path = self.workspace.resolve("input", chosen)
+                if not os.path.isfile(path) or not path.lower().endswith(".json"):
+                    return self._error("not found", 404)
+                return self._json(describe_pipeline(path))
             if route == "/api/model":
                 path = self.workspace.resolve(query.get("side", "output"), query.get("path", ""))
                 if not os.path.isfile(path):
@@ -663,7 +678,24 @@ class Handler(BaseHTTPRequestHandler):
             return self._error(str(exc))
         if not os.path.isfile(path) or not path.lower().endswith(".ifc"):
             return self._error("select an .ifc file in the input tree")
-        self._json(run_b2gm(path, self.workspace.pipeline, self.workspace.output_dir))
+        pipeline = self.workspace.pipeline
+        if payload.get("pipeline"):
+            try:
+                pipeline = self.workspace.resolve("input", str(payload["pipeline"]))
+            except ValueError as exc:
+                return self._error(str(exc))
+            if not os.path.isfile(pipeline) or not pipeline.lower().endswith(".json"):
+                return self._error("select a pipeline .json in the input tree")
+        version = None
+        if payload.get("version"):
+            try:
+                import B2GM_GIS
+
+                version = B2GM_GIS.normalise_version(str(payload["version"]))
+            except Exception as exc:
+                return self._error(str(exc))
+        self._json(run_b2gm(path, pipeline, self.workspace.output_dir, version,
+                            bool(payload.get("save_json"))))
 
 
     def _convert(self):
@@ -706,10 +738,11 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as exc:
                 return self._error(str(exc))
 
+        save_json = "save_json" in parts and parts["save_json"][1].decode() in ("1", "true")
         label = os.path.basename(keep_input) if keep_input else ifc[0]
         logger.info("converting %s", label)
         self._json(convert_upload(self.workspace, ifc, parts.get("pipeline"),
-                                  version, keep_input))
+                                  version, keep_input, save_json))
 
 
 def serve(workspace: Workspace, host: str = "127.0.0.1", port: int = 8000,

@@ -365,3 +365,83 @@ def test_read_srs_picks_up_the_envelope(tmp_path):
         '<gml:upperCorner>1 1 1</gml:upperCorner>'
         '</gml:Envelope></gml:boundedBy></core:CityModel>', encoding="utf-8")
     assert WEB.read_srs(str(path)) == "EPSG:3857"
+
+
+# --- run options and pipeline choice ----------------------------------------
+def test_pipeline_route_describes_a_chosen_input_json(server, workspace):
+    other = os.path.join(workspace.input_dir, "other.json")
+    with open(other, "w", encoding="utf-8") as f:
+        json.dump({"BIM_GIS_mapping.pipeline": [
+            {"type": "EM", "output": "x.gml", "rule": [{"source": ".*", "destination": "Room"}]}]}, f)
+    with open(os.path.join(workspace.input_dir, "plain.json"), "w", encoding="utf-8") as f:
+        json.dump({"name": "not a pipeline"}, f)
+
+    described = json.loads(get(server, "/api/pipeline?path=other.json")[1])
+    assert [s["type"] for s in described["stages"]] == ["EM"]
+    assert described["name"] == "other.json"
+
+    # a config that is not a pipeline comes back with no stages, not an error
+    plain = json.loads(get(server, "/api/pipeline?path=plain.json")[1])
+    assert plain["stages"] == []
+
+    assert get_error(server, "/api/pipeline?path=model.ifc")[0] == 404
+    assert get_error(server, "/api/pipeline?path=../pipe.json")[0] == 400
+
+
+def test_describe_pipeline_tolerates_a_json_list(tmp_path):
+    path = tmp_path / "list.json"
+    path.write_text("[1, 2, 3]", encoding="utf-8")
+    assert WEB.describe_pipeline(str(path))["stages"] == []
+
+
+def test_run_passes_version_json_and_pipeline_through(server, workspace, monkeypatch):
+    calls = []
+
+    def fake_run(input_file, pipeline, output_dir, version=None, save_json=False, **_):
+        calls.append((os.path.basename(input_file), os.path.basename(pipeline),
+                      version, save_json))
+        return {"ok": True, "log": []}
+
+    monkeypatch.setattr(WEB, "run_b2gm", fake_run)
+    with open(os.path.join(workspace.input_dir, "alt.json"), "w", encoding="utf-8") as f:
+        json.dump({"BIM_GIS_mapping.pipeline": []}, f)
+
+    body = json.dumps({"path": "model.ifc", "version": "3.0", "save_json": True,
+                       "pipeline": "alt.json"}).encode()
+    status, payload = post(server, "/api/run", "application/json", body)
+    assert status == 200 and payload["ok"]
+    assert calls == [("model.ifc", "alt.json", "3.0", True)]
+
+    # the defaults: the workspace pipeline, no version override, no json
+    body = json.dumps({"path": "model.ifc"}).encode()
+    post(server, "/api/run", "application/json", body)
+    assert calls[-1] == ("model.ifc", "pipe.json", None, False)
+
+    body = json.dumps({"path": "model.ifc", "version": "9.9"}).encode()
+    status, payload = post(server, "/api/run", "application/json", body)
+    assert status == 400 and "9.9" in payload["error"]
+
+    body = json.dumps({"path": "model.ifc", "pipeline": "notes.txt"}).encode()
+    status, payload = post(server, "/api/run", "application/json", body)
+    assert status == 400
+
+
+def test_run_b2gm_adds_the_save_json_flag(monkeypatch):
+    seen = {}
+
+    class Done:
+        returncode = 0
+        stderr = "ok\n"
+        stdout = ""
+
+    def fake(command, **kwargs):
+        seen["command"] = command
+        return Done()
+
+    monkeypatch.setattr(WEB.subprocess, "run", fake)
+    WEB.run_b2gm("a.ifc", "p.json", "out", version="3.0", save_json=True)
+    assert "--save-json" in seen["command"]
+    assert seen["command"][seen["command"].index("--citygml-version") + 1] == "3.0"
+    WEB.run_b2gm("a.ifc", "p.json", "out")
+    assert "--save-json" not in seen["command"]
+
