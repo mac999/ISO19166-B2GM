@@ -235,6 +235,7 @@ after the fact from the module headers and the commit history.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.2.5 | 2026-11-08 | The saved BIM and GIS model JSON carry the destination CRS as `srsName`, and the viewer reads it, so a Web Mercator model no longer looks squashed next to the CityGML written from the same objects. |
 | 0.2.4 | 2026-11-08 | Run pipeline writes under `output/<model>/` like a drop or Apply & run, re-runs overwrite that folder, and the result is shown and marked in the output tree straight away. |
 | 0.2.3 | 2026-11-08 | LoD chips above the canvas filter a CityGML model by level, and `?lod=` presets them. The opacity slider runs to 0 and x-ray edges follow it. |
 | 0.2.2 | 2026-11-08 | Saturated class palette, configurable from `input_data/colors.json`. Edges and wireframes drawn in the class colour. `?opacity=` and `?select=` reach the input tree. README opens on the source IFC drawn translucent; revision history traced back to the 2024 sources. |

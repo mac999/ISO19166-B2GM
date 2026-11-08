@@ -53,6 +53,12 @@ mapped = B2GM_element.apply(objects, rules)
 B2GM_GIS.GIS().save("output/gis_model.json", mapped, stage)  # {"GIS_model": {"GIS_element": [...]}}
 ```
 
+When the CM stage has placed the geometry in a destination CRS, both files
+carry it as `srsName` beside the elements, the way CityGML names it. The ISO
+19166 XSDs have no member for a CRS, so this is the one key in the files that
+is not in the schema; without it a viewer cannot draw Web Mercator coordinates
+at true ground scale.
+
 `BIM.load()` / `GIS.load()` read those JSON files back into the internal object
 dicts, so a saved model can be re-mapped or re-serialised without touching the
 IFC again — `save → load → save` is byte-identical:
