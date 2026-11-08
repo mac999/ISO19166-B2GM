@@ -226,31 +226,42 @@ ul.tree ul { padding-left: 13px; }
 }
 .prop-head .sw:hover { color: var(--accent); }
 
-/* a rule set is a list of flat records, so it edits as a table; nested
-   values keep their json in the cell */
+/* a rule set edits as one property grid per rule: the standard's keys down
+   the left, values on the right, nested values as json in the field */
 .rules {
   margin-top: 2px;
   border: 1px solid var(--border);
   border-radius: 4px;
-  overflow: auto;
   background: var(--panel-alt);
+  font-size: 11px;
 }
-.rules table { border-collapse: collapse; width: 100%; font-size: 11px; }
-.rules th {
-  text-align: left; font-weight: 500; color: var(--muted);
-  padding: 3px 5px; border-bottom: 1px solid var(--border); white-space: nowrap;
+.rule { border-bottom: 1px solid var(--border); padding: 3px 0 4px; }
+.rule:last-of-type { border-bottom: 0; }
+.rule-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1px 7px 2px; color: var(--muted); font-size: 10px;
+  text-transform: uppercase; letter-spacing: .05em;
 }
-.rules td { padding: 0; border-bottom: 1px solid var(--border); }
-.rules td.k { padding: 3px 5px; color: var(--muted); white-space: nowrap; }
-.rules tr:last-child td { border-bottom: 0; }
-.rules input {
-  width: 100%; min-width: 72px; padding: 3px 5px; border: 0;
-  background: transparent; color: var(--text);
+.kv {
+  display: grid;
+  grid-template-columns: minmax(72px, 36%) 1fr;
+  align-items: center;
+  column-gap: 6px;
+  row-gap: 1px;
+  padding: 0 7px;
+}
+.kv .k { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kv input, .kv select {
+  width: 100%; min-width: 0; padding: 2px 5px;
+  border: 1px solid transparent; border-radius: 3px;
+  background: var(--panel); color: var(--text);
   font-family: ui-monospace, "Cascadia Mono", Menlo, monospace; font-size: 11px;
 }
-.rules input:focus { outline: 1px solid var(--accent); }
-.rules input.nested { color: var(--muted); }
-.rules input.bad { color: #e5484d; }
+.kv select { font-family: inherit; }
+.kv input::placeholder { color: var(--muted); opacity: .55; }
+.kv input:focus, .kv select:focus { outline: 0; border-color: var(--accent); }
+.kv input.nested { color: var(--muted); }
+.kv input.bad { color: #e5484d; }
 .rules .rm {
   width: 18px; min-width: 0; padding: 0; border: 0; background: none;
   color: var(--muted); font-size: 12px; line-height: 1;
@@ -258,7 +269,7 @@ ul.tree ul { padding-left: 13px; }
 .rules .rm:hover { color: #e5484d; }
 .rules .add {
   display: block; width: 100%; text-align: left; border: 0; border-radius: 0;
-  background: transparent; color: var(--muted); font-size: 10px; padding: 3px 5px;
+  background: transparent; color: var(--muted); font-size: 10px; padding: 3px 7px;
 }
 .rules .add:hover { color: var(--accent); }
 .prop.edited .rules, .prop.edited .prop-input, .prop.edited .prop-val { border-color: var(--accent); }

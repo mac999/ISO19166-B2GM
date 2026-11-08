@@ -12,7 +12,7 @@ dependencies.
 
 | Panel | Contents |
 |-------|----------|
-| Left | input folder tree, and the PD/CM/EM/LM stage properties as editable fields: scalars as one-line inputs, rule sets as tables with a row per rule (a `json` toggle shows the raw form) |
+| Left | input folder tree, and the PD/CM/EM/LM stage properties as editable fields: scalars as one-line inputs, each rule as a property grid listing the keys the standard defines for that stage, filled or not, with fixed choices (`lod`, `PSet_operation`) as drop-downs and nested values as json; a `json` toggle shows the raw form |
 | Middle | WebGL canvas — drag to orbit, wheel to zoom, right drag to pan; shaded, shaded + edges or wireframe rendering, an opacity slider and view reset; an axis gizmo whose X/Y/Z tips snap the camera (click again for the far side); a legend lists the feature classes with counts and toggles each on or off |
 | Right | output folder tree, and a tabbed pane with the file preview and the stage log |
 

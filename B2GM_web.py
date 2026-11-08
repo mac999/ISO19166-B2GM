@@ -99,6 +99,58 @@ IFC_COLORS = {
 }
 
 
+# The keys a rule may carry, per stage and property, so the panel can lay a rule
+# out as a property grid with every standard field present even when the file
+# leaves it out.  ``kind`` picks the input: text, number, bool, enum (fixed
+# ``options``), choice (``options`` plus free text) or json (nested value).
+_LOD_LEVELS = ["LOD0", "LOD1", "LOD2", "LOD3", "LOD4"]
+_CITYGML_CLASSES = ["CityModel.Building", "BuildingStorey", "Room", "WallSurface",
+                    "RoofSurface", "GroundSurface", "FloorSurface", "CeilingSurface",
+                    "Window", "Door", "BuildingInstallation", "LandUse",
+                    "GenericCityObject"]
+RULE_FIELDS: Dict[Tuple[str, str], List[Dict[str, Any]]] = {
+    ("PD", "data_view"): [
+        {"key": "class", "kind": "text", "hint": "IFC type regex, full match"},
+        {"key": "filter", "kind": "json", "hint": "[{name, value, type}] property filters"},
+    ],
+    ("PD", "style_view"): [
+        {"key": "class", "kind": "text", "hint": "IFC type regex, full match"},
+        {"key": "filter", "kind": "json", "hint": "[{name, value, type}] property filters"},
+    ],
+    ("PD", "logic_view"): [
+        {"key": "external_data_source", "kind": "text", "hint": "CSV or JSON with a GUID column"},
+        {"key": "ETL_module", "kind": "text", "hint": "python module, or empty for a plain join"},
+    ],
+    ("PD", "property_style"): [
+        {"key": "category", "kind": "text", "hint": "property set regex"},
+        {"key": "property", "kind": "text", "hint": "property name regex"},
+        {"key": "formattingOperation", "kind": "text", "hint": "round:3 | strip | upper ..."},
+    ],
+    ("CM", "rule"): [
+        {"key": "source", "kind": "text", "hint": "EPSG:4326"},
+        {"key": "destination", "kind": "text", "hint": "EPSG:3857"},
+        {"key": "transform_matrix", "kind": "json", "hint": "4x4 row-major"},
+        {"key": "origin", "kind": "json", "hint": "{lon, lat, elevation} when the IFC has no IfcSite"},
+        {"key": "georeference", "kind": "bool", "hint": "false keeps local coordinates"},
+    ],
+    ("EM", "rule"): [
+        {"key": "source", "kind": "text", "hint": "IFC type regex, full match"},
+        {"key": "destination", "kind": "choice", "options": _CITYGML_CLASSES,
+         "hint": "CityGML feature class"},
+        {"key": "child_node", "kind": "text", "hint": "regex over child element types"},
+        {"key": "PSet_operation", "kind": "enum", "options": ["Append", "Replace"],
+         "hint": "how the rule's property_set combines with the IFC ones"},
+        {"key": "property_set", "kind": "json", "hint": "{set: {property: value}}"},
+    ],
+    ("LM", "rule"): [
+        {"key": "source", "kind": "text", "hint": "IFC type regex, full match"},
+        {"key": "lod", "kind": "enum", "options": _LOD_LEVELS, "hint": "level of detail"},
+        {"key": "operation", "kind": "json", "hint": "[{op, args}] operator chain"},
+        {"key": "aggregate", "kind": "text", "hint": "regex: run the chain on the merged geometry of every match"},
+    ],
+}
+
+
 class Workspace:
     """Paths and pipeline the web view works against."""
 
@@ -196,6 +248,7 @@ def describe_pipeline(path: str) -> Dict[str, Any]:
                 "value": ("" if value is None else value) if scalar else json.dumps(
                     value, ensure_ascii=False, indent=1),
                 "scalar": scalar,
+                "fields": RULE_FIELDS.get((kind, key), []),
             })
         stages.append({
             "type": kind,

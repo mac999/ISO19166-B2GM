@@ -453,3 +453,16 @@ def test_web_assets_carry_the_view_controls():
     for marker in ('id="gizmo"', 'id="mode"', 'id="version"', 'id="save-json"',
                    'id="pipeline-name"'):
         assert marker in html
+
+
+def test_describe_pipeline_lists_the_standard_fields(workspace):
+    described = WEB.describe_pipeline(workspace.pipeline)
+    lm = next(s for s in described["stages"] if s["type"] == "LM")
+    rule = next(p for p in lm["properties"] if p["key"] == "rule")
+    keys = [f["key"] for f in rule["fields"]]
+    assert keys == ["source", "lod", "operation", "aggregate"]
+    lod = next(f for f in rule["fields"] if f["key"] == "lod")
+    assert lod["kind"] == "enum" and "LOD1" in lod["options"]
+    # a scalar or an unknown property carries no field list
+    output = next(p for p in lm["properties"] if p["key"] == "output")
+    assert output["fields"] == []

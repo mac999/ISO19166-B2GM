@@ -33,7 +33,7 @@ const TEXT = {
     modeShaded: 'Shaded', modeEdges: 'Shaded + edges', modeWire: 'Wireframe',
     chipHint: 'click to open the stage and show its output',
     shown: 'shown in the 3D view',
-    table: 'table', json: 'json', addRow: '+ row', removeRow: 'remove row',
+    table: 'form', json: 'json', rule: 'rule', addRule: '+ rule', removeRule: 'remove rule',
     gizmoHint: 'Click an axis to look along it; click again for the other side',
     pipelineLoaded: 'pipeline loaded:',
   },
@@ -58,7 +58,7 @@ const TEXT = {
     modeShaded: '음영', modeEdges: '음영 + 모서리', modeWire: '와이어프레임',
     chipHint: '클릭하면 단계를 열고 산출물을 3차원 뷰에 표시',
     shown: '3차원 뷰에 표시 중',
-    table: '표', json: 'json', addRow: '+ 행', removeRow: '행 삭제',
+    table: '폼', json: 'json', rule: '규칙', addRule: '+ 규칙', removeRule: '규칙 삭제',
     gizmoHint: '축을 클릭하면 그 방향에서 봅니다. 다시 클릭하면 반대쪽',
     pipelineLoaded: '파이프라인 불러옴:',
   },
@@ -799,7 +799,7 @@ function buildProperty(property, stageIndex) {
 
   let value = null;
   try { value = JSON.parse(property.value); } catch (error) { value = null; }
-  const tabular = isRecordList(value) || isRecord(value);
+  const tabular = isRecordList(value) || isRecord(value) || (Array.isArray(value) && value.length === 0 && (property.fields || []).length > 0);
   let mode = tabular ? 'table' : 'json';
   const toggle = document.createElement('button');
   toggle.type = 'button';
@@ -816,7 +816,7 @@ function buildProperty(property, stageIndex) {
     holder.innerHTML = '';
     toggle.textContent = mode === 'table' ? t('json') : t('table');
     if (mode === 'table') {
-      holder.appendChild(buildTable(value, () => { remember(); markEdited(row); }, render));
+      holder.appendChild(buildInspector(value, property.fields || [], () => { remember(); markEdited(row); }, render));
       textarea = null;
     } else {
       textarea = document.createElement('textarea');
@@ -834,7 +834,7 @@ function buildProperty(property, stageIndex) {
         writeLog(`${property.key}: ${error.message}`);
         return;
       }
-      if (!isRecordList(value) && !isRecord(value)) return;
+      if (!isRecordList(value) && !isRecord(value) && !Array.isArray(value)) return;
       remember();
     }
     mode = mode === 'table' ? 'json' : 'table';
@@ -854,82 +854,112 @@ function buildProperty(property, stageIndex) {
 const isRecord = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const isRecordList = (v) => Array.isArray(v) && v.length > 0 && v.every(isRecord);
 
-/* Records edit in place; a cell that holds an object keeps its json. */
-function buildTable(value, changed, rerender) {
+/* Records edit in place as a property grid: every key the standard defines for
+   this rule is listed, filled or not, so the user picks from what exists rather
+   than typing key names. A nested value keeps its json in the field. */
+function buildInspector(value, fields, changed, rerender) {
   const wrap = document.createElement('div');
   wrap.className = 'rules';
-  const table = document.createElement('table');
-  wrap.appendChild(table);
   const list = Array.isArray(value);
-  const rows = list ? value : [value];
-  const columns = [];
-  rows.forEach((record) => Object.keys(record).forEach((k) => {
-    if (!columns.includes(k)) columns.push(k);
-  }));
+  const records = list ? value : [value];
+  const known = fields.map((f) => f.key);
 
-  const cell = (record, column) => {
-    const td = document.createElement('td');
-    const input = document.createElement('input');
-    const current = record[column];
+  const control = (record, field) => {
+    const current = record[field.key];
     const nested = current !== null && typeof current === 'object';
-    input.value = current === undefined ? '' : nested ? JSON.stringify(current) : String(current);
-    if (nested) input.className = 'nested';
-    input.oninput = () => {
-      const text = input.value;
-      if (nested || /^[[{]/.test(text.trim())) {
-        try { record[column] = JSON.parse(text); input.classList.remove('bad'); }
-        catch (error) { record[column] = { __invalid: text }; input.classList.add('bad'); }
+    const kind = nested && field.kind !== 'json' ? 'json' : field.kind;
+    const text = current === undefined ? '' : nested ? JSON.stringify(current) : String(current);
+    let input;
+    if (kind === 'enum' || kind === 'bool') {
+      input = document.createElement('select');
+      const options = kind === 'bool' ? ['true', 'false'] : field.options || [];
+      ['', ...options].forEach((option) => {
+        const node = document.createElement('option');
+        node.value = option;
+        node.textContent = option;
+        input.appendChild(node);
+      });
+      if (text !== '' && ![...input.options].some((o) => o.value === text)) {
+        const node = document.createElement('option');
+        node.value = text;
+        node.textContent = text;
+        input.appendChild(node);
+      }
+      input.value = text;
+    } else {
+      input = document.createElement('input');
+      input.type = 'text';
+      input.value = text;
+      if (kind === 'choice' && field.options) {
+        const id = `dl-${field.key}-${Math.random().toString(36).slice(2, 7)}`;
+        const datalist = document.createElement('datalist');
+        datalist.id = id;
+        field.options.forEach((option) => {
+          const node = document.createElement('option');
+          node.value = option;
+          datalist.appendChild(node);
+        });
+        wrap.appendChild(datalist);
+        input.setAttribute('list', id);
+      }
+    }
+    if (kind === 'json') input.classList.add('nested');
+    if (field.hint) input.placeholder = field.hint;
+    input.title = field.hint || field.key;
+    input.oninput = input.onchange = () => {
+      const raw = input.value;
+      if (kind === 'json' || /^[[{]/.test(raw.trim())) {
+        try { record[field.key] = raw.trim() === '' ? '' : JSON.parse(raw); input.classList.remove('bad'); }
+        catch (error) { record[field.key] = { __invalid: raw }; input.classList.add('bad'); }
       } else {
-        record[column] = cellValue(text);
+        record[field.key] = cellValue(raw);
       }
       changed();
     };
-    td.appendChild(input);
-    return td;
+    return input;
   };
 
-  if (list) {
-    const thead = table.createTHead().insertRow();
-    columns.forEach((column) => {
-      const th = document.createElement('th');
-      th.textContent = column;
-      thead.appendChild(th);
-    });
-    thead.appendChild(document.createElement('th'));
-    const tbody = table.createTBody();
-    rows.forEach((record, index) => {
-      const tr = tbody.insertRow();
-      columns.forEach((column) => tr.appendChild(cell(record, column)));
-      const td = document.createElement('td');
+  const card = (record, index) => {
+    const box = document.createElement('div');
+    box.className = 'rule';
+    if (list) {
+      const head = document.createElement('div');
+      head.className = 'rule-head';
+      head.innerHTML = `<span>${t('rule')} ${index + 1}</span>`;
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'rm';
       remove.textContent = '×';
-      remove.title = t('removeRow');
+      remove.title = t('removeRule');
       remove.onclick = () => { value.splice(index, 1); changed(); rerender(); };
-      td.appendChild(remove);
-      tr.appendChild(td);
+      head.appendChild(remove);
+      box.appendChild(head);
+    }
+    const grid = document.createElement('div');
+    grid.className = 'kv';
+    // standard keys first, in their order; anything else the file carries after
+    const extra = Object.keys(record).filter((k) => !known.includes(k))
+      .map((k) => ({ key: k, kind: 'text' }));
+    [...fields, ...extra].forEach((field) => {
+      const key = document.createElement('span');
+      key.className = 'k';
+      key.textContent = field.key;
+      key.title = field.hint || field.key;
+      grid.appendChild(key);
+      grid.appendChild(control(record, field));
     });
+    box.appendChild(grid);
+    return box;
+  };
+
+  records.forEach((record, index) => wrap.appendChild(card(record, index)));
+  if (list) {
     const add = document.createElement('button');
     add.type = 'button';
     add.className = 'add';
-    add.textContent = t('addRow');
-    add.onclick = () => {
-      value.push(Object.fromEntries(columns.map((c) => [c, ''])));
-      changed();
-      rerender();
-    };
+    add.textContent = t('addRule');
+    add.onclick = () => { value.push({}); changed(); rerender(); };
     wrap.appendChild(add);
-  } else {
-    const tbody = table.createTBody();
-    columns.forEach((column) => {
-      const tr = tbody.insertRow();
-      const k = document.createElement('td');
-      k.className = 'k';
-      k.textContent = column;
-      tr.appendChild(k);
-      tr.appendChild(cell(value, column));
-    });
   }
   return wrap;
 }
