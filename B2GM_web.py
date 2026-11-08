@@ -102,6 +102,53 @@ IFC_COLORS = {
     "IfcFooting": [0.46, 0.36, 0.26],
 }
 
+PALETTE_FILE = "colors.json"
+
+
+def _rgb(value: Any) -> Optional[List[float]]:
+    """Accept "#rrggbb", [r, g, b] in 0..1 or [r, g, b] in 0..255."""
+    if isinstance(value, str):
+        match = re.fullmatch(r"#?([0-9a-fA-F]{6})", value.strip())
+        if not match:
+            return None
+        n = int(match.group(1), 16)
+        return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255]
+    if isinstance(value, (list, tuple)) and len(value) == 3:
+        try:
+            rgb = [float(c) for c in value]
+        except (TypeError, ValueError):
+            return None
+        if max(rgb) > 1.0:
+            rgb = [c / 255 for c in rgb]
+        return [min(1.0, max(0.0, c)) for c in rgb]
+    return None
+
+
+def load_palette(path: Optional[str]) -> Dict[str, Any]:
+    """The class colours, with a colors.json in the input folder laid over the
+    defaults so a project can restyle the view without touching the code."""
+    palette = {"citygml": dict(CLASS_COLORS), "ifc": dict(IFC_COLORS),
+               "default": list(DEFAULT_COLOR)}
+    if not path or not os.path.isfile(path):
+        return palette
+    try:
+        with open(path, encoding="utf-8") as f:
+            custom = json.load(f)
+    except (OSError, ValueError) as exc:
+        logger.warning("%s ignored: %s", path, exc)
+        return palette
+    if not isinstance(custom, dict):
+        return palette
+    for table in ("citygml", "ifc"):
+        for name, value in (custom.get(table) or {}).items():
+            rgb = _rgb(value)
+            if rgb:
+                palette[table][name] = rgb
+    default = _rgb(custom.get("default"))
+    if default:
+        palette["default"] = default
+    return palette
+
 
 # The keys a rule may carry, per stage and property, so the panel can lay a rule
 # out as a property grid with every standard field present even when the file
@@ -173,6 +220,9 @@ class Workspace:
 
     def roots(self) -> Dict[str, str]:
         return {"input": self.input_dir, "output": self.output_dir}
+
+    def palette(self) -> Dict[str, Any]:
+        return load_palette(os.path.join(self.input_dir, PALETTE_FILE))
 
     def resolve(self, side: str, rel: str) -> str:
         """Resolve a client path inside a root; raises on traversal attempts."""
@@ -472,7 +522,7 @@ def ground_scale(srs: Optional[str], bounds: Dict[str, List[float]]) -> float:
         return 1.0
 
 
-def read_model(path: str) -> Dict[str, Any]:
+def read_model(path: str, palette: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     suffix = os.path.splitext(path)[1].lower()
     if suffix == ".json":
         features = read_model_json(path)
@@ -484,6 +534,11 @@ def read_model(path: str) -> Dict[str, Any]:
         features = read_ifc(path)
     else:
         raise ValueError(f"cannot display {suffix} in the 3D view")
+    if palette:
+        # a source IFC is coloured by IFC type, everything else by GIS class
+        table = palette["ifc"] if suffix == ".ifc" else palette["citygml"]
+        for feature in features:
+            feature["color"] = table.get(feature["gis_class"], palette["default"])
     lo = [float("inf")] * 3
     hi = [float("-inf")] * 3
     for feature in features:
@@ -620,7 +675,7 @@ def convert_upload(workspace: "Workspace", ifc: Optional[Tuple[str, bytes]],
         "name": final,
         "path": relative.replace(os.sep, "/"),
         "input": os.path.relpath(ifc_path, workspace.input_dir).replace(os.sep, "/"),
-        "model": read_model(os.path.join(output_dir, final)),
+        "model": read_model(os.path.join(output_dir, final), workspace.palette()),
     }
 
 
@@ -676,6 +731,7 @@ class Handler(BaseHTTPRequestHandler):
                     "pipeline": self.workspace.pipeline,
                     "output": self.workspace.output,
                     "pipeline_name": os.path.basename(self.workspace.pipeline),
+                    "palette": PALETTE_FILE,
                     "input_default": self.workspace.default_input(),
                 })
             if route == "/api/tree":
@@ -698,7 +754,7 @@ class Handler(BaseHTTPRequestHandler):
                 path = self.workspace.resolve(query.get("side", "output"), query.get("path", ""))
                 if not os.path.isfile(path):
                     return self._error("not found", 404)
-                return self._json(read_model(path))
+                return self._json(read_model(path, self.workspace.palette()))
             if route == "/api/file":
                 path = self.workspace.resolve(query.get("side", "output"), query.get("path", ""))
                 if not os.path.isfile(path):

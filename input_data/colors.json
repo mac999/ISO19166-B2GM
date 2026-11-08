@@ -1,0 +1,37 @@
+{
+  "_comment": "Colours for the web view: CityGML class and IFC type to #rrggbb (or [r, g, b]). Missing entries keep the built-in colour.",
+  "citygml": {
+    "CityModel.Building": "#f2bd4c",
+    "WallSurface": "#edcc8f",
+    "RoofSurface": "#db473d",
+    "GroundSurface": "#755c42",
+    "FloorSurface": "#9e8a70",
+    "CeilingSurface": "#9eb8e0",
+    "Window": "#2999f5",
+    "Door": "#eb7a1f",
+    "Room": "#38c27a",
+    "BuildingInstallation": "#a36be0",
+    "BuildingStorey": "#708fad",
+    "LandUse": "#57a847",
+    "GenericCityObject": "#9e9e9e"
+  },
+  "ifc": {
+    "IfcWall": "#edcc8f",
+    "IfcWallStandardCase": "#edcc8f",
+    "IfcSlab": "#9e8a70",
+    "IfcRoof": "#db473d",
+    "IfcWindow": "#2999f5",
+    "IfcDoor": "#eb7a1f",
+    "IfcSpace": "#38c27a",
+    "IfcCovering": "#9eb8e0",
+    "IfcBeam": "#a36be0",
+    "IfcColumn": "#805cd1",
+    "IfcStair": "#c79942",
+    "IfcStairFlight": "#c79942",
+    "IfcRailing": "#859ebd",
+    "IfcMember": "#8f7abd",
+    "IfcFurnishingElement": "#e0669e",
+    "IfcFooting": "#755c42"
+  },
+  "default": "#9e9e9e"
+}

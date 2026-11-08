@@ -21,6 +21,7 @@ recursive-include web *.html *.css *.js
 
 # PD logic view example source
 include input_data/PD_logic_source.json
+include input_data/colors.json
 
 # Tests
 recursive-include tests *.py *.json *.geojson *.ifc

@@ -466,3 +466,39 @@ def test_describe_pipeline_lists_the_standard_fields(workspace):
     # a scalar or an unknown property carries no field list
     output = next(p for p in lm["properties"] if p["key"] == "output")
     assert output["fields"] == []
+
+
+# --- class colours from colors.json ----------------------------------------
+def test_palette_overrides_defaults_and_ignores_junk(tmp_path):
+    path = tmp_path / "colors.json"
+    path.write_text(json.dumps({
+        "citygml": {"Room": "#ff0000", "Window": [0, 255, 0], "Door": "nope"},
+        "ifc": {"IfcWall": [0.1, 0.2, 0.3]},
+        "default": "#000000",
+    }), encoding="utf-8")
+    palette = WEB.load_palette(str(path))
+    assert palette["citygml"]["Room"] == [1.0, 0.0, 0.0]
+    assert palette["citygml"]["Window"] == [0.0, 1.0, 0.0]
+    assert palette["citygml"]["Door"] == WEB.CLASS_COLORS["Door"]      # bad value kept default
+    assert palette["citygml"]["WallSurface"] == WEB.CLASS_COLORS["WallSurface"]
+    assert palette["ifc"]["IfcWall"] == [0.1, 0.2, 0.3]
+    assert palette["default"] == [0.0, 0.0, 0.0]
+    assert WEB.load_palette(str(tmp_path / "missing.json"))["citygml"] == WEB.CLASS_COLORS
+    path.write_text("[not a dict]", encoding="utf-8")
+    assert WEB.load_palette(str(path))["citygml"] == WEB.CLASS_COLORS
+
+
+def test_read_model_applies_the_workspace_palette(workspace):
+    with open(os.path.join(workspace.input_dir, "colors.json"), "w", encoding="utf-8") as f:
+        json.dump({"citygml": {"WallSurface": "#123456"}}, f)
+    model = WEB.read_model(os.path.join(workspace.output_dir, "sub", "city.gml"),
+                           workspace.palette())
+    wall = next(x for x in model["features"] if x["gis_class"] == "WallSurface")
+    assert [round(c, 3) for c in wall["color"]] == [0.071, 0.204, 0.337]
+
+
+def test_shipped_colors_json_matches_the_defaults():
+    with open(os.path.join(ROOT, "input_data", "colors.json"), encoding="utf-8") as f:
+        shipped = json.load(f)
+    assert set(shipped["citygml"]) == set(WEB.CLASS_COLORS)
+    assert set(shipped["ifc"]) == set(WEB.IFC_COLORS)

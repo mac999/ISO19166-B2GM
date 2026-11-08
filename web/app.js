@@ -163,15 +163,16 @@ varying vec3 vNormal;
 varying vec3 vColor;
 uniform vec3 uLight;
 uniform float uAlpha;
-uniform float uPaint;      // 0 shaded, 1 flat vertex colour, 2 one uniform colour
+uniform float uPaint;      // 0 shaded, 1 vertex colour (mixed), 2 one uniform colour
 uniform vec3 uPaintColor;
+uniform float uMix;        // how far a paint-1 colour leans towards uPaintColor
 void main() {
   if (uPaint > 1.5) {
     gl_FragColor = vec4(uPaintColor, uAlpha);
     return;
   }
   if (uPaint > 0.5) {
-    gl_FragColor = vec4(vColor, uAlpha);
+    gl_FragColor = vec4(mix(vColor, uPaintColor, uMix), uAlpha);
     return;
   }
   vec3 n = normalize(vNormal);
@@ -284,6 +285,7 @@ class Renderer {
       alpha: gl.getUniformLocation(program, 'uAlpha'),
       paint: gl.getUniformLocation(program, 'uPaint'),
       paintColor: gl.getUniformLocation(program, 'uPaintColor'),
+      mix: gl.getUniformLocation(program, 'uMix'),
     };
     gl.enable(gl.DEPTH_TEST);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -487,8 +489,9 @@ class Renderer {
     const translucent = alpha < 0.999;
     if (translucent) { gl.enable(gl.BLEND); gl.depthMask(false); }
     else { gl.disable(gl.BLEND); gl.depthMask(true); }
-    const paint = (kind, color) => {
+    const paint = (kind, color, mixAmount) => {
       gl.uniform1f(this.uniform.paint, kind);
+      gl.uniform1f(this.uniform.mix, mixAmount || 0);
       if (color) gl.uniform3f(this.uniform.paintColor, color[0], color[1], color[2]);
     };
 
@@ -518,8 +521,11 @@ class Renderer {
     }
     if (edges) {
       if (!this.edgeCount) this.buildEdges();
-      paint(2, this.edgeColor);
-      if (mode === 'xray') { gl.uniform1f(this.uniform.alpha, 0.55); gl.enable(gl.BLEND); }
+      // edges keep the class colour; over a face of the same colour they lean
+      // towards the theme grey so they still read as lines
+      const overFaces = mode === 'edges' || mode === 'flat';
+      paint(1, this.edgeColor, overFaces ? 0.55 : 0);
+      if (mode === 'xray') { gl.uniform1f(this.uniform.alpha, 0.7); gl.enable(gl.BLEND); }
       bindAll(this.edgeBuffer);
       gl.drawArrays(gl.LINES, 0, this.edgeCount);
     }
