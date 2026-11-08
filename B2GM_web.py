@@ -623,13 +623,18 @@ def convert_upload(workspace: "Workspace", ifc: Optional[Tuple[str, bytes]],
                    pipeline: Optional[Tuple[str, bytes]],
                    version: Optional[str],
                    keep_input: Optional[str] = None,
-                   save_json: bool = False) -> Dict[str, Any]:
-    """Run the pipeline over a dropped IFC and keep everything in the workspace.
+                   save_json: bool = False,
+                   pipeline_path: Optional[str] = None,
+                   overwrite: bool = False) -> Dict[str, Any]:
+    """Run the pipeline over an IFC and keep everything in the workspace.
 
-    The upload lands in the input tree and the result in the output tree, so
-    both show up where the user expects instead of vanishing into a temporary
-    directory.  ``keep_input`` names a file already in the input tree, which is
-    how the config editor re-runs an existing model.
+    The upload lands in the input tree and the result under
+    ``output/<model>/``, so both show up where the user expects instead of
+    vanishing into a temporary directory.  ``keep_input`` names a file already
+    in the input tree, which is how Run pipeline and the config editor work; a
+    re-run of the same model then overwrites its folder rather than piling up
+    ``_2``, ``_3`` copies.  ``pipeline_path`` is a config picked from the input
+    tree, used when nothing was uploaded.
     """
     uploads = os.path.join(workspace.input_dir, "uploads")
     os.makedirs(uploads, exist_ok=True)
@@ -649,11 +654,12 @@ def convert_upload(workspace: "Workspace", ifc: Optional[Tuple[str, bytes]],
         pipeline_path = _unique_path(uploads, _safe_name(pipeline[0], "pipeline.json"))
         with open(pipeline_path, "wb") as f:
             f.write(pipeline[1])
-    else:
+    elif not pipeline_path:
         pipeline_path = workspace.pipeline
 
     stem = os.path.splitext(os.path.basename(ifc_path))[0]
-    output_dir = _unique_path(workspace.output_dir, stem)
+    output_dir = (os.path.join(workspace.output_dir, stem) if overwrite
+                  else _unique_path(workspace.output_dir, stem))
     os.makedirs(output_dir, exist_ok=True)
 
     result = run_b2gm(ifc_path, pipeline_path, output_dir, version, save_json)
@@ -807,8 +813,10 @@ class Handler(BaseHTTPRequestHandler):
                 version = B2GM_GIS.normalise_version(str(payload["version"]))
             except Exception as exc:
                 return self._error(str(exc))
-        self._json(run_b2gm(path, pipeline, self.workspace.output_dir, version,
-                            bool(payload.get("save_json"))))
+        logger.info("running %s", os.path.basename(path))
+        self._json(convert_upload(self.workspace, None, None, version, keep_input=path,
+                                  save_json=bool(payload.get("save_json")),
+                                  pipeline_path=pipeline, overwrite=True))
 
 
     def _convert(self):
@@ -855,7 +863,8 @@ class Handler(BaseHTTPRequestHandler):
         label = os.path.basename(keep_input) if keep_input else ifc[0]
         logger.info("converting %s", label)
         self._json(convert_upload(self.workspace, ifc, parts.get("pipeline"),
-                                  version, keep_input, save_json))
+                                  version, keep_input, save_json,
+                                  overwrite=keep_input is not None))
 
 
 def serve(workspace: Workspace, host: str = "127.0.0.1", port: int = 8000,

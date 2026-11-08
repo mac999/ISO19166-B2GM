@@ -1291,6 +1291,11 @@ async function showConverted(result) {
   renderTree(await api('/api/tree?side=input'), $('input-tree'), 'input');
   renderTree(await api('/api/tree?side=output'), $('output-tree'), 'output');
   if (result.input) selectedInput = result.input;
+  // mark the produced file in the output tree without fetching it again
+  const row = [...$('output-tree').querySelectorAll('.node[data-path]')]
+    .find((r) => r.dataset.path === result.path);
+  if (row) row.classList.add('on');
+  markStage(stageFor(result.path));
 }
 
 /* Send the edited config together with the selected input, so a rule change is
@@ -1361,7 +1366,8 @@ $('run').onclick = async () => {
       }),
     });
     writeLog(result.log);
-    await refreshOutputs(lodOutput(pipeline) || null);
+    if (!result.ok) return;
+    await showConverted(result);
   } catch (error) {
     writeLog(error.message);
   } finally {

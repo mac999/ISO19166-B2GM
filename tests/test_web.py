@@ -399,7 +399,9 @@ def test_run_passes_version_json_and_pipeline_through(server, workspace, monkeyp
 
     def fake_run(input_file, pipeline, output_dir, version=None, save_json=False, **_):
         calls.append((os.path.basename(input_file), os.path.basename(pipeline),
-                      version, save_json))
+                      version, save_json, os.path.relpath(output_dir, workspace.output_dir)))
+        with open(os.path.join(output_dir, "city_LoD.gml"), "w", encoding="utf-8") as f:
+            f.write(GML)
         return {"ok": True, "log": []}
 
     monkeypatch.setattr(WEB, "run_b2gm", fake_run)
@@ -410,12 +412,17 @@ def test_run_passes_version_json_and_pipeline_through(server, workspace, monkeyp
                        "pipeline": "alt.json"}).encode()
     status, payload = post(server, "/api/run", "application/json", body)
     assert status == 200 and payload["ok"]
-    assert calls == [("model.ifc", "alt.json", "3.0", True)]
+    # the result lands in a folder named after the model, and the response
+    # carries it so the canvas can show it straight away
+    assert calls == [("model.ifc", "alt.json", "3.0", True, "model")]
+    assert payload["path"] == "model/city_LoD.gml"
+    assert payload["model"]["triangles"] == 4
 
-    # the defaults: the workspace pipeline, no version override, no json
+    # the defaults: the workspace pipeline, no version override, no json; a
+    # re-run reuses the same folder instead of making model_2
     body = json.dumps({"path": "model.ifc"}).encode()
     post(server, "/api/run", "application/json", body)
-    assert calls[-1] == ("model.ifc", "pipe.json", None, False)
+    assert calls[-1] == ("model.ifc", "pipe.json", None, False, "model")
 
     body = json.dumps({"path": "model.ifc", "version": "9.9"}).encode()
     status, payload = post(server, "/api/run", "application/json", body)
