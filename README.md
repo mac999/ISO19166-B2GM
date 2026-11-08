@@ -117,6 +117,13 @@ structure and the end-to-end pipeline. It runs on GitHub Actions for each push
 and pull request. Tests that need optional dependencies skip when those are
 missing.
 
+## Revision history
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 0.2.0 | 2026-11-08 | Web view reworked: right-drag pan follows the pointer and orbits around the panned centre, two-sided lighting, axis gizmo with snap views, shaded / edges / wireframe modes, rule sets edited as property grids with the standard's keys, CityGML version and JSON save in the header, pipeline choice from the input tree, stage chips open their stage and show its output, themed scrollbars. IFC4 input covered by a fixture and regression test. GitHub Actions runs the suite on Python 3.10, 3.12 and 3.13; the package now requires 3.10 or newer, which is the oldest ifcopenshell ships wheels for. README split into doc pages behind a quick start. |
+| 0.1.0 | 2026-09-07 | First release: rule-driven PD / CM / EM / LM pipeline with all eleven Table 8 LoD operators, CM georeferencing into the destination CRS, schema-valid CityGML 2.0 and 3.0 output, web view with upload and conversion, Fly.io deployment. |
+
 # Author
 Taewook kang, Ph.D, laputa99999@gmail.com
 
