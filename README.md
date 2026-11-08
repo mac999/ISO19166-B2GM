@@ -120,6 +120,8 @@ dependencies.
   class on click, which is how you look inside a model. A file with nothing to
   draw shows its text here instead.
 - Right: the output tree, a file preview and the stage log.
+- Colours per CityGML class and IFC type come from `input_data/colors.json`,
+  so a project can restyle the view without touching the code.
 - Header: the CityGML version, whether to save the JSON models, and the stage
   chips, which open a stage and show its output on the canvas.
 
@@ -232,6 +234,7 @@ after the fact from the module headers and the commit history.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.2.2 | 2026-11-08 | Saturated class palette, configurable from `input_data/colors.json`. Edges and wireframes drawn in the class colour. `?opacity=` and `?select=` reach the input tree. README opens on the source IFC drawn translucent; revision history traced back to the 2024 sources. |
 | 0.2.1 | 2026-11-08 | The IFC parser reads every product instead of a fixed type list, so furniture, footings, the roof and stair flights now reach the PD stage; the example maps them. Openings whose host has no geometry of its own (skylights in an IfcRoof aggregate) are kept as installations instead of being lost. Files without geometry open as text in the middle panel. X-ray, flat + edges and hidden line rendering. `?select=` and `?opacity=` preset a view. README reorganised with current screenshots. |
 | 0.2.0 | 2026-11-08 | Web view reworked: right-drag pan follows the pointer and orbits around the panned centre, two-sided lighting, axis gizmo with snap views, shaded / edges / wireframe modes, rule sets edited as property grids with the standard's keys, CityGML version and JSON save in the header, pipeline choice from the input tree, stage chips open their stage and show its output, themed scrollbars. IFC4 input covered by a fixture and regression test. GitHub Actions runs the suite on Python 3.10, 3.12 and 3.13; the package requires 3.10 or newer, which is the oldest ifcopenshell ships wheels for. README split into doc pages behind a quick start. |
 | 0.1.x | 2026-09-08 to 2026-09-20 | 3D booleans on manifold3d with double-precision meshes, after float32 collapsed a wall to zero volume at projected coordinates. Launcher scripts. Docker image and Fly.io deployment with a machine cap. The viewer reads CityGML 3.0 filling surfaces and draws Web Mercator models at true ground scale. |

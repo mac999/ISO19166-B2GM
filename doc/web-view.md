@@ -65,6 +65,13 @@ quickest way to see a rule change move features between classes.
 The conversion runs in a separate process, so a large or malformed model times
 out (180 s) rather than wedging the view. Uploads are capped at 50 MB.
 
+**Colours** come from `input_data/colors.json`: CityGML class and IFC type to
+`#rrggbb` (or `[r, g, b]`). The shipped file lists the built-in palette; edit
+an entry and reload, missing entries keep their default, and a broken file is
+ignored with a warning in the server log. Edges and wireframes use the class
+colour too, leaning towards the theme grey where they sit on a face of the same
+colour.
+
 Clicking a class in the legend hides it, which is how you look inside the model:
 switch off the building block and the wall surfaces and what remains are the
 LOD1 room solids the LM operators produced, plus the windows and doors. The
