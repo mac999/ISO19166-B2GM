@@ -223,7 +223,8 @@ class GIS(B2GM_model.model):
             f.write("</core:CityModel>\n")
         return written
 
-    def save(self, fname: str, objects: List[Dict[str, Any]], stage: Optional[Dict[str, Any]] = None) -> str:
+    def save(self, fname: str, objects: List[Dict[str, Any]], stage: Optional[Dict[str, Any]] = None,
+             srs_name: Optional[str] = None) -> str:
         """Serialise mapped GIS objects to JSON per ``B2GM_GIS_model.XSD``.
 
         The document mirrors the ISO 19166 GIS model UML: a ``GIS_model`` holds
@@ -234,7 +235,8 @@ class GIS(B2GM_model.model):
 
         The destination is taken from ``_destination`` (set by EM) or resolved
         from the ``stage`` rules; elements with no destination are skipped when
-        rules are present (mirroring :meth:`store`).
+        rules are present (mirroring :meth:`store`).  ``srs_name`` is written
+        as ``srsName`` beside the elements, as in :meth:`B2GM_BIM.BIM.save`.
         """
         rules = B2GM_element.rules_from_stage(stage) if stage else []
         elements = []
@@ -259,7 +261,9 @@ class GIS(B2GM_model.model):
                     "property_set": B2GM_model.element_property_sets_json(o),
                 }
             )
-        document = {"GIS_model": {"GIS_element": elements}}
+        model: Dict[str, Any] = {"srsName": srs_name} if srs_name else {}
+        model["GIS_element"] = elements
+        document = {"GIS_model": model}
         with open(fname, "w", encoding="utf-8") as f:
             json.dump(document, f, indent=2, ensure_ascii=False, default=str)
         logging.info("GIS model saved (%d elements) -> %s", len(elements), fname)

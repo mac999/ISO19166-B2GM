@@ -332,8 +332,8 @@ def _feature(name: str, gis_class: str, lod: str, verts: List[float],
     }
 
 
-def read_model_json(path: str) -> List[Dict[str, Any]]:
-    """Read a B2GM GIS/BIM conceptual model JSON."""
+def read_model_json(path: str) -> Tuple[List[Dict[str, Any]], Optional[str]]:
+    """Read a B2GM GIS/BIM conceptual model JSON: its features and its CRS."""
     import B2GM_BIM
     import B2GM_GIS
 
@@ -342,11 +342,14 @@ def read_model_json(path: str) -> List[Dict[str, Any]]:
     if "GIS_model" in head:
         objects = B2GM_GIS.GIS().load(path)
         key = "_destination"
+        model = head["GIS_model"]
     elif "BIM_model" in head:
         objects = B2GM_BIM.BIM().load(path)
         key = "ifc_type"
+        model = head["BIM_model"]
     else:
-        return []
+        return [], None
+    srs = model.get("srsName") if isinstance(model, dict) else None
     features = []
     for obj in objects:
         geom = obj.get("geometry") or {}
@@ -357,7 +360,7 @@ def read_model_json(path: str) -> List[Dict[str, Any]]:
             [float(c) for c in geom["verts"]], [int(i) for i in geom["faces"]],
             {"GUID": obj.get("GUID", ""), "ifc_type": obj.get("ifc_type", "")},
         ))
-    return features
+    return features, srs
 
 
 # CityGML features that carry geometry; openings and rooms nest inside the
@@ -524,8 +527,9 @@ def ground_scale(srs: Optional[str], bounds: Dict[str, List[float]]) -> float:
 
 def read_model(path: str, palette: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     suffix = os.path.splitext(path)[1].lower()
+    srs = None
     if suffix == ".json":
-        features = read_model_json(path)
+        features, srs = read_model_json(path)
     elif suffix == ".gml":
         features = read_citygml(path)
     elif suffix == ".obj":
@@ -551,7 +555,8 @@ def read_model(path: str, palette: Optional[Dict[str, Any]] = None) -> Dict[str,
     if lo[0] == float("inf"):
         lo, hi = [0.0] * 3, [1.0] * 3
     bounds = {"min": lo, "max": hi}
-    srs = read_srs(path) if suffix == ".gml" else None
+    if suffix == ".gml":
+        srs = read_srs(path)
     return {"features": features, "bounds": bounds,
             "crs": srs, "xy_scale": ground_scale(srs, bounds),
             "triangles": sum(len(f["faces"]) // 3 for f in features)}

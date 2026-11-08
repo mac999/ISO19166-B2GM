@@ -273,12 +273,12 @@ def save_models(context: Dict[str, Any], output_dir: str) -> Dict[str, str]:
     objects = context.get("objects") or []
     if objects:
         path = os.path.join(output_dir, "bim_model.json")
-        written["bim"] = B2GM_BIM.BIM().save(path, objects)
+        written["bim"] = B2GM_BIM.BIM().save(path, objects, srs_name=context.get("srs_name"))
 
     gis_objects = context.get("lm_mapped") or context.get("em_mapped") or []
     if gis_objects:
         path = os.path.join(output_dir, "gis_model.json")
-        written["gis"] = B2GM_GIS.GIS().save(path, gis_objects)
+        written["gis"] = B2GM_GIS.GIS().save(path, gis_objects, srs_name=context.get("srs_name"))
     return written
 
 

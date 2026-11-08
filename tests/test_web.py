@@ -170,6 +170,29 @@ def test_read_model_json_roundtrip(tmp_path):
     model = WEB.read_model(path)
     assert model["features"][0]["gis_class"] == "WallSurface"
     assert model["triangles"] == 1
+    assert model["crs"] is None and model["xy_scale"] == 1
+
+
+def test_model_json_carries_the_crs_so_the_view_is_drawn_at_ground_scale(tmp_path):
+    """The json models had no CRS, so a web mercator model came out squashed
+    next to the CityGML written from the same objects."""
+    import B2GM_BIM
+    import B2GM_GIS
+
+    # Chicago in EPSG:3857: x and y are stretched by 1/cos(41.9 deg)
+    base = [-9755973.0, 5142183.0, 0.0]
+    verts = [base[0], base[1], 0, base[0] + 10, base[1], 0, base[0] + 10, base[1] + 10, 3]
+    objects = [{"name": "W", "GUID": "g", "ifc_type": "IfcWall", "_destination": "WallSurface",
+                "_lod": "LOD2", "pset": {}, "geometry": {"verts": verts, "faces": [0, 1, 2]}}]
+    for saver, name in ((B2GM_GIS.GIS(), "gis_model.json"), (B2GM_BIM.BIM(), "bim_model.json")):
+        path = str(tmp_path / name)
+        saver.save(path, objects, srs_name="EPSG:3857")
+        with open(path, encoding="utf-8") as f:
+            top = next(iter(json.load(f).values()))
+        assert top["srsName"] == "EPSG:3857"
+        model = WEB.read_model(path)
+        assert model["crs"] == "EPSG:3857"
+        assert 0.7 < model["xy_scale"] < 0.8
 
 
 # --- HTTP -------------------------------------------------------------------

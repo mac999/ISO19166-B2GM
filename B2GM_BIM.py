@@ -206,7 +206,7 @@ class BIM(B2GM_model.model):
             except Exception:
                 continue
 
-    def save(self, fname, objects):
+    def save(self, fname, objects, srs_name=None):
         """Serialise parsed BIM objects to JSON per ``B2GM_BIM_model.XSD``.
 
         The document mirrors the ISO 19166 BIM model UML: a ``BIM_model`` holds
@@ -214,6 +214,11 @@ class BIM(B2GM_model.model):
         ``runtime`` / ``geometry`` (member order follows the XSD).  The element
         name and GUID are written as the mandatory *system* ``property_set``
         (Table 1, BM4); ``geometry`` carries the B-rep points/faces.
+
+        ``srs_name`` is the CRS the geometry sits in once the CM stage has run.
+        The XSD has no member for it, so it is written as ``srsName`` beside the
+        elements, the way CityGML names it; a viewer needs it to draw projected
+        coordinates at true ground scale.
         """
         elements = []
         for o in objects:
@@ -225,7 +230,9 @@ class BIM(B2GM_model.model):
                     "geometry": B2GM_model.geometry_json(o.get("geometry")),
                 }
             )
-        document = {"BIM_model": {"BIM_element": elements}}
+        model = {"srsName": srs_name} if srs_name else {}
+        model["BIM_element"] = elements
+        document = {"BIM_model": model}
         with open(fname, "w", encoding="utf-8") as f:
             json.dump(document, f, indent=2, ensure_ascii=False, default=str)
         logging.info("BIM model saved (%d elements) -> %s", len(elements), fname)
