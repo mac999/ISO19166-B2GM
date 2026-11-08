@@ -1,5 +1,6 @@
 {
   "BIM_model": {
+    "srsName": "EPSG:3857",
     "BIM_element": [
       {
         "relationship": [
