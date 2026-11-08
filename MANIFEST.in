@@ -23,7 +23,7 @@ recursive-include web *.html *.css *.js
 include input_data/PD_logic_source.json
 
 # Tests
-recursive-include tests *.py *.json *.geojson
+recursive-include tests *.py *.json *.geojson *.ifc
 
 # Exclude generated / bulky artefacts
 prune output
