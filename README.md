@@ -16,7 +16,7 @@ without a tool, which makes them hard to try out; this repository is meant to
 close that gap. If you are interested, fork and join.
 
 <p align="center">
-  <img src="./doc/webview.png" width="900" alt="B2GM web view: input tree and pipeline stages on the left, the mapped CityGML model drawn translucent with edges in the middle, output tree and file preview on the right"></img>
+  <img src="./doc/webview.png" width="900" alt="B2GM web view: the source IFC selected in the input tree and drawn translucent with edges in the middle, so the furniture and windows show through the walls; pipeline stages on the left, output tree and file preview on the right"></img>
 </p>
 
 ## Contents
@@ -124,8 +124,8 @@ dependencies.
   chips, which open a stage and show its output on the canvas.
 
 Drop an `.ifc` on the canvas, optionally with a pipeline `.json`, to convert it.
-`?theme=`, `?lang=`, `?mode=`, `?select=` and `?hide=` preset a view so it can be
-shared as a link. See [Web view](doc/web-view.md) for the routes and the
+`?theme=`, `?lang=`, `?mode=`, `?opacity=`, `?select=` and `?hide=` preset a view
+so it can be shared as a link. See [Web view](doc/web-view.md) for the routes and the
 Fly.io deployment.
 
 <p align="center">
