@@ -29,6 +29,13 @@ const TEXT = {
     applyConfig: 'Apply & run', needInput: 'Select an .ifc in the input tree first',
     trueScale: 'drawn at true ground scale',
     theme: 'Dark', themeLight: 'Light',
+    saveJson: 'Save JSON', versionPipeline: 'CityGML: pipeline',
+    modeShaded: 'Shaded', modeEdges: 'Shaded + edges', modeWire: 'Wireframe',
+    chipHint: 'click to open the stage and show its output',
+    shown: 'shown in the 3D view',
+    table: 'table', json: 'json', addRow: '+ row', removeRow: 'remove row',
+    gizmoHint: 'Click an axis to look along it; click again for the other side',
+    pipelineLoaded: 'pipeline loaded:',
   },
   ko: {
     subtitle: 'BIM-GIS 개념 매핑',
@@ -47,10 +54,17 @@ const TEXT = {
     applyConfig: '적용 후 실행', needInput: '입력 트리에서 .ifc 를 먼저 선택하세요',
     trueScale: '실제 지상 비율로 표시',
     theme: '다크', themeLight: '라이트',
+    saveJson: 'JSON 저장', versionPipeline: 'CityGML: 파이프라인 설정',
+    modeShaded: '음영', modeEdges: '음영 + 모서리', modeWire: '와이어프레임',
+    chipHint: '클릭하면 단계를 열고 산출물을 3차원 뷰에 표시',
+    shown: '3차원 뷰에 표시 중',
+    table: '표', json: 'json', addRow: '+ 행', removeRow: '행 삭제',
+    gizmoHint: '축을 클릭하면 그 방향에서 봅니다. 다시 클릭하면 반대쪽',
+    pipelineLoaded: '파이프라인 불러옴:',
   },
 };
 
-// ?lang=ko&theme=light makes a view shareable and scriptable
+// ?lang=ko&theme=light&mode=wireframe makes a view shareable and scriptable
 const params = new URLSearchParams(location.search);
 let lang = params.get('lang') || localStorage.getItem('b2gm.lang') || 'en';
 const t = (key) => (TEXT[lang][key] ?? TEXT.en[key] ?? key);
@@ -61,6 +75,7 @@ function applyLanguage() {
     node.textContent = t(node.dataset.i18n);
   });
   $('lang').textContent = lang.toUpperCase();
+  $('gizmo').title = t('gizmoHint');
   updateThemeLabel();
   renderPipeline();
   renderLegend();
@@ -144,11 +159,19 @@ varying vec3 vNormal;
 varying vec3 vColor;
 uniform vec3 uLight;
 uniform float uAlpha;
+uniform float uEdge;
+uniform vec3 uEdgeColor;
 void main() {
+  if (uEdge > 0.5) {
+    gl_FragColor = vec4(uEdgeColor, uAlpha);
+    return;
+  }
   vec3 n = normalize(vNormal);
-  float diffuse = max(dot(n, normalize(uLight)), 0.0);
-  float ambient = 0.42;
-  gl_FragColor = vec4(vColor * (ambient + 0.75 * diffuse), uAlpha);
+  // IFC meshes do not wind consistently, so a back-facing normal must not
+  // turn a wall black: light both sides
+  float diffuse = abs(dot(n, normalize(uLight)));
+  float ambient = 0.38;
+  gl_FragColor = vec4(vColor * (ambient + 0.72 * diffuse), uAlpha);
 }`;
 
 const mat4 = {
@@ -173,33 +196,33 @@ const mat4 = {
     return out;
   },
   lookAt(eye, center, up) {
-    const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-    const norm = (v) => {
-      const l = Math.hypot(v[0], v[1], v[2]) || 1;
-      return [v[0] / l, v[1] / l, v[2] / l];
-    };
-    const cross = (a, b) => [
-      a[1] * b[2] - a[2] * b[1],
-      a[2] * b[0] - a[0] * b[2],
-      a[0] * b[1] - a[1] * b[0],
-    ];
-    const z = norm(sub(eye, center));
-    const x = norm(cross(up, z));
-    const y = cross(z, x);
-    const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    const z = vec.norm(vec.sub(eye, center));
+    const x = vec.norm(vec.cross(up, z));
+    const y = vec.cross(z, x);
     return new Float32Array([
       x[0], y[0], z[0], 0,
       x[1], y[1], z[1], 0,
       x[2], y[2], z[2], 0,
-      -dot(x, eye), -dot(y, eye), -dot(z, eye), 1,
+      -vec.dot(x, eye), -vec.dot(y, eye), -vec.dot(z, eye), 1,
     ]);
   },
-  translation(x, y, z) {
-    const out = mat4.identity();
-    out[12] = x; out[13] = y; out[14] = z;
-    return out;
+};
+
+const vec = {
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+  dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+  cross: (a, b) => [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0],
+  ],
+  norm(v) {
+    const l = Math.hypot(v[0], v[1], v[2]) || 1;
+    return [v[0] / l, v[1] / l, v[2] / l];
   },
 };
+
+const PITCH_LIMIT = 1.55;
 
 class Renderer {
   constructor(canvas) {
@@ -211,8 +234,11 @@ class Renderer {
     this.yaw = -0.9;
     this.pitch = 0.5;
     this.distance = 30;
-    this.pan = [0, 0];
     this.alpha = 1;
+    this.mode = 'shaded';
+    this.count = 0;
+    this.edgeCount = 0;
+    this.onDraw = null;
     if (!this.gl) return;
     this.initProgram();
     this.readThemeColors();
@@ -248,15 +274,31 @@ class Renderer {
       model: gl.getUniformLocation(program, 'uModel'),
       light: gl.getUniformLocation(program, 'uLight'),
       alpha: gl.getUniformLocation(program, 'uAlpha'),
+      edge: gl.getUniformLocation(program, 'uEdge'),
+      edgeColor: gl.getUniformLocation(program, 'uEdgeColor'),
     };
     gl.enable(gl.DEPTH_TEST);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     this.buffer = gl.createBuffer();
+    this.edgeBuffer = gl.createBuffer();
   }
 
   readThemeColors() {
     const style = getComputedStyle(document.documentElement);
     this.background = parseColor(style.getPropertyValue('--canvas-bottom')) || [0.1, 0.1, 0.1];
+    this.edgeColor = parseColor(style.getPropertyValue('--muted')) || [0.5, 0.5, 0.5];
+  }
+
+  /* Camera basis in world space: where the screen's right and up point. */
+  viewAxes() {
+    const forward = [
+      -Math.cos(this.pitch) * Math.cos(this.yaw),
+      -Math.cos(this.pitch) * Math.sin(this.yaw),
+      -Math.sin(this.pitch),
+    ];
+    const right = vec.norm(vec.cross(forward, [0, 0, 1]));
+    const up = vec.cross(right, forward);
+    return { forward, right, up };
   }
 
   bindInput() {
@@ -276,11 +318,16 @@ class Renderer {
       last = [event.clientX, event.clientY];
       if (mode === 'orbit') {
         this.yaw -= dx * 0.008;
-        this.pitch = Math.max(-1.5, Math.min(1.5, this.pitch + dy * 0.008));
+        this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch + dy * 0.008));
+        this.snapped = null;
       } else {
+        // the model follows the pointer: move the pivot along the screen axes,
+        // so a later orbit still turns around what is in the middle of the view
         const scale = this.distance * 0.0016;
-        this.pan[0] -= dx * scale;
-        this.pan[1] += dy * scale;
+        const { right, up } = this.viewAxes();
+        for (let k = 0; k < 3; k++) {
+          this.center[k] += up[k] * dy * scale - right[k] * dx * scale;
+        }
       }
       this.draw();
     });
@@ -336,6 +383,8 @@ class Renderer {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
     this.count = triangles * 3;
+    this.vertexData = data;
+    this.edgeCount = 0;   // rebuilt on demand for the edge modes
 
     const keepView = this.model === model;
     this.origin = origin;
@@ -347,11 +396,42 @@ class Renderer {
     if (keepView) this.draw(); else this.resetView();
   }
 
+  /* Every triangle as three line segments, in the same vertex layout so the
+     one program draws both. Built only when an edge mode asks for it. */
+  buildEdges() {
+    const src = this.vertexData;
+    if (!src || !this.count) return;
+    const out = new Float32Array(this.count * 2 * 9);
+    let at = 0;
+    for (let v = 0; v < this.count; v += 3) {
+      for (let k = 0; k < 3; k++) {
+        const a = (v + k) * 9;
+        const b = (v + (k + 1) % 3) * 9;
+        for (let j = 0; j < 9; j++) out[at++] = src[a + j];
+        for (let j = 0; j < 9; j++) out[at++] = src[b + j];
+      }
+    }
+    const gl = this.gl;
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.edgeBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, out, gl.STATIC_DRAW);
+    this.edgeCount = this.count * 2;
+  }
+
   resetView() {
     this.distance = this.radius * 2.8;
     this.yaw = -0.9;
     this.pitch = 0.5;
-    this.pan = [0, 0];
+    this.center = [0, 0, 0];
+    this.snapped = null;
+    this.draw();
+  }
+
+  /* Look straight along a world axis; the gizmo calls this. */
+  snapTo(axis, sign) {
+    if (axis === 'x') { this.yaw = sign > 0 ? 0 : Math.PI; this.pitch = 0; }
+    if (axis === 'y') { this.yaw = sign > 0 ? Math.PI / 2 : -Math.PI / 2; this.pitch = 0; }
+    if (axis === 'z') { this.pitch = sign > 0 ? PITCH_LIMIT : -PITCH_LIMIT; }
+    this.snapped = { axis, sign };
     this.draw();
   }
 
@@ -370,40 +450,61 @@ class Renderer {
     if (!gl) return;
     gl.clearColor(this.background[0], this.background[1], this.background[2], 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    if (this.onDraw) this.onDraw();
     if (!this.count) return;
 
     const aspect = this.canvas.width / Math.max(1, this.canvas.height);
-    // Z-up model space: orbit around the model centre.
-    const eye = [
-      this.center[0] + this.distance * Math.cos(this.pitch) * Math.cos(this.yaw),
-      this.center[1] + this.distance * Math.cos(this.pitch) * Math.sin(this.yaw),
-      this.center[2] + this.distance * Math.sin(this.pitch),
+    // Z-up model space: orbit around the pivot.
+    const offset = [
+      this.distance * Math.cos(this.pitch) * Math.cos(this.yaw),
+      this.distance * Math.cos(this.pitch) * Math.sin(this.yaw),
+      this.distance * Math.sin(this.pitch),
     ];
+    const eye = [0, 1, 2].map((k) => this.center[k] + offset[k]);
     const view = mat4.lookAt(eye, this.center, [0, 0, 1]);
-    const panned = mat4.multiply(mat4.translation(this.pan[0], this.pan[1], 0), view);
     const projection = mat4.perspective(Math.PI / 4, aspect, this.radius * 0.01, this.radius * 200);
     const model = mat4.identity();
+    // a headlight a little above the camera keeps the lit side facing the viewer
+    const light = vec.norm([offset[0], offset[1], offset[2] + this.distance * 0.5]);
 
     gl.useProgram(this.program);
-    gl.uniformMatrix4fv(this.uniform.mvp, false, mat4.multiply(projection, panned));
+    gl.uniformMatrix4fv(this.uniform.mvp, false, mat4.multiply(projection, view));
     gl.uniformMatrix4fv(this.uniform.model, false, model);
-    gl.uniform3f(this.uniform.light, 0.4, 0.6, 0.9);
+    gl.uniform3f(this.uniform.light, light[0], light[1], light[2]);
     gl.uniform1f(this.uniform.alpha, this.alpha);
+    gl.uniform3f(this.uniform.edgeColor, this.edgeColor[0], this.edgeColor[1], this.edgeColor[2]);
     // a translucent model must not write depth, or the faces behind vanish
     const translucent = this.alpha < 0.999;
     if (translucent) { gl.enable(gl.BLEND); gl.depthMask(false); }
     else { gl.disable(gl.BLEND); gl.depthMask(true); }
 
     const stride = 9 * 4;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-    const bind = (location, offset) => {
-      gl.enableVertexAttribArray(location);
-      gl.vertexAttribPointer(location, 3, gl.FLOAT, false, stride, offset);
+    const bindAll = (buffer) => {
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+      const bind = (location, offset) => {
+        gl.enableVertexAttribArray(location);
+        gl.vertexAttribPointer(location, 3, gl.FLOAT, false, stride, offset);
+      };
+      bind(this.attr.pos, 0);
+      bind(this.attr.normal, 12);
+      bind(this.attr.color, 24);
     };
-    bind(this.attr.pos, 0);
-    bind(this.attr.normal, 12);
-    bind(this.attr.color, 24);
-    gl.drawArrays(gl.TRIANGLES, 0, this.count);
+
+    const edges = this.mode !== 'shaded';
+    if (this.mode !== 'wireframe') {
+      gl.uniform1f(this.uniform.edge, 0);
+      // push the faces back a little so the edges drawn over them win the depth test
+      if (edges) { gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1, 1); }
+      bindAll(this.buffer);
+      gl.drawArrays(gl.TRIANGLES, 0, this.count);
+      if (edges) gl.disable(gl.POLYGON_OFFSET_FILL);
+    }
+    if (edges) {
+      if (!this.edgeCount) this.buildEdges();
+      gl.uniform1f(this.uniform.edge, 1);
+      bindAll(this.edgeBuffer);
+      gl.drawArrays(gl.LINES, 0, this.edgeCount);
+    }
     gl.depthMask(true);
   }
 }
@@ -417,6 +518,71 @@ function parseColor(value) {
 }
 
 const renderer = new Renderer($('scene'));
+
+/* --- axis gizmo ----------------------------------------------------------- */
+const AXES = [
+  { name: 'x', dir: [1, 0, 0], color: '#e5484d' },
+  { name: 'y', dir: [0, 1, 0], color: '#46a758' },
+  { name: 'z', dir: [0, 0, 1], color: '#3e82f7' },
+];
+const gizmo = $('gizmo');
+let gizmoTips = [];
+
+function drawGizmo() {
+  const ctx = gizmo.getContext('2d');
+  const size = gizmo.width;
+  const mid = size / 2;
+  const reach = size * 0.36;
+  ctx.clearRect(0, 0, size, size);
+  const { forward, right, up } = renderer.viewAxes();
+  const muted = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
+  // draw the axes pointing away from the viewer first so the near ones sit on top
+  const tips = AXES.map((axis) => ({
+    ...axis,
+    x: mid + vec.dot(axis.dir, right) * reach,
+    y: mid - vec.dot(axis.dir, up) * reach,
+    depth: vec.dot(axis.dir, forward),
+  })).sort((a, b) => b.depth - a.depth);
+  ctx.lineWidth = 2;
+  ctx.font = 'bold 11px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (const tip of tips) {
+    ctx.globalAlpha = tip.depth > 0.3 ? 0.45 : 1;
+    ctx.strokeStyle = tip.color;
+    ctx.beginPath();
+    ctx.moveTo(mid, mid);
+    ctx.lineTo(tip.x, tip.y);
+    ctx.stroke();
+    ctx.fillStyle = tip.color;
+    ctx.beginPath();
+    ctx.arc(tip.x, tip.y, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.fillText(tip.name.toUpperCase(), tip.x, tip.y + 0.5);
+  }
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = muted || '#888';
+  ctx.beginPath();
+  ctx.arc(mid, mid, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+  gizmoTips = tips;
+}
+
+gizmo.addEventListener('click', (event) => {
+  const rect = gizmo.getBoundingClientRect();
+  const x = (event.clientX - rect.left) * (gizmo.width / rect.width);
+  const y = (event.clientY - rect.top) * (gizmo.height / rect.height);
+  const hit = gizmoTips.find((tip) => Math.hypot(tip.x - x, tip.y - y) <= 11);
+  if (!hit) return;
+  const snapped = renderer.snapped;
+  // a second click on the same axis looks from the other side
+  const sign = snapped && snapped.axis === hit.name ? -snapped.sign : 1;
+  renderer.snapTo(hit.name, sign);
+});
+
+renderer.onDraw = drawGizmo;
+drawGizmo();
 
 /* --- narrow screens: one panel at a time ---------------------------------- */
 function showView(name) {
@@ -470,8 +636,30 @@ $('opacity').addEventListener('input', (event) => {
 
 $('reset-view').onclick = () => renderer.resetView();
 
+$('mode').value = params.get('mode') || localStorage.getItem('b2gm.mode') || 'shaded';
+renderer.mode = $('mode').value;
+$('mode').onchange = () => {
+  renderer.mode = $('mode').value;
+  localStorage.setItem('b2gm.mode', renderer.mode);
+  renderer.draw();
+};
+
+/* --- run options: the pipeline CLI flags that make sense in a browser ------ */
+$('version').value = params.get('version') || localStorage.getItem('b2gm.version') || '';
+$('save-json').checked = localStorage.getItem('b2gm.saveJson') === '1';
+$('version').onchange = () => localStorage.setItem('b2gm.version', $('version').value);
+$('save-json').onchange = () => localStorage.setItem('b2gm.saveJson', $('save-json').checked ? '1' : '0');
+
+function runOptions() {
+  return {
+    version: $('version').value || pipelineVersion() || '',
+    save_json: $('save-json').checked,
+  };
+}
+
 /* --- trees ---------------------------------------------------------------- */
 let selectedInput = null;
+let selectedPipeline = null;   // a .json picked in the input tree, else the default
 
 function renderTree(node, container, side) {
   container.innerHTML = '';
@@ -483,6 +671,7 @@ function renderTree(node, container, side) {
     row.innerHTML = `<span class="tw">${item.type === 'dir' ? '▾' : ''}</span>`
       + `<span class="nm">${item.name}</span>`
       + (item.size !== undefined ? `<span class="sz">${formatSize(item.size)}</span>` : '');
+    row.dataset.path = item.path || '';
     li.appendChild(row);
     parent.appendChild(li);
 
@@ -502,6 +691,9 @@ function renderTree(node, container, side) {
       row.classList.add('on');
       if (side === 'input') selectedInput = item.path;
       loadPreview(side, item.path);
+      if (side === 'input' && item.name.toLowerCase().endsWith('.json')) {
+        loadPipelineFile(item.path, item.name);
+      }
       if (item.viewable) {
         loadModel(side, item.path, item.name);
         if (booted && isNarrow()) showView('middle');
@@ -517,6 +709,23 @@ const formatSize = (bytes) => {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 };
 
+/* A .json in the input tree that holds a pipeline replaces the one in the
+   panel, which is the browser's form of the --pipeline flag. */
+async function loadPipelineFile(path, name) {
+  try {
+    const described = await api(`/api/pipeline?path=${encodeURIComponent(path)}`);
+    if (!described.stages.length) return;   // some other config, just previewed
+    pipeline = described;
+    selectedPipeline = path;
+    pipelineEdited = false;
+    renderPipeline();
+    $('pipeline-name').textContent = name;
+    $('runlog').textContent = `${t('pipelineLoaded')} ${name}`;
+  } catch (error) {
+    writeLog(error.message);
+  }
+}
+
 /* --- pipeline panel ------------------------------------------------------- */
 let pipeline = { stages: [] };
 
@@ -527,51 +736,234 @@ function renderPipeline() {
   host.innerHTML = '';
   chips.innerHTML = '';
   pipeline.stages.forEach((stage, index) => {
-    const chip = document.createElement('span');
+    const title = lang === 'ko' ? stage.title_ko : stage.title_en;
+    const chip = document.createElement('button');
+    chip.type = 'button';
     chip.className = 'chip';
     chip.textContent = stage.type;
-    chip.title = lang === 'ko' ? stage.title_ko : stage.title_en;
+    chip.dataset.title = `${title}${stage.output ? ` (${stage.output})` : ''}: ${t('chipHint')}`;
+    chip.title = chip.dataset.title;
     chips.appendChild(chip);
 
     const box = document.createElement('div');
     box.className = 'stage' + (index === 0 ? ' open' : '');
-    const title = lang === 'ko' ? stage.title_ko : stage.title_en;
     box.innerHTML = `<div class="stage-head"><span class="tag">${stage.type}</span>`
       + `<span class="stage-name">${title}</span></div><div class="stage-body"></div>`;
     const body = box.querySelector('.stage-body');
-
     stage.properties.forEach((property) => {
-      const row = document.createElement('div');
-      row.className = 'prop';
-      const key = document.createElement('label');
-      key.className = 'prop-key';
-      key.textContent = property.key;
-      row.appendChild(key);
-
-      // a scalar is a one-line field; a rule set stays JSON, which is the shape
-      // the standard defines
-      const field = document.createElement(property.scalar ? 'input' : 'textarea');
-      field.className = property.scalar ? 'prop-input' : 'prop-val';
-      field.value = property.value;
-      if (property.scalar) field.type = 'text';
-      field.dataset.stage = index;
-      field.dataset.key = property.key;
-      field.dataset.scalar = property.scalar ? '1' : '';
-      field.oninput = () => markEdited(field);
-      row.appendChild(field);
-      body.appendChild(row);
+      body.appendChild(buildProperty(property, index));
     });
-
     box.querySelector('.stage-head').onclick = () => box.classList.toggle('open');
     host.appendChild(box);
+
+    // the chip opens its stage in the panel and puts the stage's output on the canvas
+    chip.onclick = () => {
+      host.querySelectorAll('.stage').forEach((b, i) => b.classList.toggle('open', i === index));
+      box.scrollIntoView({ block: 'nearest' });
+      if (stage.output) selectOutput(stage.output);
+    };
   });
   updateApplyState();
 }
 
+/* One editable property. A scalar is a text field. A rule set is a list of
+   flat records, so it becomes a table with a json toggle; anything else stays
+   json, which is the shape the standard defines. */
+function buildProperty(property, stageIndex) {
+  const row = document.createElement('div');
+  row.className = 'prop';
+  row.dataset.stage = stageIndex;
+  row.dataset.key = property.key;
+  const head = document.createElement('div');
+  head.className = 'prop-head';
+  const key = document.createElement('label');
+  key.className = 'prop-key';
+  key.textContent = property.key;
+  head.appendChild(key);
+  row.appendChild(head);
+
+  if (property.scalar) {
+    const field = document.createElement('input');
+    field.className = 'prop-input';
+    field.type = 'text';
+    field.value = property.value;
+    field.oninput = () => { property.value = field.value; markEdited(row); };
+    row.appendChild(field);
+    row.readValue = () => {
+      const raw = field.value;
+      const asNumber = raw.trim() !== '' && !Number.isNaN(Number(raw));
+      return asNumber ? Number(raw) : raw;
+    };
+    return row;
+  }
+
+  let value = null;
+  try { value = JSON.parse(property.value); } catch (error) { value = null; }
+  const tabular = isRecordList(value) || isRecord(value);
+  let mode = tabular ? 'table' : 'json';
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'sw';
+  toggle.hidden = !tabular;
+  head.appendChild(toggle);
+  const holder = document.createElement('div');
+  row.appendChild(holder);
+  let textarea = null;
+
+  const remember = () => { property.value = JSON.stringify(value, null, 1); };
+
+  const render = () => {
+    holder.innerHTML = '';
+    toggle.textContent = mode === 'table' ? t('json') : t('table');
+    if (mode === 'table') {
+      holder.appendChild(buildTable(value, () => { remember(); markEdited(row); }, render));
+      textarea = null;
+    } else {
+      textarea = document.createElement('textarea');
+      textarea.className = 'prop-val';
+      textarea.value = property.value;
+      textarea.oninput = () => { property.value = textarea.value; markEdited(row); };
+      holder.appendChild(textarea);
+    }
+  };
+
+  toggle.onclick = () => {
+    if (mode === 'json') {
+      try { value = JSON.parse(textarea.value); } catch (error) {
+        textarea.classList.add('bad');
+        writeLog(`${property.key}: ${error.message}`);
+        return;
+      }
+      if (!isRecordList(value) && !isRecord(value)) return;
+      remember();
+    }
+    mode = mode === 'table' ? 'json' : 'table';
+    render();
+  };
+
+  row.readValue = () => {
+    if (mode === 'table') return cleanRecords(value, property.key);
+    try { return JSON.parse(textarea.value); } catch (error) {
+      throw new Error(`${property.key}: ${error.message}`);
+    }
+  };
+  render();
+  return row;
+}
+
+const isRecord = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+const isRecordList = (v) => Array.isArray(v) && v.length > 0 && v.every(isRecord);
+
+/* Records edit in place; a cell that holds an object keeps its json. */
+function buildTable(value, changed, rerender) {
+  const wrap = document.createElement('div');
+  wrap.className = 'rules';
+  const table = document.createElement('table');
+  wrap.appendChild(table);
+  const list = Array.isArray(value);
+  const rows = list ? value : [value];
+  const columns = [];
+  rows.forEach((record) => Object.keys(record).forEach((k) => {
+    if (!columns.includes(k)) columns.push(k);
+  }));
+
+  const cell = (record, column) => {
+    const td = document.createElement('td');
+    const input = document.createElement('input');
+    const current = record[column];
+    const nested = current !== null && typeof current === 'object';
+    input.value = current === undefined ? '' : nested ? JSON.stringify(current) : String(current);
+    if (nested) input.className = 'nested';
+    input.oninput = () => {
+      const text = input.value;
+      if (nested || /^[[{]/.test(text.trim())) {
+        try { record[column] = JSON.parse(text); input.classList.remove('bad'); }
+        catch (error) { record[column] = { __invalid: text }; input.classList.add('bad'); }
+      } else {
+        record[column] = cellValue(text);
+      }
+      changed();
+    };
+    td.appendChild(input);
+    return td;
+  };
+
+  if (list) {
+    const thead = table.createTHead().insertRow();
+    columns.forEach((column) => {
+      const th = document.createElement('th');
+      th.textContent = column;
+      thead.appendChild(th);
+    });
+    thead.appendChild(document.createElement('th'));
+    const tbody = table.createTBody();
+    rows.forEach((record, index) => {
+      const tr = tbody.insertRow();
+      columns.forEach((column) => tr.appendChild(cell(record, column)));
+      const td = document.createElement('td');
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'rm';
+      remove.textContent = '×';
+      remove.title = t('removeRow');
+      remove.onclick = () => { value.splice(index, 1); changed(); rerender(); };
+      td.appendChild(remove);
+      tr.appendChild(td);
+    });
+    const add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'add';
+    add.textContent = t('addRow');
+    add.onclick = () => {
+      value.push(Object.fromEntries(columns.map((c) => [c, ''])));
+      changed();
+      rerender();
+    };
+    wrap.appendChild(add);
+  } else {
+    const tbody = table.createTBody();
+    columns.forEach((column) => {
+      const tr = tbody.insertRow();
+      const k = document.createElement('td');
+      k.className = 'k';
+      k.textContent = column;
+      tr.appendChild(k);
+      tr.appendChild(cell(value, column));
+    });
+  }
+  return wrap;
+}
+
+/* "true"/"false" and numbers come back typed; everything else is a string. */
+function cellValue(text) {
+  const raw = text.trim();
+  if (raw === '') return '';
+  if (raw === 'true') return true;
+  if (raw === 'false') return false;
+  if (!Number.isNaN(Number(raw))) return Number(raw);
+  return text;
+}
+
+/* Blank cells are dropped so an added row only carries what was filled in. */
+function cleanRecords(value, key) {
+  const clean = (record) => {
+    const out = {};
+    for (const [k, v] of Object.entries(record)) {
+      if (v === '' || v === undefined) continue;
+      if (v && typeof v === 'object' && '__invalid' in v) {
+        throw new Error(`${key}.${k}: invalid JSON`);
+      }
+      out[k] = v;
+    }
+    return out;
+  };
+  return Array.isArray(value) ? value.map(clean) : clean(value);
+}
+
 let pipelineEdited = false;
 
-function markEdited(field) {
-  field.classList.add('edited');
+function markEdited(row) {
+  row.classList.add('edited');
   pipelineEdited = true;
   updateApplyState();
 }
@@ -586,28 +978,28 @@ function updateApplyState() {
 function editedPipeline() {
   const document_ = JSON.parse(JSON.stringify(pipeline.document || {}));
   const stages = document_['BIM_GIS_mapping.pipeline'] || [];
-  document.querySelectorAll('[data-stage]').forEach((field) => {
-    const stage = stages[Number(field.dataset.stage)];
+  document.querySelectorAll('#stage-list .prop').forEach((row) => {
+    const stage = stages[Number(row.dataset.stage)];
     if (!stage) return;
-    if (field.dataset.scalar) {
-      const raw = field.value;
-      const asNumber = raw.trim() !== '' && !Number.isNaN(Number(raw));
-      stage[field.dataset.key] = asNumber ? Number(raw) : raw;
-    } else {
-      try {
-        stage[field.dataset.key] = JSON.parse(field.value);
-      } catch (error) {
-        throw new Error(`${field.dataset.key}: ${error.message}`);
-      }
-    }
+    stage[row.dataset.key] = row.readValue();
   });
   return document_;
 }
 
 function markStage(type) {
   [...$('stage-chips').children].forEach((chip) => {
-    chip.classList.toggle('on', chip.textContent === type);
+    const on = chip.textContent === type;
+    chip.classList.toggle('on', on);
+    chip.title = (on ? `${t('shown')}. ` : '') + (chip.dataset.title || '');
   });
+}
+
+/* Which stage wrote this file: its output name in the pipeline, else a guess. */
+function stageFor(path) {
+  const name = path.split('/').pop();
+  const hit = (pipeline.stages || []).find((stage) => stage.output === name);
+  if (hit) return hit.type;
+  return /LoD/i.test(name) ? 'LM' : /city/i.test(name) ? 'EM' : null;
 }
 
 /* --- model + preview ------------------------------------------------------ */
@@ -658,10 +1050,15 @@ function busy(on, message) {
   $('overlay-text').textContent = message || '';
 }
 
+let loadSeq = 0;
+
 async function loadModel(side, path, label) {
+  // two files can be requested in a row at boot; only the last one may land
+  const token = ++loadSeq;
   busy(true, t('loading'));
   try {
     const model = await api(`/api/model?side=${side}&path=${encodeURIComponent(path)}`);
+    if (token !== loadSeq) return;
     $('model-title').textContent = label || path;
     if (!model.features.length) {
       renderer.model = null;
@@ -673,12 +1070,11 @@ async function loadModel(side, path, label) {
       renderLegend();
     }
     updateStats();
-    const stage = /LoD/i.test(path) ? 'LM' : /city/i.test(path) ? 'EM' : null;
-    if (stage) markStage(stage);
+    markStage(side === 'output' ? stageFor(path) : null);
   } catch (error) {
     $('legend').innerHTML = `<div class="legend-row err">${error.message}</div>`;
   } finally {
-    busy(false);
+    if (token === loadSeq) busy(false);
   }
 }
 
@@ -713,10 +1109,16 @@ let dragDepth = 0;
   });
 });
 
+function appendOptions(body) {
+  const options = runOptions();
+  if (options.version) body.append('version', options.version);
+  if (options.save_json) body.append('save_json', '1');
+}
+
 canvasWrap.addEventListener('drop', async (event) => {
   const files = [...event.dataTransfer.files];
   const ifc = files.find((f) => f.name.toLowerCase().endsWith('.ifc'));
-  const pipeline = files.find((f) => f.name.toLowerCase().endsWith('.json'));
+  const config = files.find((f) => f.name.toLowerCase().endsWith('.json'));
   if (!ifc) {
     writeLog(t('needIfc'));
     return;
@@ -724,12 +1126,11 @@ canvasWrap.addEventListener('drop', async (event) => {
 
   const body = new FormData();
   body.append('ifc', ifc, ifc.name);
-  if (pipeline) body.append('pipeline', pipeline, pipeline.name);
-  const version = pipelineVersion();
-  if (version) body.append('version', version);
+  if (config) body.append('pipeline', config, config.name);
+  appendOptions(body);
 
   busy(true, `${t('converting')} ${ifc.name}`);
-  writeLog(`${t('converting')} ${ifc.name}${pipeline ? ' + ' + pipeline.name : ''}`);
+  writeLog(`${t('converting')} ${ifc.name}${config ? ' + ' + config.name : ''}`);
   try {
     const result = await api('/api/convert', { method: 'POST', body });
     writeLog(result.log);
@@ -751,6 +1152,7 @@ async function showConverted(result) {
   renderer.load(result.model, hiddenClasses);
   renderLegend();
   updateStats();
+  markStage(stageFor(result.path));
   renderTree(await api('/api/tree?side=input'), $('input-tree'), 'input');
   renderTree(await api('/api/tree?side=output'), $('output-tree'), 'output');
   if (result.input) selectedInput = result.input;
@@ -775,6 +1177,7 @@ $('apply-config').onclick = async () => {
   body.append('input', selectedInput);
   body.append('pipeline', new Blob([JSON.stringify(edited, null, 2)],
                                    { type: 'application/json' }), 'pipeline.json');
+  appendOptions(body);
 
   busy(true, t('converting'));
   writeLog(t('converting'));
@@ -790,13 +1193,14 @@ $('apply-config').onclick = async () => {
   }
 };
 
-/* The header shows which CityGML version the loaded pipeline asks for. */
+/* The CityGML version the loaded pipeline asks for, if it says. */
 function pipelineVersion() {
   for (const stage of pipeline.stages || []) {
     const hit = (stage.properties || []).find((p) => p.key === 'citygml_version');
     if (hit) return String(hit.value).replace(/"/g, '').trim();
   }
-  return null;
+  const document_ = pipeline.document || {};
+  return document_.citygml_version ? String(document_.citygml_version) : null;
 }
 
 /* --- run ------------------------------------------------------------------ */
@@ -810,10 +1214,16 @@ $('run').onclick = async () => {
   button.textContent = t('running');
   writeLog('');
   try {
+    const options = runOptions();
     const result = await api('/api/run', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: selectedInput }),
+      body: JSON.stringify({
+        path: selectedInput,
+        pipeline: selectedPipeline || undefined,
+        version: options.version || undefined,
+        save_json: options.save_json,
+      }),
     });
     writeLog(result.log);
     await refreshOutputs(lodOutput(pipeline) || null);
@@ -832,10 +1242,12 @@ async function refreshOutputs(autoSelect) {
   if (wanted) selectOutput(wanted);
 }
 
-/* Click the named output file so the canvas shows the pipeline result. */
+/* Click the named output file so the canvas shows the pipeline result. A file
+   at the top of the output folder wins over a copy in a subfolder. */
 function selectOutput(name) {
-  const rows = [...$('output-tree').querySelectorAll('.node')];
-  const row = rows.find((r) => r.querySelector('.nm').textContent === name);
+  const rows = [...$('output-tree').querySelectorAll('.node[data-path]')];
+  const row = rows.find((r) => r.dataset.path === name)
+    || rows.find((r) => r.querySelector('.nm').textContent === name);
   if (row) row.click();
 }
 
@@ -860,6 +1272,7 @@ function selectInput(name) {
     const config = await api('/api/config');
     $('input-path').textContent = config.input_dir;
     $('output-path').textContent = config.output_dir;
+    $('pipeline-name').textContent = config.pipeline_name || '';
     pipeline = await api('/api/pipeline');
     renderPipeline();
     renderTree(await api('/api/tree?side=input'), $('input-tree'), 'input');

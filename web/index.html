@@ -14,6 +14,12 @@
   </div>
   <div class="stages" id="stage-chips"></div>
   <div class="actions">
+    <select id="version" class="opt" title="CityGML version">
+      <option value="" data-i18n="versionPipeline">CityGML: pipeline</option>
+      <option value="2.0">CityGML 2.0</option>
+      <option value="3.0">CityGML 3.0</option>
+    </select>
+    <label class="opt check"><input type="checkbox" id="save-json"><span data-i18n="saveJson">Save JSON</span></label>
     <button id="run" class="primary" data-i18n="run">Run pipeline</button>
     <button id="lang" class="ghost" title="Language">EN</button>
     <button id="theme" class="ghost" title="Theme">Dark</button>
@@ -39,7 +45,7 @@
       </div>
       <div class="block">
         <div class="block-head split">
-          <span data-i18n="pipeline">Pipeline stages</span>
+          <span><span data-i18n="pipeline">Pipeline stages</span> <span class="path" id="pipeline-name"></span></span>
           <button id="apply-config" class="ghost" disabled data-i18n="applyConfig">Apply &amp; run</button>
         </div>
         <div id="stage-list"></div>
@@ -58,12 +64,18 @@
       <canvas id="scene"></canvas>
       <div class="legend" id="legend"></div>
       <div class="viewtools" id="viewtools">
+        <select id="mode" title="Rendering">
+          <option value="shaded" data-i18n="modeShaded">Shaded</option>
+          <option value="edges" data-i18n="modeEdges">Shaded + edges</option>
+          <option value="wireframe" data-i18n="modeWire">Wireframe</option>
+        </select>
         <label><span data-i18n="opacity">Opacity</span>
           <input type="range" id="opacity" min="15" max="100" value="100"></label>
         <span class="val" id="opacity-val">100%</span>
         <button id="reset-view" class="ghost" data-i18n="resetView">Reset view</button>
       </div>
       <div class="hint" id="hint" data-i18n="hint">Drag to orbit, wheel to zoom, right drag to pan</div>
+      <canvas id="gizmo" class="gizmo" width="96" height="96"></canvas>
       <div class="overlay" id="overlay" hidden><div class="spinner"></div><span id="overlay-text"></span></div>
       <div class="dropzone" id="dropzone" hidden><div><strong data-i18n="dropTitle">Drop to convert</strong><br><span data-i18n="dropHint">an .ifc model, optionally with a pipeline .json</span></div></div>
     </div>

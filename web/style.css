@@ -28,6 +28,18 @@
 
 * { box-sizing: border-box; }
 
+/* scrollbars follow the theme instead of the browser default */
+* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover { background-color: var(--muted); }
+
 html, body {
   height: 100%;
   margin: 0;
@@ -59,12 +71,26 @@ html, body {
   border: 1px solid var(--border);
   border-radius: 11px;
   font-size: 11px;
+  line-height: 1.4;
   color: var(--muted);
+  background: transparent;
   white-space: nowrap;
 }
+.chip:hover { border-color: var(--accent); color: var(--accent); }
 .chip.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 
-.actions { display: flex; gap: 6px; }
+.actions { display: flex; gap: 6px; align-items: center; }
+.actions .opt {
+  font: inherit;
+  font-size: 11px;
+  color: var(--text);
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 6px;
+}
+.actions .check { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.actions .check input { margin: 0; accent-color: var(--accent); }
 
 button {
   font: inherit;
@@ -114,6 +140,7 @@ button.ghost { background: transparent; min-width: 46px; }
 .block { border-bottom: 1px solid var(--border); }
 .block-head.split { display: flex; align-items: center; justify-content: space-between; }
 .block-head.split button { padding: 1px 8px; font-size: 10px; min-width: 0; }
+#pipeline-name { text-transform: none; letter-spacing: 0; }
 
 .block-head.tabs { display: flex; gap: 0; padding: 0; }
 .tabs .tab {
@@ -192,6 +219,49 @@ ul.tree ul { padding-left: 13px; }
 
 .prop { margin: 5px 0; }
 .prop-key { color: var(--muted); font-size: 11px; }
+.prop-head { display: flex; align-items: baseline; justify-content: space-between; }
+.prop-head .sw {
+  font-size: 10px; color: var(--muted); background: none; border: 0;
+  padding: 0 2px; min-width: 0;
+}
+.prop-head .sw:hover { color: var(--accent); }
+
+/* a rule set is a list of flat records, so it edits as a table; nested
+   values keep their json in the cell */
+.rules {
+  margin-top: 2px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: auto;
+  background: var(--panel-alt);
+}
+.rules table { border-collapse: collapse; width: 100%; font-size: 11px; }
+.rules th {
+  text-align: left; font-weight: 500; color: var(--muted);
+  padding: 3px 5px; border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.rules td { padding: 0; border-bottom: 1px solid var(--border); }
+.rules td.k { padding: 3px 5px; color: var(--muted); white-space: nowrap; }
+.rules tr:last-child td { border-bottom: 0; }
+.rules input {
+  width: 100%; min-width: 72px; padding: 3px 5px; border: 0;
+  background: transparent; color: var(--text);
+  font-family: ui-monospace, "Cascadia Mono", Menlo, monospace; font-size: 11px;
+}
+.rules input:focus { outline: 1px solid var(--accent); }
+.rules input.nested { color: var(--muted); }
+.rules input.bad { color: #e5484d; }
+.rules .rm {
+  width: 18px; min-width: 0; padding: 0; border: 0; background: none;
+  color: var(--muted); font-size: 12px; line-height: 1;
+}
+.rules .rm:hover { color: #e5484d; }
+.rules .add {
+  display: block; width: 100%; text-align: left; border: 0; border-radius: 0;
+  background: transparent; color: var(--muted); font-size: 10px; padding: 3px 5px;
+}
+.rules .add:hover { color: var(--accent); }
+.prop.edited .rules, .prop.edited .prop-input, .prop.edited .prop-val { border-color: var(--accent); }
 .prop-input {
   width: 100%;
   margin: 2px 0 0;
@@ -268,6 +338,11 @@ ul.tree ul { padding-left: 13px; }
   font-size: 11px;
 }
 .viewtools label { display: flex; align-items: center; gap: 6px; }
+.viewtools select {
+  font: inherit; font-size: 11px; color: var(--text);
+  background: var(--panel-alt); border: 1px solid var(--border);
+  border-radius: 4px; padding: 2px 4px;
+}
 .viewtools input[type="range"] { width: 96px; accent-color: var(--accent); }
 .viewtools .val { color: var(--muted); min-width: 34px; }
 .viewtools button { padding: 2px 8px; font-size: 11px; min-width: 0; }
@@ -279,6 +354,15 @@ ul.tree ul { padding-left: 13px; }
   color: var(--muted);
   font-size: 11px;
   pointer-events: none;
+}
+
+.gizmo {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  width: 96px;
+  height: 96px;
+  cursor: pointer;
 }
 
 .dropzone {
@@ -379,7 +463,10 @@ ul.tree ul { padding-left: 13px; }
   .legend { max-width: 55%; font-size: 10px; }
   .viewtools { top: auto; bottom: 8px; right: 8px; font-size: 10px; }
   .viewtools input[type="range"] { width: 74px; }
+  .viewtools select { display: none; }
+  .gizmo { right: auto; left: 8px; width: 72px; height: 72px; }
   .hint { display: none; }
+  .actions .check span { display: none; }
   .prop-val { max-height: 130px; }
   .preview { max-height: 45vh; }
 }

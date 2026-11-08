@@ -12,14 +12,24 @@ dependencies.
 
 | Panel | Contents |
 |-------|----------|
-| Left | input folder tree, and the PD/CM/EM/LM stage properties as editable fields (scalars as one-line inputs, rule sets as JSON) |
-| Middle | WebGL canvas — drag to orbit, wheel to zoom, right drag to pan; an opacity slider and view reset; a legend lists the feature classes with counts and toggles each on or off |
+| Left | input folder tree, and the PD/CM/EM/LM stage properties as editable fields: scalars as one-line inputs, rule sets as tables with a row per rule (a `json` toggle shows the raw form) |
+| Middle | WebGL canvas — drag to orbit, wheel to zoom, right drag to pan; shaded, shaded + edges or wireframe rendering, an opacity slider and view reset; an axis gizmo whose X/Y/Z tips snap the camera (click again for the far side); a legend lists the feature classes with counts and toggles each on or off |
 | Right | output folder tree, and a tabbed pane with the file preview and the stage log |
+
+The header carries the pipeline flags that make sense in a browser: the CityGML
+version (2.0, 3.0, or whatever the pipeline file says) and whether to also save
+the BIM/GIS conceptual models as JSON. Clicking a `.json` in the input tree that
+holds a pipeline loads it into the stage panel, which is the `--pipeline` flag;
+the panel head names the file in use. The PD/CM/EM/LM chips in the header open
+that stage in the panel and put its output file on the canvas, and the lit chip
+is the stage whose output is currently shown.
 
 Both side panels are resized by dragging the splitters (the widths are
 remembered). Below 900 px the three panels do not fit side by side and a drag
 splitter is no use on touch, so the layout becomes one panel at a time behind a
-tab bar; `?view=left|middle|right` opens a particular one. **Run pipeline** executes PD → CM → EM → LM on the IFC selected in
+tab bar; `?view=left|middle|right` opens a particular one, and `?theme=`,
+`?lang=`, `?mode=shaded|edges|wireframe`, `?version=` and `?hide=` preset the
+rest, so a view can be shared as a link. **Run pipeline** executes PD → CM → EM → LM on the IFC selected in
 the input tree and streams the stage log back, then reloads the output tree and
 the canvas.
 
@@ -37,7 +47,9 @@ pipeline `.json`. The model runs through PD → CM → EM → LM and the result 
 rendered straight away:
 
 ```
-POST /api/convert     multipart: ifc=<model.ifc> [pipeline=<config.json>] [version=2.0|3.0]
+POST /api/convert     multipart: ifc=<model.ifc> [pipeline=<config.json>] [version=2.0|3.0] [save_json=1]
+POST /api/run         json: {"path": "<in input tree>", "pipeline": "<.json in input tree>", "version": "3.0", "save_json": true}
+GET  /api/pipeline?path=<.json in input tree>    describe a pipeline other than the default
 ```
 
 Sending your own config is the point of it — change an `EM_rule` destination and
