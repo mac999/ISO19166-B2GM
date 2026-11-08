@@ -2,17 +2,37 @@
 
 [![tests](https://github.com/mac999/ISO19166-B2GM/actions/workflows/tests.yml/badge.svg)](https://github.com/mac999/ISO19166-B2GM/actions/workflows/tests.yml)
 
+An implementation of the [ISO/TS 19166 B2GM](https://www.iso.org/standard/90943.html)
+conceptual framework: a BIM model (IFC) is mapped into a GIS model (CityGML)
+through four rule-driven stages. The rules live in a JSON file whose vocabulary
+follows the standard's UML, the output validates against the official OGC
+CityGML 2.0 and 3.0 schemas, and a browser workspace shows the source, the
+rules and the result side by side.
+
 Written by the project leader of ISO/TS 19166. This is a personal
 implementation, not an official ISO or ISO/TC 211 deliverable and not a
-conformance certification.
-
-An implementation of the [ISO/TS 19166 B2GM](https://www.iso.org/standard/90943.html) conceptual framework: mapping a BIM model (IFC) into a GIS model (CityGML) through four well-defined stages. In fact, I thought there were issues with practical application because standards like ISO often only have standard documents without providing tools. Taking this into consideration, I plan to continue updating it whenever I have time. 
+conformance certification. Standards such as this one usually ship as a document
+without a tool, which makes them hard to try out; this repository is meant to
+close that gap. If you are interested, fork and join.
 
 <p align="center">
- <img src="./doc/fig6.png" height="150"></img>
+  <img src="./doc/webview.png" width="900" alt="B2GM web view: input tree and pipeline stages on the left, the mapped CityGML model in the middle, output tree and file preview on the right"></img>
 </p>
 
-If you are interested in this project, please fork and join.
+## Contents
+
+1. [How the mapping works](#how-the-mapping-works)
+2. [Quick start](#quick-start)
+3. [What comes out](#what-comes-out)
+4. [Web view](#web-view)
+5. [Configuring the mapping](#configuring-the-mapping)
+6. [Scope](#scope)
+7. [Documentation](#documentation)
+8. [For developers](#for-developers)
+9. [Revision history](#revision-history)
+10. [Citation and author](#citation-and-author)
+
+## How the mapping works
 
 ```
  IFC (BIM)  ──►  PD  ──►  CM  ──►  EM  ──►  LM  ──►  CityGML (GIS)
@@ -26,31 +46,25 @@ If you are interested in this project, please fork and join.
 | PD    | Perspective Definition  | Select the required subset of the BIM dataset (data/logic/style views) |
 | CM    | Coordinate Mapping      | Transform source CRS → destination CRS (e.g. EPSG:4326 → EPSG:3857) |
 | EM    | Element Mapping         | Map an IFC class to its GIS/CityGML class (e.g. `IfcBuilding` → `CityModel.Building`) |
-| LM    | LoD Mapping             | Assign a GIS Level-of-Detail (LOD0…LOD4)                        |
+| LM    | LoD Mapping             | Assign a GIS Level-of-Detail (LOD0…LOD4) and regenerate the geometry with the Table 8 operators |
 
-
+Each stage reads its rules from the pipeline file and writes an intermediate
+file, so a run can be inspected stage by stage. The concept figures below are
+from the standard's development.
 
 <p align="center">
+<img src="./doc/fig6.png" height="150"></img> </br>
 <img src="./doc/fig1.JPG" height="240"> </img>  </br>
 <img src="./doc/fig5.png" height="150"> </img>
 <img src="./doc/fig4.png" height="150"> </img>  </br>
 <img src="./doc/fig7.png" height="205"> </img> </br>
-<img src="./doc/fig2.JPG" height="270"> </img> 
-</p>
-
-The pipeline also ships with a browser workspace: the input tree and the
-PD/CM/EM/LM stage properties on the left, a WebGL canvas in the middle and the
-output tree on the right. Drop an IFC on the canvas to convert it, or edit a
-stage rule and run it again. Clicking a class in the legend hides it, which is
-how you look inside the result. See [Web view](doc/web-view.md).
-
-<p align="center">
-  <img src="./doc/webview.png" width="900" alt="B2GM web view: input tree and pipeline stages, 3D canvas, output tree"></img>
-  </br>
-  <img src="./doc/webview_rooms.png" width="900" alt="The same model with the building block and wall surfaces hidden, showing the LOD1 room solids"></img>
+<img src="./doc/fig2.JPG" height="270"> </img>
 </p>
 
 ## Quick start
+
+Python 3.10 or newer. The core dependencies are ifcopenshell, pyproj, shapely,
+numpy and tqdm.
 
 ```bash
 git clone https://github.com/mac999/ISO19166-B2GM.git
@@ -62,9 +76,89 @@ python B2GM_main.py --web                     # browser workspace on localhost
 python -m pytest
 ```
 
-Results land under `output/`. Python 3.10 to 3.13 are exercised in CI; the
-sample is IFC2X3 and the test suite also runs an IFC4 model through every stage.
-A live copy of the web view runs at https://iso19166-b2gm-mac999.fly.dev.
+`pip install .` adds the `b2gm`, `b2gm-web`, `b2gm-em` and `b2gm-lm` console
+commands; `run_pipeline.sh` / `.bat` and `run_web.sh` / `.bat` are launchers for
+a clone. A live copy of the web view runs at
+https://iso19166-b2gm-mac999.fly.dev, where you can drop your own IFC on the
+canvas.
+
+Optional packages switch on more: `manifold3d` for the 3D boolean operators,
+`xmlschema` to validate the output against the OGC schemas, `xsdata` for the
+typed CityGML writer.
+
+## What comes out
+
+With the bundled sample (`input_data/duplex_apartment.ifc`, IFC2X3) and the
+example pipeline, `output/` receives:
+
+| File | Stage | Contents |
+|------|-------|----------|
+| `intermediate.ifc` + `.pd.json` | PD | the selected elements and the perspective summary |
+| `intermediate_CM.ifc` + `.cm.json` | CM | the model placed in the destination CRS; origin, true north and element count |
+| `city.gml` | EM | CityGML with every element mapped to its feature class |
+| `city_LoD.gml` | LM | the same with the LoD assigned and the operator geometry, for example a LOD1 block for the building and one for each room |
+| `bim_model.json`, `gis_model.json` | with `--save-json` | the conceptual models in the shape of the ISO 19166 XSDs |
+
+The CityGML version is a variable, not a build-time choice: `--citygml-version`
+on the command line, `"citygml_version"` in the pipeline file, or the selector in
+the web view. 3.0 keeps the building storeys as `bldg:Storey` features, which
+2.0 has no element for, and writes closed meshes as `gml:Solid`.
+
+## Web view
+
+<p align="center">
+  <img src="./doc/webview_rooms.png" width="900" alt="The same model with the building block and the wall, floor, ceiling and roof surfaces hidden from the legend, leaving the LOD1 room solids, windows and doors"></img>
+</p>
+
+`python B2GM_main.py --web` opens a three-panel workspace on the stdlib HTTP
+server, with no web framework and nothing to install beyond the core
+dependencies.
+
+- Left: the input tree and the pipeline stages. Scalars are plain fields; a
+  rule set is a property grid per rule listing the keys the standard defines
+  for that stage, with fixed choices such as `lod` and `PSet_operation` as
+  drop-downs. **Apply & run** converts the selected IFC with the edited rules.
+- Middle: a WebGL canvas. Drag to orbit, wheel to zoom, right-drag to pan; an
+  axis gizmo snaps the view; six rendering modes (shaded, shaded + edges,
+  wireframe, x-ray, flat + edges, hidden line); the legend hides a feature
+  class on click, which is how you look inside a model. A file with nothing to
+  draw shows its text here instead.
+- Right: the output tree, a file preview and the stage log.
+- Header: the CityGML version, whether to save the JSON models, and the stage
+  chips, which open a stage and show its output on the canvas.
+
+Drop an `.ifc` on the canvas, optionally with a pipeline `.json`, to convert it.
+`?theme=`, `?lang=`, `?mode=`, `?select=` and `?hide=` preset a view so it can be
+shared as a link. See [Web view](doc/web-view.md) for the routes and the
+Fly.io deployment.
+
+<p align="center">
+  <img src="./doc/webview_xray.png" width="900" alt="X-ray rendering of the LoD model in the light theme"></img>
+</p>
+
+## Configuring the mapping
+
+`input_data/B2GM_example.json` defines the stage sequence. A stage carries its
+`type`, an `output` name and its rules:
+
+```json
+{ "type": "EM", "output": "city.gml",
+  "rule": [{ "source": "IfcBuilding", "destination": "CityModel.Building" }] }
+```
+
+```json
+{ "type": "LM", "output": "city_LoD.gml",
+  "rule": [{ "source": "IfcBuilding", "lod": "LOD1", "aggregate": "IfcWall.*",
+             "operation": [{ "op": "footprint" },
+                           { "op": "extrude", "args": { "height": { "$extent": "z" } } }] }] }
+```
+
+Patterns are full-match regular expressions. The PD stage carries data, logic
+and style views and property formatting; CM carries the source and destination
+CRS, an optional transform matrix and origin; EM carries the class mapping and
+the `PSet_operation`; LM carries the LoD and an operator chain over the eleven
+Table 8 operators. [Pipeline configuration](doc/pipeline-configuration.md)
+covers every key.
 
 ## Scope
 
@@ -83,7 +177,8 @@ What this implementation does, stated so it can be checked:
 - The conceptual model classes mirror the ISO 19166 XSDs, and
   `tests/test_xsd_conformance.py` parses those XSDs to check it, so a renamed or
   missing member fails the build.
-- Core dependencies are ifcopenshell, pyproj, shapely, numpy and tqdm. MIT.
+- The parser reads every IfcProduct; which of them are mapped is the PD stage's
+  decision. IFC2X3 and IFC4 input are both exercised by the test suite.
 
 What it is **not**:
 
@@ -91,6 +186,8 @@ What it is **not**:
   conceptual mapping stages; geometry handling is deliberately simple.
 - Not a conformance test suite. The XSD check verifies this implementation, not
   a third party's.
+- CityGML output covers the Building and LandUse modules. Transportation,
+  vegetation, relief and the other thematic modules are out of scope.
 - Geometry is triangulated B-rep. A mesh is written as `gml:Solid` only when it
   actually closes, otherwise as `gml:MultiSurface`.
 - Boolean operators work on 2D geometry, or on 3D via `manifold3d` when
@@ -105,7 +202,17 @@ What it is **not**:
 | [Architecture](doc/architecture.md) | module map, ISO 19166 XSD alignment, saving the conceptual models as JSON |
 | [Web view](doc/web-view.md) | the browser workspace, upload and conversion, deploying to Fly.io |
 
-## Tests
+## For developers
+
+| Module | Role |
+|--------|------|
+| `B2GM_main.py` | pipeline orchestrator and CLI |
+| `B2GM_PD.py`, `B2GM_CM.py`, `B2GM_element.py`, `B2GM_LM.py` | the four stages |
+| `B2GM_LM_operators.py` | the Table 8 operator library |
+| `B2GM_BIM.py`, `B2GM_GIS.py`, `B2GM_citygml3.py` | IFC reader, CityGML 2.0 writer, CityGML 3.0 writer |
+| `B2GM_model.py`, `B2GM_property.py` | the conceptual model mirroring the XSDs |
+| `B2GM_web.py`, `web/` | the web view: HTTP routes, model readers, and the browser side |
+| `XSD/`, `UML/` | the standard's schemas the model classes are checked against |
 
 ```bash
 python -m pytest
@@ -113,18 +220,26 @@ python -m pytest
 
 The suite under `tests/` covers the conceptual model, every stage, the LM
 operator chains, IFC parsing for IFC2X3 and IFC4, CityGML 2.0 and 3.0 document
-structure and the end-to-end pipeline. It runs on GitHub Actions for each push
-and pull request. Tests that need optional dependencies skip when those are
-missing.
+structure, the web routes and the end-to-end pipeline. It runs on GitHub Actions
+for every push and pull request on Python 3.10, 3.12 and 3.13. Tests that need
+optional dependencies skip when those are missing.
+
+Pull requests are welcome. Keep a change to one concern, add a test next to the
+ones that cover that module, and run the suite before pushing.
 
 ## Revision history
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.2.1 | 2026-11-08 | The IFC parser reads every product instead of a fixed type list, so furniture, footings, the roof and stair flights now reach the PD stage; the example maps them. Openings whose host has no geometry of its own (skylights in an IfcRoof aggregate) are kept as installations instead of being lost. Files without geometry open as text in the middle panel. X-ray, flat + edges and hidden line rendering. `?select=` opens a given output file. README reorganised with current screenshots. |
 | 0.2.0 | 2026-11-08 | Web view reworked: right-drag pan follows the pointer and orbits around the panned centre, two-sided lighting, axis gizmo with snap views, shaded / edges / wireframe modes, rule sets edited as property grids with the standard's keys, CityGML version and JSON save in the header, pipeline choice from the input tree, stage chips open their stage and show its output, themed scrollbars. IFC4 input covered by a fixture and regression test. GitHub Actions runs the suite on Python 3.10, 3.12 and 3.13; the package now requires 3.10 or newer, which is the oldest ifcopenshell ships wheels for. README split into doc pages behind a quick start. |
 | 0.1.0 | 2026-09-07 | First release: rule-driven PD / CM / EM / LM pipeline with all eleven Table 8 LoD operators, CM georeferencing into the destination CRS, schema-valid CityGML 2.0 and 3.0 output, web view with upload and conversion, Fly.io deployment. |
 
-# Author
-Taewook kang, Ph.D, laputa99999@gmail.com
+## Citation and author
+
+`CITATION.cff` carries the citation metadata; GitHub's "Cite this repository"
+button renders it. MIT licence.
+
+Taewook Kang, Ph.D, laputa99999@gmail.com
 
 Project leader, ISO/TC 211 ISO/TS 19166

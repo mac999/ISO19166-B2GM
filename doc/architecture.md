@@ -85,7 +85,7 @@ is `{name, type, related}`:
 | `IfcRelAssociatesMaterial` | `material` | dependency |
 | `IfcRelDefinesByType` | `type` | generalization |
 
-For `duplex_apartment.ifc` this yields 736 relationships across 166 elements
+For `duplex_apartment.ifc` this yields 849 relationships across 245 elements
 (association / dependency / generalization), carried through to the GIS model.
 
 ```powershell

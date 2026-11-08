@@ -66,7 +66,7 @@ The conversion runs in a separate process, so a large or malformed model times
 out (180 s) rather than wedging the view. Uploads are capped at 50 MB.
 
 Clicking a class in the legend hides it, which is how you look inside the model.
-In the second screenshot at the top of this README the building block and the
+In the second screenshot in the README the building block and the
 wall surfaces are switched off, leaving the LOD1 room solids the LM operators
 produced, plus the windows and doors.
 
