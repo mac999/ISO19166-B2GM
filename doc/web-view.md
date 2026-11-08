@@ -30,8 +30,9 @@ splitter is no use on touch, so the layout becomes one panel at a time behind a
 tab bar; `?view=left|middle|right` opens a particular one, and `?theme=`,
 `?lang=`, `?mode=shaded|edges|wireframe|xray|flat|hidden`, `?opacity=<0..100>`, `?lod=LOD1,LOD2`, `?select=<file in the output tree, else the input tree>`, `?version=` and `?hide=` preset the
 rest, so a view can be shared as a link. **Run pipeline** executes PD → CM → EM → LM on the IFC selected in
-the input tree and streams the stage log back, then reloads the output tree and
-the canvas.
+the input tree, writes the result under `output/<model>/` (a re-run overwrites
+that folder), streams the stage log back and puts the finished LoD model on the
+canvas. The top of `output/` is left to the command line run.
 
 Clicking a file renders it: `.ifc` (the source model, coloured by IFC type),
 `.gml` (CityGML), `.json` (`bim_model.json` / `gis_model.json`) and `.obj`.

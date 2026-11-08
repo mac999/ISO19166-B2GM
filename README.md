@@ -235,6 +235,7 @@ after the fact from the module headers and the commit history.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.2.4 | 2026-11-08 | Run pipeline writes under `output/<model>/` like a drop or Apply & run, re-runs overwrite that folder, and the result is shown and marked in the output tree straight away. |
 | 0.2.3 | 2026-11-08 | LoD chips above the canvas filter a CityGML model by level, and `?lod=` presets them. The opacity slider runs to 0 and x-ray edges follow it. |
 | 0.2.2 | 2026-11-08 | Saturated class palette, configurable from `input_data/colors.json`. Edges and wireframes drawn in the class colour. `?opacity=` and `?select=` reach the input tree. README opens on the source IFC drawn translucent; revision history traced back to the 2024 sources. |
 | 0.2.1 | 2026-11-08 | The IFC parser reads every product instead of a fixed type list, so furniture, footings, the roof and stair flights now reach the PD stage; the example maps them. Openings whose host has no geometry of its own (skylights in an IfcRoof aggregate) are kept as installations instead of being lost. Files without geometry open as text in the middle panel. X-ray, flat + edges and hidden line rendering. `?select=` and `?opacity=` preset a view. README reorganised with current screenshots. |
