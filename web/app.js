@@ -1338,6 +1338,7 @@ function selectOutput(name) {
   const row = rows.find((r) => r.dataset.path === name)
     || rows.find((r) => r.querySelector('.nm').textContent === name);
   if (row) row.click();
+  return Boolean(row);
 }
 
 /* The LM stage output is the finished model, so show it first. */
@@ -1366,9 +1367,10 @@ function selectInput(name) {
     renderPipeline();
     renderTree(await api('/api/tree?side=input'), $('input-tree'), 'input');
     await refreshOutputs(lodOutput(pipeline) || config.output);
-    // ?select=<output file> opens that file instead of the default input
-    if (params.get('select')) selectOutput(params.get('select'));
-    else selectInput(config.input_default);
+    // ?select=<file> opens that file from the output tree, else the input tree
+    const wanted = params.get('select');
+    if (wanted && selectOutput(wanted)) { /* shown */ }
+    else selectInput(wanted || config.input_default);
     booted = true;
   } catch (error) {
     writeLog(error.message);

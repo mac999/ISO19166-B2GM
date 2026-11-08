@@ -28,7 +28,7 @@ Both side panels are resized by dragging the splitters (the widths are
 remembered). Below 900 px the three panels do not fit side by side and a drag
 splitter is no use on touch, so the layout becomes one panel at a time behind a
 tab bar; `?view=left|middle|right` opens a particular one, and `?theme=`,
-`?lang=`, `?mode=shaded|edges|wireframe|xray|flat|hidden`, `?opacity=<15..100>`, `?select=<output file>`, `?version=` and `?hide=` preset the
+`?lang=`, `?mode=shaded|edges|wireframe|xray|flat|hidden`, `?opacity=<15..100>`, `?select=<file in the output tree, else the input tree>`, `?version=` and `?hide=` preset the
 rest, so a view can be shared as a link. **Run pipeline** executes PD → CM → EM → LM on the IFC selected in
 the input tree and streams the stage log back, then reloads the output tree and
 the canvas.

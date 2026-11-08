@@ -62,42 +62,44 @@ MAX_BODY_BYTES = 64 * 1024           # JSON requests
 MAX_UPLOAD_BYTES = 50 * 1024 * 1024  # an uploaded IFC plus its pipeline config
 CONVERT_TIMEOUT = 180                # one conversion must not wedge the view
 
-# GIS class -> RGB, so the canvas colours features the way a CityGML viewer does
+# GIS class -> RGB, so the canvas colours features the way a CityGML viewer
+# does.  Saturated and well separated, because a translucent or x-ray view
+# washes every colour towards the background
 CLASS_COLORS = {
-    "CityModel.Building": [0.85, 0.72, 0.42],
-    "WallSurface": [0.80, 0.78, 0.72],
-    "RoofSurface": [0.78, 0.32, 0.28],
-    "GroundSurface": [0.45, 0.42, 0.38],
-    "FloorSurface": [0.62, 0.60, 0.56],
-    "CeilingSurface": [0.70, 0.74, 0.80],
-    "Window": [0.35, 0.66, 0.86],
-    "Door": [0.72, 0.50, 0.28],
-    "Room": [0.42, 0.72, 0.55],
-    "BuildingInstallation": [0.58, 0.52, 0.70],
-    "BuildingStorey": [0.50, 0.55, 0.60],
-    "LandUse": [0.40, 0.60, 0.35],
-    "GenericCityObject": [0.60, 0.60, 0.60],
+    "CityModel.Building": [0.95, 0.74, 0.30],
+    "WallSurface": [0.93, 0.80, 0.56],
+    "RoofSurface": [0.86, 0.28, 0.24],
+    "GroundSurface": [0.46, 0.36, 0.26],
+    "FloorSurface": [0.62, 0.54, 0.44],
+    "CeilingSurface": [0.62, 0.72, 0.88],
+    "Window": [0.16, 0.60, 0.96],
+    "Door": [0.92, 0.48, 0.12],
+    "Room": [0.22, 0.76, 0.48],
+    "BuildingInstallation": [0.64, 0.42, 0.88],
+    "BuildingStorey": [0.44, 0.56, 0.68],
+    "LandUse": [0.34, 0.66, 0.28],
+    "GenericCityObject": [0.62, 0.62, 0.62],
 }
-DEFAULT_COLOR = [0.65, 0.65, 0.65]
+DEFAULT_COLOR = [0.62, 0.62, 0.62]
 
 # IFC type -> RGB, so a source model reads like the mapped one
 IFC_COLORS = {
-    "IfcWall": [0.80, 0.78, 0.72],
-    "IfcWallStandardCase": [0.80, 0.78, 0.72],
-    "IfcSlab": [0.62, 0.60, 0.56],
-    "IfcRoof": [0.78, 0.32, 0.28],
-    "IfcWindow": [0.35, 0.66, 0.86],
-    "IfcDoor": [0.72, 0.50, 0.28],
-    "IfcSpace": [0.42, 0.72, 0.55],
-    "IfcCovering": [0.70, 0.74, 0.80],
-    "IfcBeam": [0.58, 0.52, 0.70],
-    "IfcColumn": [0.52, 0.48, 0.64],
-    "IfcStair": [0.66, 0.58, 0.44],
-    "IfcRailing": [0.60, 0.60, 0.66],
-    "IfcMember": [0.56, 0.54, 0.62],
-    "IfcFurnishingElement": [0.74, 0.64, 0.52],
-    "IfcFooting": [0.45, 0.42, 0.38],
-    "IfcStairFlight": [0.66, 0.58, 0.44],
+    "IfcWall": [0.93, 0.80, 0.56],
+    "IfcWallStandardCase": [0.93, 0.80, 0.56],
+    "IfcSlab": [0.62, 0.54, 0.44],
+    "IfcRoof": [0.86, 0.28, 0.24],
+    "IfcWindow": [0.16, 0.60, 0.96],
+    "IfcDoor": [0.92, 0.48, 0.12],
+    "IfcSpace": [0.22, 0.76, 0.48],
+    "IfcCovering": [0.62, 0.72, 0.88],
+    "IfcBeam": [0.64, 0.42, 0.88],
+    "IfcColumn": [0.50, 0.36, 0.82],
+    "IfcStair": [0.78, 0.60, 0.26],
+    "IfcStairFlight": [0.78, 0.60, 0.26],
+    "IfcRailing": [0.52, 0.62, 0.74],
+    "IfcMember": [0.56, 0.48, 0.74],
+    "IfcFurnishingElement": [0.88, 0.40, 0.62],
+    "IfcFooting": [0.46, 0.36, 0.26],
 }
 
 
