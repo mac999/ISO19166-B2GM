@@ -1,6 +1,8 @@
 # Fly.io deployment for the B2GM web view.
 #   fly launch --no-deploy --copy-config   (first time, to pick app name and region)
 #   fly deploy --remote-only
+#   fly deploy --remote-only --no-cache   (when the sample conversion baked
+#                                          into the image must change)
 #
 # Note: `fly launch` rewrites this file and drops keys it does not manage, so
 # check max_machines_running survived after running it.
