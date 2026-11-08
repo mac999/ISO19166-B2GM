@@ -59,6 +59,7 @@
     <div class="panel-head">
       <span id="model-title" data-i18n="canvas">3D view</span>
       <span class="path" id="model-stats"></span>
+      <div class="lods" id="lod-chips"></div>
     </div>
     <div class="canvas-wrap">
       <canvas id="scene"></canvas>
@@ -73,7 +74,7 @@
           <option value="hidden" data-i18n="modeHidden">Hidden line</option>
         </select>
         <label><span data-i18n="opacity">Opacity</span>
-          <input type="range" id="opacity" min="15" max="100" value="100"></label>
+          <input type="range" id="opacity" min="0" max="100" value="100"></label>
         <span class="val" id="opacity-val">100%</span>
         <button id="reset-view" class="ghost" data-i18n="resetView">Reset view</button>
       </div>

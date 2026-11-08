@@ -450,7 +450,7 @@ def test_run_b2gm_adds_the_save_json_flag(monkeypatch):
 def test_web_assets_carry_the_view_controls():
     with open(os.path.join(ROOT, "web", "index.html"), encoding="utf-8") as f:
         html = f.read()
-    for marker in ('id="gizmo"', 'id="mode"', 'id="version"', 'id="save-json"', 'id="docview"', 'value="xray"',
+    for marker in ('id="gizmo"', 'id="mode"', 'id="version"', 'id="save-json"', 'id="docview"', 'value="xray"', 'id="lod-chips"',
                    'id="pipeline-name"'):
         assert marker in html
 

@@ -134,6 +134,10 @@ button.ghost { background: transparent; min-width: 46px; }
   font-size: 12px;
 }
 .path { color: var(--muted); font-weight: 400; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* the levels of detail in the loaded model, each a toggle */
+.lods { display: flex; gap: 4px; margin-left: auto; flex: 0 0 auto; }
+.lods .chip { padding: 1px 7px; font-size: 10px; cursor: pointer; }
+.lods .chip.off { opacity: .45; text-decoration: line-through; }
 
 .panel-body { flex: 1; overflow: auto; }
 

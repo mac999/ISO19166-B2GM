@@ -68,7 +68,7 @@ const TEXT = {
   },
 };
 
-// ?lang=ko&theme=light&mode=wireframe&opacity=45&select=city.gml makes a view shareable and scriptable
+// ?lang=ko&theme=light&mode=wireframe&opacity=45&lod=LOD1&select=city.gml makes a view shareable and scriptable
 const params = new URLSearchParams(location.search);
 let lang = params.get('lang') || localStorage.getItem('b2gm.lang') || 'en';
 const t = (key) => (TEXT[lang][key] ?? TEXT.en[key] ?? key);
@@ -353,11 +353,12 @@ class Renderer {
   }
 
   /* Build one interleaved buffer (position, face normal, colour) for the model. */
-  load(model, hiddenClasses) {
+  load(model, hiddenClasses, hiddenLods) {
     if (!this.gl) return;
     const skip = hiddenClasses || new Set();
+    const skipLod = hiddenLods || new Set();
     const features = model.features.filter(
-      (f) => f.faces.length >= 3 && !skip.has(f.gis_class));
+      (f) => f.faces.length >= 3 && !skip.has(f.gis_class) && !skipLod.has(f.lod || ''));
     const triangles = features.reduce((sum, f) => sum + f.faces.length / 3, 0);
     // Georeferenced coordinates run to 1e7, past float32 precision, so the
     // buffer holds offsets from the model centre and the camera works there too.
@@ -482,7 +483,8 @@ class Renderer {
     gl.uniformMatrix4fv(this.uniform.model, false, model);
     gl.uniform3f(this.uniform.light, light[0], light[1], light[2]);
     const mode = this.mode;
-    // x-ray ignores the slider: faint faces, edges on top
+    if (this.alpha <= 0.005) return;   // fully transparent: nothing to draw
+    // x-ray keeps the faces faint however far the slider goes; the edges follow it
     const alpha = mode === 'xray' ? Math.min(this.alpha, 0.22) : this.alpha;
     gl.uniform1f(this.uniform.alpha, alpha);
     // a translucent model must not write depth, or the faces behind vanish
@@ -525,7 +527,7 @@ class Renderer {
       // towards the theme grey so they still read as lines
       const overFaces = mode === 'edges' || mode === 'flat';
       paint(1, this.edgeColor, overFaces ? 0.55 : 0);
-      if (mode === 'xray') { gl.uniform1f(this.uniform.alpha, 0.7); gl.enable(gl.BLEND); }
+      if (mode === 'xray') { gl.uniform1f(this.uniform.alpha, this.alpha); gl.enable(gl.BLEND); }
       bindAll(this.edgeBuffer);
       gl.drawArrays(gl.LINES, 0, this.edgeCount);
     }
@@ -1066,6 +1068,36 @@ function stageFor(path) {
 
 /* --- model + preview ------------------------------------------------------ */
 const hiddenClasses = new Set((params.get('hide') || '').split(',').filter(Boolean));
+// ?lod=LOD1,LOD2 shows only those levels; the chips above the canvas toggle them
+const hiddenLods = new Set();
+const wantedLods = (params.get('lod') || '').split(',').filter(Boolean);
+
+function renderLods() {
+  const host = $('lod-chips');
+  const model = renderer.model;
+  host.innerHTML = '';
+  if (!model) return;
+  const levels = [...new Set(model.features.map((f) => f.lod).filter(Boolean))].sort();
+  if (!levels.length) return;
+  if (wantedLods.length) {
+    levels.forEach((level) => { if (!wantedLods.includes(level)) hiddenLods.add(level); });
+    wantedLods.length = 0;   // applied once, then the chips own the state
+  }
+  levels.forEach((level) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'chip' + (hiddenLods.has(level) ? ' off' : '');
+    chip.textContent = level;
+    chip.title = t('toggle');
+    chip.onclick = () => {
+      if (hiddenLods.has(level)) hiddenLods.delete(level);
+      else hiddenLods.add(level);
+      renderer.load(renderer.model, hiddenClasses, hiddenLods);
+      renderLods();
+    };
+    host.appendChild(chip);
+  });
+}
 
 function renderLegend() {
   const legend = $('legend');
@@ -1089,7 +1121,7 @@ function renderLegend() {
       const name = row.dataset.class;
       if (hiddenClasses.has(name)) hiddenClasses.delete(name);
       else hiddenClasses.add(name);
-      renderer.load(renderer.model, hiddenClasses);
+      renderer.load(renderer.model, hiddenClasses, hiddenLods);
       renderLegend();
     };
   });
@@ -1127,10 +1159,15 @@ async function loadModel(side, path, label) {
       renderer.count = 0;
       renderer.draw();
       $('legend').innerHTML = `<div class="legend-row">${t('empty')}</div>`;
+      $('lod-chips').innerHTML = '';
       await showDocument(side, path, label);
     } else {
       hideDocument();
-      renderer.load(model, hiddenClasses);
+      // the lod filter applies before the first draw, so ?lod= lands directly
+      renderer.model = model;
+      renderLods();
+      renderer.model = null;
+      renderer.load(model, hiddenClasses, hiddenLods);
       renderLegend();
     }
     updateStats();
@@ -1148,6 +1185,7 @@ async function showDocument(side, path, label) {
   const view = $('docview');
   $('model-title').textContent = label || path;
   $('model-stats').textContent = '';
+  $('lod-chips').innerHTML = '';
   canvasWrap.classList.add('doc');
   view.hidden = false;
   view.textContent = '';
@@ -1244,8 +1282,10 @@ async function showConverted(result) {
   $('model-title').textContent = result.path;
   hideDocument();
   hiddenClasses.clear();
-  renderer.load(result.model, hiddenClasses);
+  hiddenLods.clear();
+  renderer.load(result.model, hiddenClasses, hiddenLods);
   renderLegend();
+  renderLods();
   updateStats();
   markStage(stageFor(result.path));
   renderTree(await api('/api/tree?side=input'), $('input-tree'), 'input');
