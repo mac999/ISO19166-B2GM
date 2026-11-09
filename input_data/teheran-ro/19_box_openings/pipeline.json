@@ -1,0 +1,225 @@
+{
+  "input": "../box_ifc4.ifc",
+  "description": "LOD3: walls, slabs and roof with their windows and doors; no interior. Placed at lon 127.062225, lat 37.508964 on Teheran-ro",
+  "citygml_version": "2.0",
+  "BIM_GIS_mapping.pipeline": [
+    {
+      "type": "PD",
+      "name": "perspective: openings",
+      "output": "intermediate.ifc",
+      "data_view": [
+        {
+          "class": "IfcBuilding",
+          "filter": [
+            {
+              "name": ".*",
+              "value": ".*",
+              "type": ".*"
+            }
+          ]
+        },
+        {
+          "class": "IfcBuildingStorey",
+          "filter": [
+            {
+              "name": ".*",
+              "value": ".*",
+              "type": ".*"
+            }
+          ]
+        },
+        {
+          "class": "IfcWall.*",
+          "filter": [
+            {
+              "name": ".*",
+              "value": ".*",
+              "type": ".*"
+            }
+          ]
+        },
+        {
+          "class": "IfcSlab",
+          "filter": [
+            {
+              "name": ".*",
+              "value": ".*",
+              "type": ".*"
+            }
+          ]
+        },
+        {
+          "class": "IfcRoof",
+          "filter": [
+            {
+              "name": ".*",
+              "value": ".*",
+              "type": ".*"
+            }
+          ]
+        },
+        {
+          "class": "IfcWindow",
+          "filter": [
+            {
+              "name": ".*",
+              "value": ".*",
+              "type": ".*"
+            }
+          ]
+        },
+        {
+          "class": "IfcDoor",
+          "filter": [
+            {
+              "name": ".*",
+              "value": ".*",
+              "type": ".*"
+            }
+          ]
+        },
+        {
+          "class": "IfcFooting",
+          "filter": [
+            {
+              "name": ".*",
+              "value": ".*",
+              "type": ".*"
+            }
+          ]
+        },
+        {
+          "class": "IfcStair.*",
+          "filter": [
+            {
+              "name": ".*",
+              "value": ".*",
+              "type": ".*"
+            }
+          ]
+        },
+        {
+          "class": "IfcRailing",
+          "filter": [
+            {
+              "name": ".*",
+              "value": ".*",
+              "type": ".*"
+            }
+          ]
+        }
+      ],
+      "logic_view": "",
+      "style_view": [],
+      "property_style": []
+    },
+    {
+      "type": "EM",
+      "name": "element mapping: openings",
+      "output": "city.gml",
+      "rule": [
+        {
+          "source": "IfcBuilding",
+          "destination": "CityModel.Building",
+          "PSet_operation": "Append",
+          "property_set": {
+            "B2GM": {
+              "source_standard": "ISO 19166 B2GM",
+              "district": "Teheran-ro"
+            }
+          }
+        },
+        {
+          "source": "IfcBuildingStorey",
+          "destination": "BuildingStorey"
+        },
+        {
+          "source": "IfcWall.*",
+          "destination": "WallSurface"
+        },
+        {
+          "source": "IfcSlab\\.ROOF",
+          "destination": "RoofSurface"
+        },
+        {
+          "source": "IfcRoof",
+          "destination": "RoofSurface"
+        },
+        {
+          "source": "IfcSlab\\.BASESLAB",
+          "destination": "GroundSurface"
+        },
+        {
+          "source": "IfcFooting",
+          "destination": "GroundSurface"
+        },
+        {
+          "source": "IfcSlab",
+          "destination": "FloorSurface"
+        },
+        {
+          "source": "IfcWindow",
+          "destination": "Window"
+        },
+        {
+          "source": "IfcDoor",
+          "destination": "Door"
+        },
+        {
+          "source": "IfcStair.*|IfcRailing",
+          "destination": "BuildingInstallation"
+        }
+      ]
+    },
+    {
+      "type": "LM",
+      "name": "lod mapping: openings",
+      "output": "city_LoD_local.gml",
+      "rule": [
+        {
+          "source": "IfcBuilding",
+          "lod": "LOD1",
+          "aggregate": "IfcWall.*",
+          "operation": [
+            {
+              "op": "footprint"
+            },
+            {
+              "op": "extrude",
+              "args": {
+                "height": {
+                  "$extent": "z"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "source": ".*",
+          "lod": "LOD3"
+        }
+      ]
+    },
+    {
+      "type": "CM",
+      "name": "coordinate mapping: Korea 2000 central belt",
+      "output": "city_LoD.gml",
+      "rule": [
+        {
+          "source": "EPSG:4326",
+          "destination": "EPSG:5186"
+        },
+        {
+          "origin": {
+            "lon": 127.062225,
+            "lat": 37.508964,
+            "elevation": 30.0
+          }
+        },
+        {
+          "rotation": 21.31
+        }
+      ]
+    }
+  ]
+}

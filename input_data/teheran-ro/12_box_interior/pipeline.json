@@ -1,0 +1,180 @@
+{
+  "input": "../box_ifc4.ifc",
+  "description": "LOD4: the whole model, rooms as solids and interior walls kept; furniture left out to keep the file small. Placed at lon 127.057075, lat 37.506486 on Teheran-ro",
+  "citygml_version": "2.0",
+  "BIM_GIS_mapping.pipeline": [
+    {
+      "type": "PD",
+      "name": "perspective: interior",
+      "output": "intermediate.ifc",
+      "data_view": [
+        {
+          "class": ".*",
+          "filter": [
+            {
+              "name": ".*",
+              "value": ".*",
+              "type": ".*"
+            }
+          ]
+        }
+      ],
+      "logic_view": "",
+      "style_view": [],
+      "property_style": [
+        {
+          "category": "PSet_Revit_Dimensions",
+          "property": "Length|Area|Volume",
+          "formattingOperation": "round:2"
+        }
+      ]
+    },
+    {
+      "type": "EM",
+      "name": "element mapping: interior",
+      "output": "city.gml",
+      "rule": [
+        {
+          "source": "IfcBuilding",
+          "destination": "CityModel.Building",
+          "PSet_operation": "Append",
+          "property_set": {
+            "B2GM": {
+              "source_standard": "ISO 19166 B2GM",
+              "district": "Teheran-ro"
+            }
+          }
+        },
+        {
+          "source": "IfcBuildingStorey",
+          "destination": "BuildingStorey"
+        },
+        {
+          "source": "IfcSpace",
+          "destination": "Room"
+        },
+        {
+          "source": "IfcWall.*",
+          "filter": [
+            {
+              "name": "IsExternal",
+              "value": "(?i)false"
+            }
+          ],
+          "destination": "InteriorWallSurface"
+        },
+        {
+          "source": "IfcWall.*",
+          "destination": "WallSurface"
+        },
+        {
+          "source": "IfcSlab\\.ROOF",
+          "destination": "RoofSurface"
+        },
+        {
+          "source": "IfcRoof",
+          "destination": "RoofSurface"
+        },
+        {
+          "source": "IfcSlab\\.BASESLAB",
+          "destination": "GroundSurface"
+        },
+        {
+          "source": "IfcFooting",
+          "destination": "GroundSurface"
+        },
+        {
+          "source": "IfcSlab",
+          "destination": "FloorSurface"
+        },
+        {
+          "source": "IfcWindow",
+          "destination": "Window"
+        },
+        {
+          "source": "IfcDoor",
+          "destination": "Door"
+        },
+        {
+          "source": "IfcCovering\\.CEILING",
+          "destination": "CeilingSurface"
+        },
+        {
+          "source": "IfcCovering",
+          "destination": "FloorSurface"
+        },
+        {
+          "source": "IfcBeam|IfcColumn|IfcMember|IfcRailing|IfcStair.*",
+          "destination": "BuildingInstallation"
+        }
+      ]
+    },
+    {
+      "type": "LM",
+      "name": "lod mapping: interior",
+      "output": "city_LoD_local.gml",
+      "rule": [
+        {
+          "source": "IfcBuilding",
+          "lod": "LOD1",
+          "aggregate": "IfcWall.*",
+          "operation": [
+            {
+              "op": "footprint"
+            },
+            {
+              "op": "extrude",
+              "args": {
+                "height": {
+                  "$extent": "z"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "source": "IfcSpace",
+          "lod": "LOD4",
+          "operation": [
+            {
+              "op": "footprint"
+            },
+            {
+              "op": "extrude",
+              "args": {
+                "height": {
+                  "$extent": "z"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "source": ".*",
+          "lod": "LOD4"
+        }
+      ]
+    },
+    {
+      "type": "CM",
+      "name": "coordinate mapping: Korea 2000 central belt",
+      "output": "city_LoD.gml",
+      "rule": [
+        {
+          "source": "EPSG:4326",
+          "destination": "EPSG:5186"
+        },
+        {
+          "origin": {
+            "lon": 127.057075,
+            "lat": 37.506486,
+            "elevation": 30.0
+          }
+        },
+        {
+          "rotation": 201.31
+        }
+      ]
+    }
+  ]
+}

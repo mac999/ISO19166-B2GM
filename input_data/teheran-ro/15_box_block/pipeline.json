@@ -1,0 +1,110 @@
+{
+  "input": "../box_ifc4.ifc",
+  "description": "LOD1 block from the exterior walls; property sets replaced by the rule's own. Placed at lon 127.059465, lat 37.508104 on Teheran-ro",
+  "citygml_version": "2.0",
+  "BIM_GIS_mapping.pipeline": [
+    {
+      "type": "PD",
+      "name": "perspective: block",
+      "output": "intermediate.ifc",
+      "data_view": [
+        {
+          "class": "IfcBuilding",
+          "filter": [
+            {
+              "name": ".*",
+              "value": ".*",
+              "type": ".*"
+            }
+          ]
+        },
+        {
+          "class": "IfcWall.*",
+          "filter": [
+            {
+              "name": ".*",
+              "value": ".*",
+              "type": ".*"
+            }
+          ]
+        }
+      ],
+      "logic_view": "",
+      "style_view": [],
+      "property_style": []
+    },
+    {
+      "type": "EM",
+      "name": "element mapping: block",
+      "output": "city.gml",
+      "rule": [
+        {
+          "source": "IfcBuilding",
+          "destination": "CityModel.Building",
+          "PSet_operation": "Replace",
+          "property_set": {
+            "B2GM": {
+              "source_standard": "ISO 19166 B2GM",
+              "district": "Teheran-ro"
+            }
+          }
+        },
+        {
+          "source": "IfcWall.*",
+          "destination": "WallSurface",
+          "PSet_operation": "Replace"
+        }
+      ]
+    },
+    {
+      "type": "LM",
+      "name": "lod mapping: block",
+      "output": "city_LoD_local.gml",
+      "rule": [
+        {
+          "source": "IfcBuilding",
+          "lod": "LOD1",
+          "aggregate": "IfcWall.*",
+          "operation": [
+            {
+              "op": "footprint"
+            },
+            {
+              "op": "extrude",
+              "args": {
+                "height": {
+                  "$extent": "z"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "source": ".*",
+          "lod": "LOD1"
+        }
+      ]
+    },
+    {
+      "type": "CM",
+      "name": "coordinate mapping: Korea 2000 central belt",
+      "output": "city_LoD.gml",
+      "rule": [
+        {
+          "source": "EPSG:4326",
+          "destination": "EPSG:5186"
+        },
+        {
+          "origin": {
+            "lon": 127.059465,
+            "lat": 37.508104,
+            "elevation": 30.0
+          }
+        },
+        {
+          "rotation": 21.31
+        }
+      ]
+    }
+  ]
+}

@@ -19,7 +19,8 @@ COPY input_data/ ./input_data/
 # the demo converts the bundled sample once at build time, so the first visitor
 # sees a model instead of an empty canvas
 RUN python B2GM_main.py --output-dir output \
- && python B2GM_main.py --citygml-version 3.0 --output-dir output/citygml_3.0
+ && python B2GM_main.py --citygml-version 3.0 --output-dir output/citygml_3.0 \
+ && python B2GM_main.py --input input_data/teheran-ro --output-dir output/teheran-ro
 
 RUN useradd --create-home --uid 10001 b2gm && chown -R b2gm /app
 USER b2gm
