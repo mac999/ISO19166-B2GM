@@ -95,6 +95,17 @@ def test_build_tree_marks_viewable(workspace):
     assert gml["mtime"] > 0
 
 
+def test_build_tree_flags_the_run_result(workspace):
+    sub = os.path.join(workspace.output_dir, "sub")
+    with open(os.path.join(sub, "city_LoD.gml"), "w", encoding="utf-8") as f:
+        f.write(GML)
+    with open(os.path.join(sub, "b2gm_run.json"), "w", encoding="utf-8") as f:
+        json.dump({"final_output": "city_LoD.gml"}, f)
+    folder = next(n for n in WEB.build_tree(workspace.output_dir)["children"] if n["type"] == "dir")
+    flags = {n["name"]: n.get("final", False) for n in folder["children"]}
+    assert flags["city_LoD.gml"] and not flags["city.gml"]
+
+
 def test_describe_pipeline_flattens_stages(workspace):
     described = WEB.describe_pipeline(workspace.pipeline)
     kinds = [s["type"] for s in described["stages"]]

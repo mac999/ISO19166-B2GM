@@ -1301,15 +1301,17 @@ async function loadModel(side, path, label) {
 }
 
 /* The CityGML files a folder view draws. A run folder holds every stage's
-   CityGML and the stage that ran last wrote the result, so the newest file
-   stands for the run; a folder whose subfolders hold runs is a district, and
-   its own .gml is their merge. */
+   CityGML; its run record names the result (flagged `final` in the tree), and
+   without one the newest file stands for the run. A folder whose subfolders
+   hold runs is a district, and its own .gml is their merge. */
 function folderModels(item) {
   const gml = (n) => n.type === 'file' && n.name.toLowerCase().endsWith('.gml');
   const nested = item.children.filter((n) => n.type === 'dir').flatMap(folderModels);
   if (nested.length) return nested;
   const files = item.children.filter(gml);
   if (!files.length) return [];
+  const final = files.find((n) => n.final);
+  if (final) return [final];
   return [files.reduce((a, b) => ((b.mtime || 0) > (a.mtime || 0) ? b : a))];
 }
 

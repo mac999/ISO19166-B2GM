@@ -270,7 +270,23 @@ def build_tree(root: str, rel: str = "") -> Dict[str, Any]:
                 "ext": suffix,
                 "viewable": suffix in MODEL_SUFFIXES,
             })
+    _mark_final(path, node)
     return node
+
+
+def _mark_final(path: str, node: Dict[str, Any]) -> None:
+    """Flag the file a pipeline run in this folder ended with, from its run record."""
+    record = os.path.join(path, "b2gm_run.json")
+    if not os.path.isfile(record):
+        return
+    try:
+        with open(record, encoding="utf-8") as f:
+            final = json.load(f).get("final_output")
+    except (OSError, ValueError, AttributeError):
+        return
+    for child in node["children"]:
+        if child["type"] == "file" and child["name"] == final:
+            child["final"] = True
 
 
 # ---------------------------------------------------------------------------
