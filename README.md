@@ -109,8 +109,9 @@ the web view. 3.0 keeps the building storeys as `bldg:Storey` features, which
 `--input` also takes a folder of building folders, each holding the pipeline
 that maps it, and merges the results into one city model with the `gml:id`s
 kept unique. The shipped `input_data/teheran-ro` places twenty buildings along
-Teheran-ro in Seoul, in EPSG:5186, cycling through four profiles from a LOD1
-block to a LOD4 interior; one of them is placed by its own `IfcMapConversion`.
+Teheran-ro in Seoul, in EPSG:5186, two rows across the road with half a
+building's frontage between neighbours, cycling through four profiles from a
+LOD1 block to a LOD4 interior; one of them is placed by its own `IfcMapConversion`.
 Positions are illustrative. See [Install and run](doc/install-and-run.md).
 
 ```bash
@@ -143,9 +144,12 @@ dependencies.
   scene, each from its newest CityGML, so buildings placed by CM appear where
   CM put them. A progress strip shows the file being read, and Stop keeps
   what has landed.
+- Canvas toolbar: rendering mode, opacity, reset view, a ground grid whose
+  step is shown with the model stats, and a full-size view that hides the side
+  panels (Esc restores them).
 
 Drop an `.ifc` on the canvas, optionally with a pipeline `.json`, to convert it.
-`?theme=`, `?lang=`, `?mode=`, `?opacity=`, `?select=`, `?folder=` and `?hide=` preset a view
+`?theme=`, `?lang=`, `?mode=`, `?opacity=`, `?select=`, `?folder=`, `?grid=1`, `?max=1` and `?hide=` preset a view
 so it can be shared as a link. See [Web view](doc/web-view.md) for the routes and the
 Fly.io deployment.
 
@@ -258,6 +262,7 @@ after the fact from the module headers and the commit history.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.3.2 | 2026-11-09 | The `teheran-ro` buildings stand in two rows across a 20 m road with half a frontage between neighbours instead of 130 m slots. The canvas gets a ground grid and a full-size view; `?grid=1` and `?max=1` preset them. `?lod=` holds until a folder load finishes. |
 | 0.3.1 | 2026-11-09 | A folder in the output tree opens as one scene: each run's newest CityGML is read in turn, in its own coordinates, so a district can be checked building by building without the merged file. A progress strip under the canvas shows which file is loading, and Stop keeps what has been read. `?folder=` presets it. |
 | 0.3.0 | 2026-11-09 | `--input` takes a folder of building folders, each with its own pipeline; the results are merged into one city model with unique `gml:id`s. CM rules take a `rotation`. The shipped `teheran-ro` district: twenty buildings along Teheran-ro in EPSG:5186 across four LoD profiles, one placed by its own `IfcMapConversion`. The web view runs a folder from the input tree. |
 | 0.2.6 | 2026-11-08 | Georeferencing from `IfcMapConversion` + `IfcProjectedCRS` and the IFC2x3 `ePSet_MapConversion` sets, with lengths scaled from the project unit; a non-identity `IfcSite` placement is undone before projecting. The CM stage can run after LM and then writes the final CityGML, so the operators work in local metres. EM rules take PD-style property filters; the example maps interior walls to `InteriorWallSurface`, which both writers now place as a boundary surface. |
