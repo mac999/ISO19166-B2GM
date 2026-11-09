@@ -255,6 +255,7 @@ def mapping_ifc_to_target(input_file: str, output_file: str, pipeline_file: str,
     context: Dict[str, Any] = {"citygml_version": version, "source_ifc": input_file}
     current_input = input_file
     final_output = os.path.join(output_dir, os.path.basename(output_file))
+    written = []
 
     for stage in pipeline:
         stage_type = stage.get("type")
@@ -270,14 +271,34 @@ def mapping_ifc_to_target(input_file: str, output_file: str, pipeline_file: str,
             continue
 
         current_output = func(current_input, current_output, stage, context)
+        written.append({"type": stage_type, "output": os.path.basename(current_output)})
         if stage_type in ("EM", "LM") or current_output.lower().endswith(".gml"):
             # a CM placed after LM writes the georeferenced CityGML itself
             final_output = current_output
         current_input = current_output
 
     context["final_output"] = final_output
+    write_run_record(output_dir, input_file, pipeline_file, version, written, final_output)
     logger.info("Pipeline finished, final output: %s", final_output)
     return context
+
+
+RUN_RECORD = "b2gm_run.json"
+
+
+def write_run_record(output_dir: str, input_file: str, pipeline_file: str, version: str,
+                     stages: List[Dict[str, Any]], final_output: str) -> str:
+    """Note which file a run ended with. File times cannot tell: a container
+    image keeps them to the second, and every stage of a small model lands in
+    the same second."""
+    path = os.path.join(output_dir, RUN_RECORD)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"input": os.path.basename(input_file),
+                   "pipeline": os.path.basename(pipeline_file),
+                   "citygml_version": version,
+                   "stages": stages,
+                   "final_output": os.path.basename(final_output)}, f, indent=2)
+    return path
 
 
 def save_models(context: Dict[str, Any], output_dir: str) -> Dict[str, str]:

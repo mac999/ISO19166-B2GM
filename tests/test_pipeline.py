@@ -157,6 +157,10 @@ def test_cm_can_run_last_so_the_lod_geometry_is_built_in_local_metres(tmp_path):
     path.write_text(json.dumps(pipeline), encoding="utf-8")
     context = MAIN.mapping_ifc_to_target(ifc, "city.gml", str(path), output_dir=str(tmp_path))
     assert context["final_output"].endswith("city_LoD.gml")
+    # the run record names the result, since file times cannot
+    record = json.loads((tmp_path / "b2gm_run.json").read_text(encoding="utf-8"))
+    assert record["final_output"] == "city_LoD.gml"
+    assert [s["type"] for s in record["stages"]][-1] == "CM"
 
     def local(tag):
         return tag.split("}")[-1]

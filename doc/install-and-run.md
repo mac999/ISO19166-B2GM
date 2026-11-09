@@ -68,8 +68,9 @@ input_data/teheran-ro/
 python B2GM_main.py --input input_data/teheran-ro --output-dir output/teheran-ro
 ```
 
-Every building is written under `output/teheran-ro/<building>/` and the final
-CityGML files are merged into `output/teheran-ro/teheran-ro.gml`: one
+Every building is written under `output/teheran-ro/<building>/`, with a
+`b2gm_run.json` that lists each stage's output and names the final CityGML, and
+the final CityGML files are merged into `output/teheran-ro/teheran-ro.gml`: one
 `CityModel`, one `cityObjectMember` per building, the envelope recomputed and
 every `gml:id` prefixed with the building folder so a model placed twice does
 not collide. All buildings must come out in the same CityGML version
