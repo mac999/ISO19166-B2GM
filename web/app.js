@@ -41,6 +41,8 @@ const TEXT = {
     runFolder: 'Run every building folder in here and merge the result',
     viewFolder: 'Show every CityGML in this folder together, in its own coordinates',
     crsMixed: 'files use different CRSs:',
+    grid: 'grid', gridToggle: 'Ground grid on / off', maxView: 'Full-size view (Esc to restore)',
+    restoreView: 'Restore the panels',
     stop: 'Stop', stopped: 'stopped', files: '{n} files',
   },
   ko: {
@@ -72,6 +74,8 @@ const TEXT = {
     runFolder: '이 폴더의 건물 폴더를 모두 실행하고 하나로 합칩니다',
     viewFolder: '이 폴더의 CityGML을 각자의 좌표 그대로 한 화면에 모아 봅니다',
     crsMixed: '좌표계가 서로 다른 파일이 있습니다:',
+    grid: '격자', gridToggle: '바닥 격자 켜기 / 끄기', maxView: '최대 크기 보기 (Esc로 복귀)',
+    restoreView: '패널 다시 보기',
     stop: '중지', stopped: '중지됨', files: '파일 {n}개',
   },
 };
@@ -87,7 +91,11 @@ function applyLanguage() {
     node.textContent = t(node.dataset.i18n);
   });
   $('lang').textContent = lang.toUpperCase();
+  document.querySelectorAll('[data-i18n-title]').forEach((node) => {
+    node.title = t(node.dataset.i18nTitle);
+  });
   $('gizmo').title = t('gizmoHint');
+  $('max-toggle').title = t($('workspace').classList.contains('max') ? 'restoreView' : 'maxView');
   updateThemeLabel();
   renderPipeline();
   renderLegend();
@@ -255,6 +263,8 @@ class Renderer {
     this.mode = 'shaded';
     this.count = 0;
     this.edgeCount = 0;
+    this.gridCount = 0;
+    this.showGrid = false;
     this.onDraw = null;
     if (!this.gl) return;
     this.initProgram();
@@ -298,6 +308,7 @@ class Renderer {
     gl.enable(gl.DEPTH_TEST);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     this.buffer = gl.createBuffer();
+    this.gridBuffer = gl.createBuffer();
     this.edgeBuffer = gl.createBuffer();
   }
 
@@ -412,6 +423,7 @@ class Renderer {
                                             (max[1] - min[1]) * sx,
                                             max[2] - min[2]) / 2);
     this.model = model;
+    this.buildGrid(min, max, origin, sx);
     if (keepView) this.draw(); else this.resetView();
   }
 
@@ -434,6 +446,34 @@ class Renderer {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.edgeBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, out, gl.STATIC_DRAW);
     this.edgeCount = this.count * 2;
+  }
+
+  /* A ground grid under the model, at its lowest z, so distances read at a
+     glance. The step is a 1-2-5 number of metres about a tenth of the model;
+     every fifth line is drawn stronger. */
+  buildGrid(min, max, origin, sx) {
+    const span = Math.max((max[0] - min[0]) * sx, (max[1] - min[1]) * sx, 1e-3);
+    const raw = span / 10;
+    const power = 10 ** Math.floor(Math.log10(raw));
+    const step = [1, 2, 5, 10].map((m) => m * power).find((v) => v >= raw);
+    const half = Math.ceil((span * 0.8) / step / 5) * 5 * step;
+    const z = min[2] - origin[2];
+    const minor = [];
+    const major = [];
+    const push = (list, a, b) => list.push(a[0], a[1], z, 0, 0, 1, 0, 0, 0,
+                                           b[0], b[1], z, 0, 0, 1, 0, 0, 0);
+    for (let i = -half / step; i <= half / step; i++) {
+      const at = i * step;
+      const list = i % 5 === 0 ? major : minor;
+      push(list, [at, -half], [at, half]);
+      push(list, [-half, at], [half, at]);
+    }
+    const gl = this.gl;
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.gridBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(minor.concat(major)), gl.STATIC_DRAW);
+    this.gridMinor = minor.length / 9;
+    this.gridCount = (minor.length + major.length) / 9;
+    this.gridStep = step;
   }
 
   resetView() {
@@ -516,6 +556,22 @@ class Renderer {
       bind(this.attr.normal, 12);
       bind(this.attr.color, 24);
     };
+
+    if (this.showGrid && this.gridCount) {
+      // opaque lines between the background and the edge grey, drawn first so
+      // the model covers them
+      const shade = (t) => this.background.map((c, k) => c + (this.edgeColor[k] - c) * t);
+      gl.disable(gl.BLEND);
+      gl.depthMask(true);
+      gl.uniform1f(this.uniform.alpha, 1);
+      bindAll(this.gridBuffer);
+      paint(2, shade(0.28));
+      gl.drawArrays(gl.LINES, 0, this.gridMinor);
+      paint(2, shade(0.6));
+      gl.drawArrays(gl.LINES, this.gridMinor, this.gridCount - this.gridMinor);
+      gl.uniform1f(this.uniform.alpha, alpha);
+      if (translucent) { gl.enable(gl.BLEND); gl.depthMask(false); }
+    }
 
     const edges = mode !== 'shaded';
     if (mode !== 'wireframe') {
@@ -669,6 +725,33 @@ $('opacity').addEventListener('input', (event) => {
 });
 
 $('reset-view').onclick = () => renderer.resetView();
+
+/* Grid and full-size view are per-viewer habits, so they are remembered;
+   ?grid=1 and ?max=1 preset them for a shared link. */
+const stored = (key) => { try { return localStorage.getItem(key); } catch (e) { return null; } };
+const store = (key, value) => { try { localStorage.setItem(key, value); } catch (e) { /* private window */ } };
+
+function setGrid(on) {
+  renderer.showGrid = on;
+  $('grid-toggle').classList.toggle('on', on);
+  $('grid-toggle').setAttribute('aria-pressed', String(on));
+  store('b2gm.grid', on ? '1' : '0');
+  renderer.draw();
+  updateStats();
+}
+$('grid-toggle').onclick = () => setGrid(!renderer.showGrid);
+
+function setMaximized(on) {
+  $('workspace').classList.toggle('max', on);
+  $('max-toggle').classList.toggle('on', on);
+  $('max-toggle').setAttribute('aria-pressed', String(on));
+  $('max-toggle').title = t(on ? 'restoreView' : 'maxView');
+  requestAnimationFrame(() => renderer.resize());
+}
+$('max-toggle').onclick = () => setMaximized(!$('workspace').classList.contains('max'));
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && $('workspace').classList.contains('max')) setMaximized(false);
+});
 
 // ?opacity=45 presets the slider, so a translucent view can be shared as a link
 if (params.get('opacity')) {
@@ -1171,6 +1254,7 @@ function updateStats() {
     parts.push(model.xy_scale && Math.abs(model.xy_scale - 1) > 1e-6
       ? `${model.crs} (${t('trueScale')})` : model.crs);
   }
+  if (renderer.showGrid && renderer.gridStep) parts.push(`${t('grid')} ${+renderer.gridStep.toPrecision(3)} m`);
   $('model-stats').textContent = parts.join(' / ');
 }
 
@@ -1574,6 +1658,8 @@ function selectInput(name) {
 (async function start() {
   setTheme(params.get('theme') || localStorage.getItem('b2gm.theme') || 'dark');
   applyLanguage();
+  setGrid((params.get('grid') || stored('b2gm.grid')) === '1');
+  if (params.get('max') === '1') setMaximized(true);
   try {
     const config = await api('/api/config');
     $('input-path').textContent = config.input_dir;

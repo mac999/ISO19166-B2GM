@@ -366,6 +366,11 @@ ul.tree ul { padding-left: 13px; }
 .viewtools input[type="range"] { width: 96px; accent-color: var(--accent); }
 .viewtools .val { color: var(--muted); min-width: 34px; }
 .viewtools button { padding: 2px 8px; font-size: 11px; min-width: 0; }
+.viewtools button.icon { display: inline-flex; align-items: center; padding: 3px 5px; }
+.viewtools button.icon.on { color: var(--accent); border-color: var(--accent); }
+
+/* full-size view: the canvas takes the side panels' room */
+#workspace.max #left, #workspace.max #right, #workspace.max .splitter { display: none; }
 
 .hint {
   position: absolute;
