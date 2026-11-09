@@ -55,6 +55,8 @@ rendered straight away:
 POST /api/convert     multipart: ifc=<model.ifc> [pipeline=<config.json>] [version=2.0|3.0] [save_json=1]
 POST /api/run         json: {"path": "<in input tree>", "pipeline": "<.json in input tree>", "version": "3.0", "save_json": true}
 GET  /api/pipeline?path=<.json in input tree>    describe a pipeline other than the default
+GET  /api/inspect?side=input|output&path=<file or folder>    object tree (IFC, CityGML) or metadata
+GET  /api/inspect?side=...&path=<.ifc>&step=<STEP id>         attributes and property sets of one IFC object
 ```
 
 Sending your own config is the point of it — change an `EM_rule` destination and
