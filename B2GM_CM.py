@@ -114,6 +114,11 @@ class CoordinateMapping:
                 matrix = rule["transform_matrix"]
             elif "tranform_matrix" in rule:
                 matrix = rule["tranform_matrix"]
+            if "rotation" in rule:
+                # degrees about Z, counter-clockwise seen from above, applied
+                # before any transform_matrix: the easy way to turn a model
+                # along a street when it is placed by hand
+                matrix = compose(matrix, rotation_matrix(float(rule["rotation"])))
             if "origin" in rule:
                 spot = rule["origin"]
                 origin = (float(spot["lon"]), float(spot["lat"]),
@@ -122,6 +127,18 @@ class CoordinateMapping:
 
     def transform(self, x: float, y: float) -> Tuple[float, float]:
         return transform_coordinate(x, y, self.source_crs, self.dest_crs)
+
+
+def rotation_matrix(degrees: float) -> List[List[float]]:
+    c, s = math.cos(math.radians(degrees)), math.sin(math.radians(degrees))
+    return [[c, -s, 0.0, 0.0], [s, c, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]]
+
+
+def compose(outer: Optional[List[List[float]]], inner: List[List[float]]) -> List[List[float]]:
+    """``outer @ inner``: ``inner`` is applied first."""
+    if not outer:
+        return inner
+    return [[sum(outer[i][k] * inner[k][j] for k in range(4)) for j in range(4)] for i in range(4)]
 
 
 def _apply_matrix(m: Optional[List[List[float]]], x: float, y: float, z: float

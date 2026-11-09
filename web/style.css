@@ -196,6 +196,11 @@ ul.tree ul { padding-left: 13px; }
 .node .nm { overflow: hidden; text-overflow: ellipsis; }
 .node .sz { margin-left: auto; color: var(--muted); font-size: 11px; }
 .node.dim { color: var(--muted); }
+.node .runfolder {
+  margin-left: auto; min-width: 0; padding: 0 6px; font-size: 9px; line-height: 1.6;
+  border-color: transparent; background: transparent; color: var(--muted);
+}
+.node .runfolder:hover { color: var(--accent); border-color: var(--accent); }
 
 /* --- pipeline stages ------------------------------------------------------ */
 .stage { border-bottom: 1px solid var(--border); }

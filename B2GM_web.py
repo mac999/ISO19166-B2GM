@@ -577,8 +577,9 @@ def run_b2gm(input_file: str, pipeline: str, output_dir: str,
     out instead of wedging the view, which a call in this process could not do.
     """
     command = [sys.executable, os.path.join(HERE, "B2GM_main.py"),
-               "--input", input_file, "--pipeline", pipeline,
-               "--output-dir", output_dir]
+               "--input", input_file, "--output-dir", output_dir]
+    if pipeline:
+        command += ["--pipeline", pipeline]
     if version:
         command += ["--citygml-version", version]
     if save_json:
@@ -693,6 +694,24 @@ def convert_upload(workspace: "Workspace", ifc: Optional[Tuple[str, bytes]],
     }
 
 
+def run_district(workspace: "Workspace", folder: str, version: Optional[str],
+                 save_json: bool = False) -> Dict[str, Any]:
+    """Run every building folder under ``folder`` and return the merged model."""
+    name = os.path.basename(folder.rstrip(os.sep))
+    output_dir = os.path.join(workspace.output_dir, name)
+    os.makedirs(output_dir, exist_ok=True)
+    result = run_b2gm(folder, None, output_dir, version, save_json,
+                      timeout=CONVERT_TIMEOUT * 4)
+    if not result["ok"]:
+        return result
+    merged = os.path.join(output_dir, name + ".gml")
+    if not os.path.isfile(merged):
+        return {"ok": False, "log": result["log"] + ["no merged city model was produced"]}
+    relative = os.path.relpath(merged, workspace.output_dir).replace(os.sep, "/")
+    return {"ok": True, "log": result["log"], "name": os.path.basename(merged),
+            "path": relative, "model": read_model(merged, workspace.palette())}
+
+
 class Handler(BaseHTTPRequestHandler):
     workspace: Workspace
     server_version = "B2GM"
@@ -799,6 +818,25 @@ class Handler(BaseHTTPRequestHandler):
         if length > MAX_BODY_BYTES:
             return self._error("request body too large", 413)
         payload = json.loads(self.rfile.read(length) or b"{}")
+        version = None
+        if payload.get("version"):
+            try:
+                import B2GM_GIS
+
+                version = B2GM_GIS.normalise_version(str(payload["version"]))
+            except Exception as exc:
+                return self._error(str(exc))
+        if payload.get("folder"):
+            # a district: every building folder under it, then one merged model
+            try:
+                folder = self.workspace.resolve("input", str(payload["folder"]))
+            except ValueError as exc:
+                return self._error(str(exc))
+            if not os.path.isdir(folder):
+                return self._error("select a folder in the input tree")
+            logger.info("running folder %s", os.path.basename(folder))
+            return self._json(run_district(self.workspace, folder, version,
+                                           bool(payload.get("save_json"))))
         try:
             path = self.workspace.resolve("input", payload.get("path", ""))
         except ValueError as exc:
@@ -813,14 +851,6 @@ class Handler(BaseHTTPRequestHandler):
                 return self._error(str(exc))
             if not os.path.isfile(pipeline) or not pipeline.lower().endswith(".json"):
                 return self._error("select a pipeline .json in the input tree")
-        version = None
-        if payload.get("version"):
-            try:
-                import B2GM_GIS
-
-                version = B2GM_GIS.normalise_version(str(payload["version"]))
-            except Exception as exc:
-                return self._error(str(exc))
         logger.info("running %s", os.path.basename(path))
         self._json(convert_upload(self.workspace, None, None, version, keep_input=path,
                                   save_json=bool(payload.get("save_json")),

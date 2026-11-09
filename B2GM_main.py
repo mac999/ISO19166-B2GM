@@ -358,7 +358,8 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--input", default=DEFAULT_INPUT,
-                        help=f"Input IFC file (default: {DEFAULT_INPUT})")
+                        help=f"Input IFC file, or a folder of building folders that each "
+                             f"hold their own pipeline JSON (default: {DEFAULT_INPUT})")
     parser.add_argument("--pipeline", default=DEFAULT_PIPELINE,
                         help=f"Mapping pipeline JSON config (default: {DEFAULT_PIPELINE})")
     parser.add_argument("--output-dir", default=DEFAULT_OUTPUT_DIR, dest="output_dir",
@@ -396,6 +397,15 @@ def main():
 
     if not os.path.exists(args.input):
         logger.error("Input file does not exist: %s", args.input)
+        return
+
+    if os.path.isdir(args.input):
+        # a folder of building folders, each with its own pipeline
+        import B2GM_batch
+
+        result = B2GM_batch.run_folder(args.input, args.output_dir,
+                                       args.citygml_version, args.save_json)
+        logging.info("Finished")
         return
 
     ext = os.path.splitext(args.input)[1].lower()

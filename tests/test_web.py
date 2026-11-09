@@ -532,3 +532,27 @@ def test_shipped_colors_json_matches_the_defaults():
         shipped = json.load(f)
     assert set(shipped["citygml"]) == set(WEB.CLASS_COLORS)
     assert set(shipped["ifc"]) == set(WEB.IFC_COLORS)
+
+
+def test_run_accepts_a_folder_and_returns_the_merged_model(server, workspace, monkeypatch):
+    calls = []
+
+    def fake_run(input_file, pipeline, output_dir, version=None, save_json=False, **_):
+        calls.append((os.path.basename(input_file), pipeline, os.path.basename(output_dir)))
+        with open(os.path.join(output_dir, os.path.basename(output_dir) + ".gml"), "w",
+                  encoding="utf-8") as f:
+            f.write(GML)
+        return {"ok": True, "log": ["merged 2 buildings"]}
+
+    monkeypatch.setattr(WEB, "run_b2gm", fake_run)
+    os.makedirs(os.path.join(workspace.input_dir, "district", "01_a"))
+    body = json.dumps({"folder": "district", "version": "2.0"}).encode()
+    status, payload = post(server, "/api/run", "application/json", body)
+    assert status == 200 and payload["ok"], payload
+    assert calls == [("district", None, "district")]
+    assert payload["path"] == "district/district.gml"
+    assert payload["model"]["triangles"] == 4
+
+    status, payload = post(server, "/api/run", "application/json",
+                           json.dumps({"folder": "nope"}).encode())
+    assert status == 400

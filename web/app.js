@@ -38,6 +38,7 @@ const TEXT = {
     table: 'form', json: 'json', rule: 'rule', addRule: '+ rule', removeRule: 'remove rule',
     gizmoHint: 'Click an axis to look along it; click again for the other side',
     pipelineLoaded: 'pipeline loaded:',
+    runFolder: 'Run every building folder in here and merge the result',
   },
   ko: {
     subtitle: 'BIM-GIS 개념 매핑',
@@ -65,6 +66,7 @@ const TEXT = {
     table: '폼', json: 'json', rule: '규칙', addRule: '+ 규칙', removeRule: '규칙 삭제',
     gizmoHint: '축을 클릭하면 그 방향에서 봅니다. 다시 클릭하면 반대쪽',
     pipelineLoaded: '파이프라인 불러옴:',
+    runFolder: '이 폴더의 건물 폴더를 모두 실행하고 하나로 합칩니다',
   },
 };
 
@@ -716,6 +718,16 @@ function renderTree(node, container, side) {
         children.style.display = open ? 'none' : '';
         row.querySelector('.tw').textContent = open ? '▸' : '▾';
       };
+      // an input folder of building folders runs as one district
+      if (side === 'input' && depth > 0) {
+        const run = document.createElement('button');
+        run.type = 'button';
+        run.className = 'runfolder';
+        run.textContent = '▶';
+        run.title = t('runFolder');
+        run.onclick = (event) => { event.stopPropagation(); runFolder(item.path, item.name); };
+        row.appendChild(run);
+      }
       return;
     }
     row.onclick = () => {
@@ -1341,6 +1353,29 @@ function pipelineVersion() {
   }
   const document_ = pipeline.document || {};
   return document_.citygml_version ? String(document_.citygml_version) : null;
+}
+
+/* Every building folder under the folder, each with its own pipeline, then
+   the merged city model on the canvas. */
+async function runFolder(path, name) {
+  busy(true, `${t('running')} ${name}`);
+  writeLog(`${t('running')} ${name}`);
+  try {
+    const options = runOptions();
+    const result = await api('/api/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder: path, version: options.version || undefined,
+                             save_json: options.save_json }),
+    });
+    writeLog(result.log);
+    if (!result.ok) return;
+    await showConverted(result);
+  } catch (error) {
+    writeLog(error.message);
+  } finally {
+    busy(false);
+  }
 }
 
 /* --- run ------------------------------------------------------------------ */

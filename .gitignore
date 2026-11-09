@@ -1,0 +1,6 @@
+# generated runs and uploads from the web view; the shipped example output
+# at the top of output/ stays tracked
+output/*/
+input_data/uploads/
+__pycache__/
+*.pyc
