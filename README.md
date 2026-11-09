@@ -19,6 +19,34 @@ close that gap. If you are interested, fork and join.
   <img src="./doc/webview.png" width="900" alt="B2GM web view: the source IFC selected in the input tree and drawn translucent with edges in the middle, so the furniture and windows show through the walls; pipeline stages on the left, output tree and file preview on the right"></img>
 </p>
 
+## Highlights
+
+A district of twenty buildings along Teheran-ro in Seoul, each mapped by its
+own pipeline (LOD1 block to LOD4 interior) and placed in EPSG:5186 by the CM
+stage or by the IFC's own `IfcMapConversion`. Clicking the output folder reads
+every building's final CityGML into one scene over a ground grid; the panel
+below the output tree shows the folder's metadata.
+
+<p align="center">
+  <img src="./doc/highlight_district.png" width="900" alt="The teheran-ro output folder open as one scene: twenty buildings in two rows along the road, a 50 m ground grid, LoD chips LOD1 to LOD4 and the folder metadata in the lower right panel"></img>
+</p>
+
+An IFC opens as its spatial structure in the lower right panel. Picking an
+object lists its attributes, relations and property sets and highlights it on
+the canvas; here a kitchen space is picked with the model in x-ray.
+
+<p align="center">
+  <img src="./doc/highlight_ifc_inspector.png" width="900" alt="The source IFC in x-ray mode with the IfcSpace A103 picked in the object tree and drawn in magenta; its IFC attributes are listed below the tree"></img>
+</p>
+
+A CityGML file opens as its feature tree, Building to boundary surfaces to
+openings. A picked wall is highlighted with the windows it hosts, and its
+generic attributes are grouped back into the IFC property sets they came from.
+
+<p align="center">
+  <img src="./doc/highlight_citygml_inspector.png" width="900" alt="A LOD3 CityGML building with one exterior WallSurface and its four windows picked and drawn in magenta; the feature's class, gml:id and attributes are listed below the feature tree"></img>
+</p>
+
 ## Contents
 
 1. [How the mapping works](#how-the-mapping-works)
