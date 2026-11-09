@@ -231,6 +231,15 @@ def get_error(base, path):
     raise AssertionError("expected an error response")
 
 
+def test_inspect_route(server):
+    status, body = get(server, "/api/inspect?side=output&path=sub/city.gml")
+    result = json.loads(body)
+    assert status == 200 and result["kind"] == "citygml"
+    assert result["tree"][0]["id"] == "b1"
+    status, body = get(server, "/api/inspect?side=output&path=sub")
+    assert json.loads(body)["kind"] == "folder"
+
+
 def test_routes(server):
     status, body = get(server, "/")
     assert status == 200 and b"<canvas id=\"scene\">" in body

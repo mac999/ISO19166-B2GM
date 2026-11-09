@@ -420,8 +420,9 @@ def read_citygml(path: str) -> List[Dict[str, Any]]:
         name = _tag(element)
         if event == "start":
             if name in FEATURE_TAGS:
+                gml_id = next((v for k, v in element.attrib.items() if k.endswith("}id")), "")
                 stack.append({"class": name, "name": "", "verts": [], "faces": [],
-                              "attrs": {}, "index": {}})
+                              "attrs": {}, "index": {}, "id": gml_id})
             continue
         if not stack:
             if name in ("cityObjectMember",):
@@ -449,6 +450,8 @@ def read_citygml(path: str) -> List[Dict[str, Any]]:
                     done["attrs"].get("gis_class", done["class"]),
                     done["attrs"].get("lod", ""),
                     done["verts"], done["faces"], done["attrs"]))
+                # the object tree in the lower right panel selects by this id
+                features[-1]["id"] = done["id"]
             element.clear()
     return features
 
@@ -508,6 +511,7 @@ def read_ifc(path: str) -> List[Dict[str, Any]]:
             "faces": [int(i) for i in geometry["faces"]],
             "color": IFC_COLORS.get(ifc_type, DEFAULT_COLOR),
             "attributes": {"GUID": obj.get("GUID", ""), "ifc_type": ifc_type},
+            "id": obj.get("GUID", ""),
         })
     return features
 
@@ -807,6 +811,15 @@ class Handler(BaseHTTPRequestHandler):
                 if not os.path.isfile(path):
                     return self._error("not found", 404)
                 return self._json(read_model(path, self.workspace.palette()))
+            if route == "/api/inspect":
+                import B2GM_inspect
+
+                path = self.workspace.resolve(query.get("side", "output"), query.get("path", ""))
+                if not os.path.exists(path):
+                    return self._error("not found", 404)
+                if "step" in query:
+                    return self._json({"props": B2GM_inspect.node_properties(path, query["step"])})
+                return self._json(B2GM_inspect.inspect_path(path))
             if route == "/api/file":
                 path = self.workspace.resolve(query.get("side", "output"), query.get("path", ""))
                 if not os.path.isfile(path):
