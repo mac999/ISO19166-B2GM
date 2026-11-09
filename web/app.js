@@ -18,6 +18,9 @@ const TEXT = {
     inputPanel: 'Input', inputFiles: 'Input files', pipeline: 'Pipeline stages',
     outputPanel: 'Output', outputFiles: 'Output files',
     canvas: '3D view', preview: 'File preview', previewEmpty: 'Select a file',
+    properties: 'Properties', inspectEmpty: 'Select a file or folder', filter: 'Filter objects',
+    objects: 'objects', selectObject: 'Select an object in the tree for its properties',
+    resize: 'Drag to resize',
     log: 'Log', logEmpty: 'Drop an .ifc on the canvas, or press Run pipeline',
     hint: 'Drag to orbit, wheel to zoom, right drag to pan',
     loading: 'Loading model...', empty: 'No geometry in this file',
@@ -51,6 +54,9 @@ const TEXT = {
     inputPanel: '입력', inputFiles: '입력 파일', pipeline: '파이프라인 단계',
     outputPanel: '출력', outputFiles: '출력 파일',
     canvas: '3차원 뷰', preview: '파일 미리보기', previewEmpty: '파일을 선택하세요',
+    properties: '속성', inspectEmpty: '파일이나 폴더를 선택하세요', filter: '객체 검색',
+    objects: '객체', selectObject: '트리에서 객체를 고르면 속성이 나옵니다',
+    resize: '끌어서 크기 조절',
     log: '로그', logEmpty: '캔버스에 .ifc 를 놓거나 파이프라인 실행을 누르세요',
     hint: '드래그 회전, 휠 확대, 우클릭 드래그 이동',
     loading: '모델 읽는 중...', empty: '이 파일에는 형상이 없습니다',
@@ -83,6 +89,7 @@ const TEXT = {
 // ?lang=ko&theme=light&mode=wireframe&opacity=45&lod=LOD1&select=city.gml (or &folder=teheran-ro) makes a view shareable and scriptable
 const params = new URLSearchParams(location.search);
 let lang = params.get('lang') || localStorage.getItem('b2gm.lang') || 'en';
+let inspected = null;   // {side, path, data} shown in the lower right panel
 const t = (key) => (TEXT[lang][key] ?? TEXT.en[key] ?? key);
 
 function applyLanguage() {
@@ -90,6 +97,11 @@ function applyLanguage() {
   document.querySelectorAll('[data-i18n]').forEach((node) => {
     node.textContent = t(node.dataset.i18n);
   });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach((node) => {
+    node.placeholder = t(node.dataset.i18nPlaceholder);
+  });
+  $('hsplit').title = t('resize');
+  if (!inspected) $('insp-head').textContent = t('inspectEmpty');
   $('lang').textContent = lang.toUpperCase();
   document.querySelectorAll('[data-i18n-title]').forEach((node) => {
     node.title = t(node.dataset.i18nTitle);
@@ -159,6 +171,8 @@ document.querySelectorAll('.splitter').forEach((splitter) => {
 });
 
 /* --- WebGL renderer ------------------------------------------------------- */
+// the colour of what is picked in the object tree; no class uses it
+const HIGHLIGHT = [1.0, 0.22, 0.78];
 const VERTEX_SHADER = `
 attribute vec3 aPos;
 attribute vec3 aNormal;
@@ -388,8 +402,16 @@ class Renderer {
     const sx = model.xy_scale || 1;
     const data = new Float32Array(triangles * 3 * 9);
     let at = 0;
-    for (const feature of features) {
-      const { verts, faces, color } = feature;
+    const chosen = this.selected;
+    // picked features go last, so draw() can repeat just that range on top
+    const isChosen = (f) => chosen && chosen.has(f.id);
+    const ordered = chosen ? features.filter((f) => !isChosen(f)).concat(features.filter(isChosen))
+      : features;
+    this.chosenFrom = 0;
+    for (const feature of ordered) {
+      if (isChosen(feature) && !this.chosenFrom) this.chosenFrom = at / 9;
+      const { verts, faces } = feature;
+      const color = isChosen(feature) ? HIGHLIGHT : feature.color;
       for (let i = 0; i < faces.length; i += 3) {
         const p = [0, 1, 2].map((k) => {
           const index = faces[i + k] * 3;
@@ -413,6 +435,7 @@ class Renderer {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
     this.count = triangles * 3;
+    this.chosenCount = this.chosenFrom || ordered.some(isChosen) ? this.count - this.chosenFrom : 0;
     this.vertexData = data;
     this.edgeCount = 0;   // rebuilt on demand for the edge modes
 
@@ -595,6 +618,18 @@ class Renderer {
       bindAll(this.edgeBuffer);
       gl.drawArrays(gl.LINES, 0, this.edgeCount);
     }
+    if (this.chosenCount) {
+      // a picked object inside a wall or under an LoD1 block still shows,
+      // half see-through over whatever covers it
+      gl.disable(gl.DEPTH_TEST);
+      gl.enable(gl.BLEND);
+      gl.depthMask(false);
+      gl.uniform1f(this.uniform.alpha, 0.55);
+      paint(0);
+      bindAll(this.buffer);
+      gl.drawArrays(gl.TRIANGLES, this.chosenFrom, this.chosenCount);
+      gl.enable(gl.DEPTH_TEST);
+    }
     gl.depthMask(true);
   }
 }
@@ -708,6 +743,7 @@ function showPanel(name) {
   document.querySelectorAll('.tabs .tab').forEach((tab) => {
     tab.classList.toggle('on', tab.dataset.panel === name);
   });
+  $('inspector').hidden = name !== 'inspector';
   $('preview').hidden = name !== 'preview';
   $('runlog').hidden = name !== 'runlog';
 }
@@ -816,6 +852,7 @@ function renderTree(node, container, side) {
       // still folds it, and a folder with nothing to draw just folds
       const showsScene = side === 'output' && depth > 0 && folderModels(item).length > 0;
       row.onclick = (event) => {
+        inspect(side, item.path, event.isTrusted);
         if (!showsScene) { fold(children.style.display === 'none'); return; }
         if (event.isTrusted) picked = true;
         container.querySelectorAll('.node.on').forEach((n) => n.classList.remove('on'));
@@ -850,6 +887,9 @@ function renderTree(node, container, side) {
       row.classList.add('on');
       if (side === 'input') selectedInput = item.path;
       loadPreview(side, item.path);
+      // a click by the viewer brings the panel forward; a pick made after a
+      // run leaves its log in front
+      inspect(side, item.path, event.isTrusted);
       if (side === 'input' && item.name.toLowerCase().endsWith('.json')) {
         loadPipelineFile(item.path, item.name);
       }
@@ -1299,6 +1339,7 @@ async function loadModel(side, path, label) {
       renderer.model = model;
       renderLods();
       renderer.model = null;
+      renderer.selected = null;
       renderer.load(model, hiddenClasses, hiddenLods);
       renderLegend();
     }
@@ -1357,6 +1398,7 @@ async function loadFolder(item) {
     renderer.model = shown;
     renderLods();
     renderer.model = null;
+    renderer.selected = null;
     renderer.load(shown, hiddenClasses, hiddenLods);
     renderLegend();
     updateStats();
@@ -1456,6 +1498,161 @@ async function loadPreview(side, path) {
     preview.textContent = error.message;
   }
 }
+
+/* --- lower right panel: object tree and properties, or metadata ----------- */
+let inspectSeq = 0;
+
+const escapeHtml = (text) => String(text ?? '').replace(/[&<>"]/g,
+  (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function renderGroups(groups) {
+  const host = $('insp-props');
+  host.innerHTML = groups.map(([title, items]) => {
+    const rows = items.map(([key, value]) => {
+      const shown = typeof value === 'boolean' ? String(value)
+        : (value === '' || value === null || value === undefined ? '-' : value);
+      return `<tr><td>${escapeHtml(key)}</td><td>${escapeHtml(shown)}</td></tr>`;
+    }).join('');
+    return `<details class="pgroup" open><summary>${escapeHtml(title)} (${items.length})</summary>`
+      + `<table>${rows}</table></details>`;
+  }).join('');
+}
+
+/* Every id under a node: picking a building lights up its surfaces too. */
+function subtreeIds(node, out = new Set()) {
+  if (node.id) out.add(node.id);
+  node.children.forEach((child) => subtreeIds(child, out));
+  return out;
+}
+
+function highlight(ids) {
+  const model = renderer.model;
+  const hits = ids && model && model.features.some((f) => f.id && ids.has(f.id));
+  const next = hits ? ids : null;
+  if (!next && !renderer.selected) return;
+  renderer.selected = next;
+  renderer.load(model, hiddenClasses, hiddenLods);   // same model: the view stays
+}
+
+async function selectObject(node, row) {
+  $('insp-tree').querySelectorAll('.onode.on').forEach((n) => n.classList.remove('on'));
+  row.classList.add('on');
+  highlight(subtreeIds(node));
+  if (node.props) { renderGroups(node.props); return; }
+  if (node.step === null || node.step === undefined) { renderGroups([]); return; }
+  const { side, path } = inspected;
+  $('insp-props').innerHTML = `<div class="insp-head">${t('loading')}</div>`;
+  try {
+    const result = await api(`/api/inspect?side=${side}&path=${encodeURIComponent(path)}&step=${node.step}`);
+    if (inspected && inspected.path === path) renderGroups(result.props);
+  } catch (error) {
+    $('insp-props').innerHTML = `<div class="insp-head err">${escapeHtml(error.message)}</div>`;
+  }
+}
+
+function renderObjectTree(nodes, filter) {
+  const host = $('insp-tree');
+  host.innerHTML = '';
+  const needle = (filter || '').trim().toLowerCase();
+  const matches = (node) => !needle
+    || `${node.cls} ${node.name} ${node.id}`.toLowerCase().includes(needle);
+  // a node stays when it or something below it matches
+  const keep = (node) => matches(node) || node.children.some(keep);
+  const walk = (list, parent, depth) => {
+    list.filter(keep).forEach((node) => {
+      const li = document.createElement('li');
+      const row = document.createElement('div');
+      row.className = 'onode';
+      const kids = node.children.length;
+      row.innerHTML = `<span class="otw">${kids ? '▾' : ''}</span>`
+        + `<span class="ocls">${escapeHtml(node.cls)}</span>`
+        + `<span class="onm">${escapeHtml(node.name)}</span>`
+        + (kids ? `<span class="ocount">${kids}</span>` : '');
+      row.title = node.id || '';
+      li.appendChild(row);
+      parent.appendChild(li);
+      if (kids) {
+        const ul = document.createElement('ul');
+        li.appendChild(ul);
+        // the first levels open by themselves; a filter opens everything it keeps
+        const open = needle || depth < 4;
+        ul.style.display = open ? '' : 'none';
+        row.querySelector('.otw').textContent = open ? '▾' : '▸';
+        let built = false;
+        const build = () => { if (!built) { walk(node.children, ul, depth + 1); built = true; } };
+        if (open) build();
+        row.querySelector('.otw').onclick = (event) => {
+          event.stopPropagation();
+          const show = ul.style.display === 'none';
+          if (show) build();
+          ul.style.display = show ? '' : 'none';
+          row.querySelector('.otw').textContent = show ? '▾' : '▸';
+        };
+      }
+      row.onclick = () => selectObject(node, row);
+    });
+  };
+  walk(nodes, host, 0);
+}
+
+async function inspect(side, path, bringForward) {
+  const token = ++inspectSeq;
+  const name = path.split('/').pop() || (side === 'input' ? 'input' : 'output');
+  $('insp-head').innerHTML = `<strong>${escapeHtml(name)}</strong> ${t('loading')}`;
+  if (bringForward) showPanel('inspector');
+  try {
+    const data = await api(`/api/inspect?side=${side}&path=${encodeURIComponent(path)}`);
+    if (token !== inspectSeq) return;
+    inspected = { side, path, data };
+    const tree = data.tree || [];
+    let count = 0;
+    const tally = (list) => list.forEach((n) => { count += 1; tally(n.children); });
+    tally(tree);
+    $('insp-head').innerHTML = `<strong>${escapeHtml(name)}</strong> `
+      + (tree.length ? `${data.kind === 'ifc' ? 'IFC' : 'CityGML'} / ${count} ${t('objects')}` : data.kind);
+    $('insp-tree').hidden = !tree.length;
+    $('insp-filter').hidden = !tree.length;
+    $('insp-filter').value = '';
+    renderObjectTree(tree);
+    // until an object is picked, the file's own summary and metadata show
+    renderGroups((data.summary ? [[data.kind === 'ifc' ? 'IFC' : 'CityGML', data.summary]] : [])
+      .concat(data.meta || []));
+    if (renderer.selected) highlight(null);
+  } catch (error) {
+    if (token !== inspectSeq) return;
+    $('insp-head').innerHTML = `<strong>${escapeHtml(name)}</strong> <span class="err">${escapeHtml(error.message)}</span>`;
+  }
+}
+
+$('insp-filter').addEventListener('input', () => {
+  if (inspected) renderObjectTree(inspected.data.tree || [], $('insp-filter').value);
+});
+
+/* The tree and the lower panel share the column; the split is remembered. */
+(() => {
+  const bar = $('hsplit');
+  const lower = $('lower');
+  try {
+    const saved = localStorage.getItem('b2gm.lowerHeight');
+    if (saved) lower.style.setProperty('--lower-h', saved);
+  } catch (e) { /* private window */ }
+  bar.addEventListener('pointerdown', (event) => {
+    const column = lower.parentElement.getBoundingClientRect();
+    bar.classList.add('active');
+    bar.setPointerCapture(event.pointerId);
+    const move = (e) => {
+      const height = Math.min(column.height - 80, Math.max(120, column.bottom - e.clientY));
+      lower.style.setProperty('--lower-h', `${height}px`);
+    };
+    const up = () => {
+      bar.classList.remove('active');
+      bar.removeEventListener('pointermove', move);
+      try { localStorage.setItem('b2gm.lowerHeight', lower.style.getPropertyValue('--lower-h')); } catch (e) { /* private window */ }
+    };
+    bar.addEventListener('pointermove', move);
+    bar.addEventListener('pointerup', up, { once: true });
+  });
+})();
 
 /* --- drop an ifc (and optionally a pipeline config) to convert ------------ */
 const canvasWrap = document.querySelector('.canvas-wrap');

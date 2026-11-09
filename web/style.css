@@ -485,6 +485,46 @@ ul.tree ul { padding-left: 13px; }
 }
 #log { flex: 1; }
 .preview { max-height: 360px; color: var(--muted); }
+
+/* --- lower right: object tree, properties, metadata ------------------------ */
+.panel-body.split { display: flex; flex-direction: column; overflow: hidden; }
+.panel-body.split .grow { flex: 1 1 auto; min-height: 80px; overflow: auto; }
+.panel-body.split .lower {
+  flex: 0 0 auto; height: var(--lower-h, 46%); min-height: 120px;
+  display: flex; flex-direction: column; overflow: hidden; border-bottom: 0;
+}
+.lower .preview { flex: 1; max-height: none; }
+.hsplit { flex: 0 0 5px; cursor: row-resize; background: var(--border); }
+.hsplit:hover, .hsplit.active { background: var(--accent); }
+
+.inspector { flex: 1; display: flex; flex-direction: column; min-height: 0; font-size: 12px; }
+.inspector[hidden] { display: none; }
+.insp-head { padding: 6px 11px; color: var(--muted); border-bottom: 1px solid var(--border); }
+.insp-head strong { color: var(--text); font-weight: 600; }
+.insp-filter {
+  margin: 6px 11px 2px; padding: 3px 7px; font: inherit; font-size: 11px;
+  color: var(--text); background: var(--panel-alt);
+  border: 1px solid var(--border); border-radius: 4px;
+}
+.insp-tree, .insp-tree ul { list-style: none; margin: 0; }
+.insp-tree { flex: 1 1 50%; min-height: 60px; overflow: auto; padding: 4px 0 6px; border-bottom: 1px solid var(--border); }
+.insp-tree ul { padding-left: 12px; }
+.insp-tree .onode { display: flex; gap: 5px; align-items: baseline; padding: 1px 8px; cursor: pointer; white-space: nowrap; }
+.insp-tree .onode:hover { background: var(--panel-alt); }
+.insp-tree .onode.on { background: var(--accent-soft); color: var(--accent); }
+.insp-tree .otw { width: 10px; flex: 0 0 auto; color: var(--muted); font-size: 10px; }
+.insp-tree .ocls { color: var(--muted); font-size: 11px; }
+.insp-tree .onm { overflow: hidden; text-overflow: ellipsis; }
+.insp-tree .ocount { margin-left: auto; color: var(--muted); font-size: 10px; }
+.insp-props { flex: 1 1 50%; min-height: 60px; overflow: auto; padding: 2px 0 8px; }
+.insp-tree[hidden] + .insp-props { flex-basis: 100%; }
+.pgroup > summary {
+  padding: 4px 11px; cursor: pointer; font-size: 11px; color: var(--muted);
+  background: var(--panel-alt); border-bottom: 1px solid var(--border);
+}
+.pgroup table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.pgroup td { padding: 2px 11px; border-bottom: 1px solid var(--border); vertical-align: top; overflow-wrap: anywhere; }
+.pgroup td:first-child { width: 40%; color: var(--muted); }
 #runlog { color: var(--text); }
 .err { color: #e5484d; }
 

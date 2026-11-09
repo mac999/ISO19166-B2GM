@@ -102,17 +102,25 @@
       <span data-i18n="outputPanel">Output</span>
       <span class="path" id="output-path"></span>
     </div>
-    <div class="panel-body">
-      <div class="block">
+    <div class="panel-body split">
+      <div class="block grow">
         <div class="block-head" data-i18n="outputFiles">Output files</div>
         <ul class="tree" id="output-tree"></ul>
       </div>
-      <div class="block">
+      <div class="hsplit" id="hsplit" title="Drag to resize"></div>
+      <div class="block lower" id="lower">
         <div class="block-head tabs">
-          <button class="tab on" data-panel="preview" data-i18n="preview">File preview</button>
+          <button class="tab on" data-panel="inspector" data-i18n="properties">Properties</button>
+          <button class="tab" data-panel="preview" data-i18n="preview">File preview</button>
           <button class="tab" data-panel="runlog" data-i18n="log">Log</button>
         </div>
-        <pre class="preview" id="preview" data-i18n="previewEmpty">Select a file</pre>
+        <div class="inspector" id="inspector">
+          <div class="insp-head" id="insp-head">Select a file or folder</div>
+          <input class="insp-filter" id="insp-filter" type="search" data-i18n-placeholder="filter" placeholder="Filter objects" hidden>
+          <ul class="insp-tree" id="insp-tree" hidden></ul>
+          <div class="insp-props" id="insp-props"></div>
+        </div>
+        <pre class="preview" id="preview" hidden data-i18n="previewEmpty">Select a file</pre>
         <pre class="preview" id="runlog" hidden data-i18n="logEmpty">Drop an .ifc on the canvas, or press Run pipeline</pre>
       </div>
     </div>
