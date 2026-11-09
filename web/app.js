@@ -696,6 +696,8 @@ const isNarrow = () => window.matchMedia('(max-width: 900px)').matches;
 // during boot the trees auto-select a file; jumping to the canvas then would
 // override an explicit ?view=, so the automatic switch waits until boot is done
 let booted = false;
+// a click while the page is still loading wins over the boot's default pick
+let picked = false;
 
 /* --- right panel tabs ----------------------------------------------------- */
 document.querySelectorAll('.tabs .tab').forEach((tab) => {
@@ -813,8 +815,9 @@ function renderTree(node, container, side) {
       // an output folder with CityGML in it opens as one scene; the arrow
       // still folds it, and a folder with nothing to draw just folds
       const showsScene = side === 'output' && depth > 0 && folderModels(item).length > 0;
-      row.onclick = () => {
+      row.onclick = (event) => {
         if (!showsScene) { fold(children.style.display === 'none'); return; }
+        if (event.isTrusted) picked = true;
         container.querySelectorAll('.node.on').forEach((n) => n.classList.remove('on'));
         row.classList.add('on');
         fold(true);
@@ -841,7 +844,8 @@ function renderTree(node, container, side) {
       }
       return;
     }
-    row.onclick = () => {
+    row.onclick = (event) => {
+      if (event.isTrusted) picked = true;
       container.querySelectorAll('.node.on').forEach((n) => n.classList.remove('on'));
       row.classList.add('on');
       if (side === 'input') selectedInput = item.path;
@@ -1677,11 +1681,12 @@ function selectInput(name) {
     pipeline = await api('/api/pipeline');
     renderPipeline();
     renderTree(await api('/api/tree?side=input'), $('input-tree'), 'input');
-    await refreshOutputs(lodOutput(pipeline) || config.output);
+    await refreshOutputs(picked ? null : lodOutput(pipeline) || config.output);
     // ?select=<file> opens that file from the output tree, else the input tree
     const wanted = params.get('select');
     const folder = params.get('folder') && findDir(outputTree, params.get('folder'));
-    if (folder) loadFolder(folder);
+    if (picked) { /* the viewer already chose something */ }
+    else if (folder) loadFolder(folder);
     else if (wanted && selectOutput(wanted)) { /* shown */ }
     else selectInput(wanted || config.input_default);
     booted = true;
