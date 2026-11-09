@@ -1,6 +1,6 @@
 {
   "input": "../../duplex_apartment.ifc",
-  "description": "LOD4: the whole model, rooms as solids and interior walls kept; furniture left out to keep the file small. Placed at lon 127.059835, lat 37.507346 on Teheran-ro",
+  "description": "LOD4: the whole model, rooms as solids and interior walls kept; furniture left out to keep the file small. Placed at lon 127.0568265, lat 37.5066627 on Teheran-ro",
   "citygml_version": "2.0",
   "BIM_GIS_mapping.pipeline": [
     {
@@ -166,8 +166,8 @@
         },
         {
           "origin": {
-            "lon": 127.059835,
-            "lat": 37.507346,
+            "lon": 127.0568265,
+            "lat": 37.5066627,
             "elevation": 30.0
           }
         },

@@ -79,8 +79,10 @@ skipped with a log line.
 
 The shipped `teheran-ro` district places twenty buildings along Teheran-ro
 between Seolleung and Samseong stations in Seoul, in EPSG:5186, with the CM
-stage last so the LoD operators work in metres. The positions are illustrative,
-not surveyed. Four profiles rotate through the folders:
+stage last so the LoD operators work in metres. The buildings stand in two rows
+facing each other across a 20 m road, about midway between the stations, with a
+gap of half a building's frontage to the next one. The positions are
+illustrative, not surveyed. Four profiles rotate through the folders:
 
 | Profile | PD | EM | LM |
 |---------|----|----|----|

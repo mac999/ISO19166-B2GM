@@ -1,6 +1,6 @@
 {
   "input": "../box_ifc4.ifc",
-  "description": "LOD3: walls, slabs and roof with their windows and doors; no interior. Placed at lon 127.062225, lat 37.508964 on Teheran-ro",
+  "description": "LOD3: walls, slabs and roof with their windows and doors; no interior. Placed at lon 127.0571795, lat 37.5070523 on Teheran-ro",
   "citygml_version": "2.0",
   "BIM_GIS_mapping.pipeline": [
     {
@@ -211,8 +211,8 @@
         },
         {
           "origin": {
-            "lon": 127.062225,
-            "lat": 37.508964,
+            "lon": 127.0571795,
+            "lat": 37.5070523,
             "elevation": 30.0
           }
         },

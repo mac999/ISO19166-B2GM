@@ -1,6 +1,6 @@
 {
   "input": "../box_ifc4.ifc",
-  "description": "LOD1 block from the exterior walls; property sets replaced by the rule's own. Placed at lon 127.059465, lat 37.508104 on Teheran-ro",
+  "description": "LOD1 block from the exterior walls; property sets replaced by the rule's own. Placed at lon 127.0567997, lat 37.5069339 on Teheran-ro",
   "citygml_version": "2.0",
   "BIM_GIS_mapping.pipeline": [
     {
@@ -96,8 +96,8 @@
         },
         {
           "origin": {
-            "lon": 127.059465,
-            "lat": 37.508104,
+            "lon": 127.0567997,
+            "lat": 37.5069339,
             "elevation": 30.0
           }
         },

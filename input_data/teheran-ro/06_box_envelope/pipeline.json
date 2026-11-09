@@ -1,6 +1,6 @@
 {
   "input": "../box_ifc4.ifc",
-  "description": "LOD2 envelope: exterior walls, roof footprint and ground; the LOD1 block stays as the building solid. Placed at lon 127.052935, lat 37.505196 on Teheran-ro",
+  "description": "LOD2 envelope: exterior walls, roof footprint and ground; the LOD1 block stays as the building solid. Placed at lon 127.0556921, lat 37.5063947 on Teheran-ro",
   "citygml_version": "2.0",
   "BIM_GIS_mapping.pipeline": [
     {
@@ -150,8 +150,8 @@
         },
         {
           "origin": {
-            "lon": 127.052935,
-            "lat": 37.505196,
+            "lon": 127.0556921,
+            "lat": 37.5063947,
             "elevation": 30.0
           }
         },

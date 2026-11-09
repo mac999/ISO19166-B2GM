@@ -1,6 +1,6 @@
 {
   "input": "../box_ifc4.ifc",
-  "description": "LOD4: the whole model, rooms as solids and interior walls kept; furniture left out to keep the file small. Placed at lon 127.057075, lat 37.506486 on Teheran-ro",
+  "description": "LOD4: the whole model, rooms as solids and interior walls kept; furniture left out to keep the file small. Placed at lon 127.0564453, lat 37.5066294 on Teheran-ro",
   "citygml_version": "2.0",
   "BIM_GIS_mapping.pipeline": [
     {
@@ -166,8 +166,8 @@
         },
         {
           "origin": {
-            "lon": 127.057075,
-            "lat": 37.506486,
+            "lon": 127.0564453,
+            "lat": 37.5066294,
             "elevation": 30.0
           }
         },
