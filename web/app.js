@@ -1114,7 +1114,9 @@ function renderLods() {
   if (!levels.length) return;
   if (wantedLods.length) {
     levels.forEach((level) => { if (!wantedLods.includes(level)) hiddenLods.add(level); });
-    wantedLods.length = 0;   // applied once, then the chips own the state
+    // applied once, then the chips own the state; a folder load keeps it
+    // until the last file, since later files can bring levels the first lacked
+    if (!folderAbort) wantedLods.length = 0;
   }
   levels.forEach((level) => {
     const chip = document.createElement('button');
@@ -1306,11 +1308,11 @@ async function loadFolder(item) {
     }
   } finally {
     if (token === loadSeq) {
+      folderAbort = null;
       if (merged.features.length) show();
       if (crss.size > 1) writeLog(`${t('crsMixed')} ${[...crss].join(', ')}`);
       markStage(null);
       $('progress').hidden = true;
-      folderAbort = null;
     }
   }
 }
