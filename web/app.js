@@ -802,10 +802,24 @@ function renderTree(node, container, side) {
       const children = document.createElement('ul');
       item.children.forEach((child) => walk(child, children, depth + 1));
       li.appendChild(children);
+      const fold = (open) => {
+        children.style.display = open ? '' : 'none';
+        row.querySelector('.tw').textContent = open ? '▾' : '▸';
+      };
+      row.querySelector('.tw').onclick = (event) => {
+        event.stopPropagation();
+        fold(children.style.display === 'none');
+      };
+      // an output folder with CityGML in it opens as one scene; the arrow
+      // still folds it, and a folder with nothing to draw just folds
+      const showsScene = side === 'output' && depth > 0 && folderModels(item).length > 0;
       row.onclick = () => {
-        const open = children.style.display !== 'none';
-        children.style.display = open ? 'none' : '';
-        row.querySelector('.tw').textContent = open ? '▸' : '▾';
+        if (!showsScene) { fold(children.style.display === 'none'); return; }
+        container.querySelectorAll('.node.on').forEach((n) => n.classList.remove('on'));
+        row.classList.add('on');
+        fold(true);
+        loadFolder(item);
+        if (booted && isNarrow()) showView('middle');
       };
       // an input folder of building folders runs as one district
       if (side === 'input' && depth > 0) {
@@ -817,20 +831,13 @@ function renderTree(node, container, side) {
         run.onclick = (event) => { event.stopPropagation(); runFolder(item.path, item.name); };
         row.appendChild(run);
       }
-      if (side === 'output' && depth > 0 && folderModels(item).length) {
-        const view = document.createElement('button');
-        view.type = 'button';
-        view.className = 'runfolder';
+      if (showsScene) {
+        const view = document.createElement('span');
+        view.className = 'scenemark';
         view.textContent = '◫';
         view.title = t('viewFolder');
-        view.onclick = (event) => {
-          event.stopPropagation();
-          container.querySelectorAll('.node.on').forEach((n) => n.classList.remove('on'));
-          row.classList.add('on');
-          loadFolder(item);
-          if (booted && isNarrow()) showView('middle');
-        };
         row.appendChild(view);
+        row.title = t('viewFolder');
       }
       return;
     }

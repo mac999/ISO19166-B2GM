@@ -139,8 +139,8 @@ dependencies.
   so a project can restyle the view without touching the code.
 - Header: the CityGML version, whether to save the JSON models, and the stage
   chips, which open a stage and show its output on the canvas. A folder in the
-  input tree runs as a district and shows the merged model. The folder button
-  in the output tree reads every run below it one after another into one
+  input tree runs as a district and shows the merged model. Clicking a folder
+  name in the output tree (the arrow folds it) reads every run below it one after another into one
   scene, each from the CityGML its run record names, so buildings placed by CM appear where
   CM put them. A progress strip shows the file being read, and Stop keeps
   what has landed.

@@ -201,6 +201,9 @@ ul.tree ul { padding-left: 13px; }
   border-color: transparent; background: transparent; color: var(--muted);
 }
 .node .runfolder:hover { color: var(--accent); border-color: var(--accent); }
+.node .scenemark { margin-left: auto; padding: 0 4px; color: var(--muted); font-size: 11px; }
+.node:hover .scenemark, .node.on .scenemark { color: var(--accent); }
+.node .tw { cursor: pointer; }
 
 /* --- pipeline stages ------------------------------------------------------ */
 .stage { border-bottom: 1px solid var(--border); }
