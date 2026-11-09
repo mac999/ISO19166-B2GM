@@ -134,7 +134,12 @@ dependencies.
   class on click, which is how you look inside a model; chips above the canvas
   do the same per level of detail. A file with nothing to draw shows its text
   here instead.
-- Right: the output tree, a file preview and the stage log.
+- Right: the output tree and, below it, three tabs. Properties shows an IFC's
+  spatial structure or a CityGML file's feature tree with the attributes and
+  property sets of the object picked in it, which is also highlighted on the
+  canvas, through anything in front of it; a folder or any other file gets a
+  metadata table, including the run record of a pipeline output folder. File
+  preview and the stage log are the other two tabs.
 - Colours per CityGML class and IFC type come from `input_data/colors.json`,
   so a project can restyle the view without touching the code.
 - Header: the CityGML version, whether to save the JSON models, and the stage
@@ -262,6 +267,7 @@ after the fact from the module headers and the commit history.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.4.0 | 2026-11-10 | Object tree and properties below the output tree: IFC spatial structure with attributes, relations and property sets; CityGML features with their generic attributes grouped by property set and a geometry summary; metadata for folders and other files. A picked object is highlighted in the 3D view. Output folders open as one scene by clicking their name. |
 | 0.3.3 | 2026-11-10 | Every run writes `b2gm_run.json` with its stage outputs and final CityGML. The folder view picks each building from it instead of the newest file, which failed on the server because the container image keeps file times to the second. |
 | 0.3.2 | 2026-11-09 | The `teheran-ro` buildings stand in two rows across a 20 m road with half a frontage between neighbours instead of 130 m slots. The canvas gets a ground grid and a full-size view; `?grid=1` and `?max=1` preset them. `?lod=` holds until a folder load finishes. |
 | 0.3.1 | 2026-11-09 | A folder in the output tree opens as one scene: each run's newest CityGML is read in turn, in its own coordinates, so a district can be checked building by building without the merged file. A progress strip under the canvas shows which file is loading, and Stop keeps what has been read. `?folder=` presets it. |
