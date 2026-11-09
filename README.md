@@ -138,10 +138,14 @@ dependencies.
   so a project can restyle the view without touching the code.
 - Header: the CityGML version, whether to save the JSON models, and the stage
   chips, which open a stage and show its output on the canvas. A folder in the
-  input tree runs as a district and shows the merged model.
+  input tree runs as a district and shows the merged model. The folder button
+  in the output tree reads every run below it one after another into one
+  scene, each from its newest CityGML, so buildings placed by CM appear where
+  CM put them. A progress strip shows the file being read, and Stop keeps
+  what has landed.
 
 Drop an `.ifc` on the canvas, optionally with a pipeline `.json`, to convert it.
-`?theme=`, `?lang=`, `?mode=`, `?opacity=`, `?select=` and `?hide=` preset a view
+`?theme=`, `?lang=`, `?mode=`, `?opacity=`, `?select=`, `?folder=` and `?hide=` preset a view
 so it can be shared as a link. See [Web view](doc/web-view.md) for the routes and the
 Fly.io deployment.
 
@@ -254,6 +258,7 @@ after the fact from the module headers and the commit history.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.3.1 | 2026-11-09 | A folder in the output tree opens as one scene: each run's newest CityGML is read in turn, in its own coordinates, so a district can be checked building by building without the merged file. A progress strip under the canvas shows which file is loading, and Stop keeps what has been read. `?folder=` presets it. |
 | 0.3.0 | 2026-11-09 | `--input` takes a folder of building folders, each with its own pipeline; the results are merged into one city model with unique `gml:id`s. CM rules take a `rotation`. The shipped `teheran-ro` district: twenty buildings along Teheran-ro in EPSG:5186 across four LoD profiles, one placed by its own `IfcMapConversion`. The web view runs a folder from the input tree. |
 | 0.2.6 | 2026-11-08 | Georeferencing from `IfcMapConversion` + `IfcProjectedCRS` and the IFC2x3 `ePSet_MapConversion` sets, with lengths scaled from the project unit; a non-identity `IfcSite` placement is undone before projecting. The CM stage can run after LM and then writes the final CityGML, so the operators work in local metres. EM rules take PD-style property filters; the example maps interior walls to `InteriorWallSurface`, which both writers now place as a boundary surface. |
 | 0.2.5 | 2026-11-08 | The saved BIM and GIS model JSON carry the destination CRS as `srsName`, and the viewer reads it, so a Web Mercator model no longer looks squashed next to the CityGML written from the same objects. |
