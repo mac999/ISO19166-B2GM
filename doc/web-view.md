@@ -43,7 +43,11 @@ EPSG:3857 stretches x and y by 1/cos(latitude) but leaves z alone, so a building
 taken straight from it looks too wide for its height and does not line up with
 the IFC it came from. The header names the CRS when a correction is applied.
 
-**Drop an `.ifc` on the canvas** to convert it, optionally together with a
+**Every folder in the input tree below the root carries a small run button: it
+runs each building folder inside with its own pipeline and puts the merged
+city model on the canvas, the browser form of `--input <folder>`.
+
+Drop an `.ifc` on the canvas** to convert it, optionally together with a
 pipeline `.json`. The model runs through PD → CM → EM → LM and the result is
 rendered straight away:
 

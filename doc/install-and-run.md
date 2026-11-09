@@ -47,6 +47,52 @@ pip install -r requirements.txt
 
 ## Run
 
+### A folder of buildings
+
+`--input` also takes a folder. Each sub-folder is one building and holds the
+pipeline JSON that maps it, so PD, EM, LM and CM can differ from building to
+building; the IFC is a file in that folder or the one named by the pipeline's
+top-level `input` key, relative to the folder, so a sample model can be placed
+many times without copies:
+
+```
+input_data/teheran-ro/
+  box_ifc4.ifc
+  01_duplex_block/pipeline.json        "input": "../../duplex_apartment.ifc"
+  02_duplex_envelope/pipeline.json
+  03_box_openings/pipeline.json        "input": "../box_ifc4.ifc"
+  ...
+```
+
+```bash
+python B2GM_main.py --input input_data/teheran-ro --output-dir output/teheran-ro
+```
+
+Every building is written under `output/teheran-ro/<building>/` and the final
+CityGML files are merged into `output/teheran-ro/teheran-ro.gml`: one
+`CityModel`, one `cityObjectMember` per building, the envelope recomputed and
+every `gml:id` prefixed with the building folder so a model placed twice does
+not collide. All buildings must come out in the same CityGML version
+(`--citygml-version` applies to all of them); a mixed set is reported and not
+merged. A folder without a pipeline JSON, or whose IFC cannot be found, is
+skipped with a log line.
+
+The shipped `teheran-ro` district places twenty buildings along Teheran-ro
+between Seolleung and Samseong stations in Seoul, in EPSG:5186, with the CM
+stage last so the LoD operators work in metres. The positions are illustrative,
+not surveyed. Four profiles rotate through the folders:
+
+| Profile | PD | EM | LM |
+|---------|----|----|----|
+| block | building and exterior walls | Building, WallSurface; property sets replaced | LOD1 block from the walls |
+| envelope | plus roof, slabs, footings | plus RoofSurface, GroundSurface | LOD2, roof footprint |
+| openings | plus storeys, windows, doors, stairs | plus Window, Door, BuildingInstallation | LOD3 |
+| interior | everything, with property formatting | the full rule set, Room and InteriorWallSurface included | LOD4, rooms as solids |
+
+Eighteen folders are placed by an `origin` and a `rotation` in their CM stage;
+`20_box_interior` maps an IFC4 file that carries its own `IfcMapConversion` in
+EPSG:5186, so its CM stage names no origin at all.
+
 Input data and the pipeline config live under `input_data/`; **all** results
 (intermediate + final) are written under `output/`. These are the defaults, so a
 bare command runs the shipped example end to end:

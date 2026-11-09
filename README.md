@@ -104,6 +104,19 @@ on the command line, `"citygml_version"` in the pipeline file, or the selector i
 the web view. 3.0 keeps the building storeys as `bldg:Storey` features, which
 2.0 has no element for, and writes closed meshes as `gml:Solid`.
 
+## A district of buildings
+
+`--input` also takes a folder of building folders, each holding the pipeline
+that maps it, and merges the results into one city model with the `gml:id`s
+kept unique. The shipped `input_data/teheran-ro` places twenty buildings along
+Teheran-ro in Seoul, in EPSG:5186, cycling through four profiles from a LOD1
+block to a LOD4 interior; one of them is placed by its own `IfcMapConversion`.
+Positions are illustrative. See [Install and run](doc/install-and-run.md).
+
+```bash
+python B2GM_main.py --input input_data/teheran-ro --output-dir output/teheran-ro
+```
+
 ## Web view
 
 `python B2GM_main.py --web` opens a three-panel workspace on the stdlib HTTP
@@ -124,7 +137,8 @@ dependencies.
 - Colours per CityGML class and IFC type come from `input_data/colors.json`,
   so a project can restyle the view without touching the code.
 - Header: the CityGML version, whether to save the JSON models, and the stage
-  chips, which open a stage and show its output on the canvas.
+  chips, which open a stage and show its output on the canvas. A folder in the
+  input tree runs as a district and shows the merged model.
 
 Drop an `.ifc` on the canvas, optionally with a pipeline `.json`, to convert it.
 `?theme=`, `?lang=`, `?mode=`, `?opacity=`, `?select=` and `?hide=` preset a view
@@ -240,6 +254,7 @@ after the fact from the module headers and the commit history.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.3.0 | 2026-11-09 | `--input` takes a folder of building folders, each with its own pipeline; the results are merged into one city model with unique `gml:id`s. CM rules take a `rotation`. The shipped `teheran-ro` district: twenty buildings along Teheran-ro in EPSG:5186 across four LoD profiles, one placed by its own `IfcMapConversion`. The web view runs a folder from the input tree. |
 | 0.2.6 | 2026-11-08 | Georeferencing from `IfcMapConversion` + `IfcProjectedCRS` and the IFC2x3 `ePSet_MapConversion` sets, with lengths scaled from the project unit; a non-identity `IfcSite` placement is undone before projecting. The CM stage can run after LM and then writes the final CityGML, so the operators work in local metres. EM rules take PD-style property filters; the example maps interior walls to `InteriorWallSurface`, which both writers now place as a boundary surface. |
 | 0.2.5 | 2026-11-08 | The saved BIM and GIS model JSON carry the destination CRS as `srsName`, and the viewer reads it, so a Web Mercator model no longer looks squashed next to the CityGML written from the same objects. |
 | 0.2.4 | 2026-11-08 | Run pipeline writes under `output/<model>/` like a drop or Apply & run, re-runs overwrite that folder, and the result is shown and marked in the output tree straight away. |
