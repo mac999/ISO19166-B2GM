@@ -81,6 +81,11 @@
       <div class="hint" id="hint" data-i18n="hint">Drag to orbit, wheel to zoom, right drag to pan</div>
       <canvas id="gizmo" class="gizmo" width="96" height="96"></canvas>
       <pre class="docview" id="docview" hidden></pre>
+      <div class="progress" id="progress" hidden>
+        <div class="progress-row"><span id="progress-text"></span>
+          <button id="progress-stop" class="ghost" data-i18n="stop">Stop</button></div>
+        <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+      </div>
       <div class="overlay" id="overlay" hidden><div class="spinner"></div><span id="overlay-text"></span></div>
       <div class="dropzone" id="dropzone" hidden><div><strong data-i18n="dropTitle">Drop to convert</strong><br><span data-i18n="dropHint">an .ifc model, optionally with a pipeline .json</span></div></div>
     </div>

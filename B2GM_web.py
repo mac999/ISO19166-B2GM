@@ -259,11 +259,14 @@ def build_tree(root: str, rel: str = "") -> Dict[str, Any]:
             node["children"].append(build_tree(root, child_rel))
         else:
             suffix = os.path.splitext(entry.name)[1].lower()
+            stat = entry.stat()
             node["children"].append({
                 "name": entry.name,
                 "path": child_rel.replace(os.sep, "/"),
                 "type": "file",
-                "size": entry.stat().st_size,
+                "size": stat.st_size,
+                # the folder view takes a run's newest CityGML as its result
+                "mtime": stat.st_mtime,
                 "ext": suffix,
                 "viewable": suffix in MODEL_SUFFIXES,
             })

@@ -92,6 +92,7 @@ def test_build_tree_marks_viewable(workspace):
     gml = folder["children"][0]
     assert gml["name"] == "city.gml" and gml["viewable"]
     assert gml["path"] == "sub/city.gml"
+    assert gml["mtime"] > 0
 
 
 def test_describe_pipeline_flattens_stages(workspace):

@@ -39,6 +39,9 @@ const TEXT = {
     gizmoHint: 'Click an axis to look along it; click again for the other side',
     pipelineLoaded: 'pipeline loaded:',
     runFolder: 'Run every building folder in here and merge the result',
+    viewFolder: 'Show every CityGML in this folder together, in its own coordinates',
+    crsMixed: 'files use different CRSs:',
+    stop: 'Stop', stopped: 'stopped', files: '{n} files',
   },
   ko: {
     subtitle: 'BIM-GIS 개념 매핑',
@@ -67,10 +70,13 @@ const TEXT = {
     gizmoHint: '축을 클릭하면 그 방향에서 봅니다. 다시 클릭하면 반대쪽',
     pipelineLoaded: '파이프라인 불러옴:',
     runFolder: '이 폴더의 건물 폴더를 모두 실행하고 하나로 합칩니다',
+    viewFolder: '이 폴더의 CityGML을 각자의 좌표 그대로 한 화면에 모아 봅니다',
+    crsMixed: '좌표계가 서로 다른 파일이 있습니다:',
+    stop: '중지', stopped: '중지됨', files: '파일 {n}개',
   },
 };
 
-// ?lang=ko&theme=light&mode=wireframe&opacity=45&lod=LOD1&select=city.gml makes a view shareable and scriptable
+// ?lang=ko&theme=light&mode=wireframe&opacity=45&lod=LOD1&select=city.gml (or &folder=teheran-ro) makes a view shareable and scriptable
 const params = new URLSearchParams(location.search);
 let lang = params.get('lang') || localStorage.getItem('b2gm.lang') || 'en';
 const t = (key) => (TEXT[lang][key] ?? TEXT.en[key] ?? key);
@@ -728,6 +734,21 @@ function renderTree(node, container, side) {
         run.onclick = (event) => { event.stopPropagation(); runFolder(item.path, item.name); };
         row.appendChild(run);
       }
+      if (side === 'output' && depth > 0 && folderModels(item).length) {
+        const view = document.createElement('button');
+        view.type = 'button';
+        view.className = 'runfolder';
+        view.textContent = '◫';
+        view.title = t('viewFolder');
+        view.onclick = (event) => {
+          event.stopPropagation();
+          container.querySelectorAll('.node.on').forEach((n) => n.classList.remove('on'));
+          row.classList.add('on');
+          loadFolder(item);
+          if (booted && isNarrow()) showView('middle');
+        };
+        row.appendChild(view);
+      }
       return;
     }
     row.onclick = () => {
@@ -1161,6 +1182,8 @@ let loadSeq = 0;
 async function loadModel(side, path, label) {
   // two files can be requested in a row at boot; only the last one may land
   const token = ++loadSeq;
+  if (folderAbort) folderAbort.abort();
+  $('progress').hidden = true;
   busy(true, t('loading'));
   try {
     const model = await api(`/api/model?side=${side}&path=${encodeURIComponent(path)}`);
@@ -1188,6 +1211,107 @@ async function loadModel(side, path, label) {
     $('legend').innerHTML = `<div class="legend-row err">${error.message}</div>`;
   } finally {
     if (token === loadSeq) busy(false);
+  }
+}
+
+/* The CityGML files a folder view draws. A run folder holds every stage's
+   CityGML and the stage that ran last wrote the result, so the newest file
+   stands for the run; a folder whose subfolders hold runs is a district, and
+   its own .gml is their merge. */
+function folderModels(item) {
+  const gml = (n) => n.type === 'file' && n.name.toLowerCase().endsWith('.gml');
+  const nested = item.children.filter((n) => n.type === 'dir').flatMap(folderModels);
+  if (nested.length) return nested;
+  const files = item.children.filter(gml);
+  if (!files.length) return [];
+  return [files.reduce((a, b) => ((b.mtime || 0) > (a.mtime || 0) ? b : a))];
+}
+
+function findDir(node, path) {
+  if (!node || node.type !== 'dir') return null;
+  if (node.path === path) return node;
+  for (const child of node.children) {
+    const hit = findDir(child, path);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+/* Read the files one after another into one scene. Coordinates are kept as
+   written, so a building placed by CM shows where CM put it. The canvas stays
+   usable while files land, and Stop keeps whatever has been read. */
+let folderAbort = null;
+
+async function loadFolder(item) {
+  const token = ++loadSeq;
+  if (folderAbort) folderAbort.abort();
+  const abort = new AbortController();
+  folderAbort = abort;
+  const files = folderModels(item);
+  const merged = { features: [], bounds: null, crs: null, xy_scale: 1, triangles: 0 };
+  const crss = new Set();
+  let read = 0;
+  let drawnAt = 0;
+  const show = () => {
+    // a fresh object each time so the view refits to what has landed so far
+    const shown = { ...merged, features: merged.features.slice() };
+    renderer.model = shown;
+    renderLods();
+    renderer.model = null;
+    renderer.load(shown, hiddenClasses, hiddenLods);
+    renderLegend();
+    updateStats();
+    drawnAt = performance.now();
+  };
+  const progress = (text) => {
+    $('progress-text').textContent = text;
+    $('progress-bar').style.width = `${(100 * read) / files.length}%`;
+  };
+  hideDocument();
+  busy(false);
+  $('progress').hidden = false;
+  $('progress-stop').onclick = () => abort.abort();
+  try {
+    for (const file of files) {
+      progress(`${read + 1}/${files.length}  ${file.path}`);
+      const model = await api(`/api/model?side=output&path=${encodeURIComponent(file.path)}`,
+                              { signal: abort.signal });
+      if (token !== loadSeq) return;
+      read += 1;
+      $('model-title').textContent = `${item.path}/ (${read}/${files.length})`;
+      if (!model.features.length) continue;
+      if (!merged.bounds) {
+        merged.bounds = { min: [...model.bounds.min], max: [...model.bounds.max] };
+        merged.crs = model.crs;
+        merged.xy_scale = model.xy_scale;
+      }
+      for (let k = 0; k < 3; k++) {
+        merged.bounds.min[k] = Math.min(merged.bounds.min[k], model.bounds.min[k]);
+        merged.bounds.max[k] = Math.max(merged.bounds.max[k], model.bounds.max[k]);
+      }
+      crss.add(model.crs || '-');
+      merged.features.push(...model.features);
+      merged.triangles += model.triangles;
+      // rebuilding the buffer per file grows with the scene, so a long folder
+      // redraws about once a second and once more at the end
+      if (!drawnAt || performance.now() - drawnAt > 1000) show();
+    }
+    $('model-title').textContent = `${item.path}/ (${t('files').replace('{n}', files.length)})`;
+  } catch (error) {
+    if (error.name !== 'AbortError') {
+      $('legend').innerHTML = `<div class="legend-row err">${error.message}</div>`;
+    } else if (token === loadSeq) {
+      $('model-title').textContent = `${item.path}/ (${read}/${files.length}, ${t('stopped')})`;
+      writeLog(`${item.path}: ${t('stopped')} ${read}/${files.length}`);
+    }
+  } finally {
+    if (token === loadSeq) {
+      if (merged.features.length) show();
+      if (crss.size > 1) writeLog(`${t('crsMixed')} ${[...crss].join(', ')}`);
+      markStage(null);
+      $('progress').hidden = true;
+      folderAbort = null;
+    }
   }
 }
 
@@ -1411,8 +1535,11 @@ $('run').onclick = async () => {
   }
 };
 
+let outputTree = null;
+
 async function refreshOutputs(autoSelect) {
   const tree = await api('/api/tree?side=output');
+  outputTree = tree;
   renderTree(tree, $('output-tree'), 'output');
   const wanted = autoSelect || (renderer.model ? $('model-title').textContent : null);
   if (wanted) selectOutput(wanted);
@@ -1456,7 +1583,9 @@ function selectInput(name) {
     await refreshOutputs(lodOutput(pipeline) || config.output);
     // ?select=<file> opens that file from the output tree, else the input tree
     const wanted = params.get('select');
-    if (wanted && selectOutput(wanted)) { /* shown */ }
+    const folder = params.get('folder') && findDir(outputTree, params.get('folder'));
+    if (folder) loadFolder(folder);
+    else if (wanted && selectOutput(wanted)) { /* shown */ }
     else selectInput(wanted || config.input_default);
     booted = true;
   } catch (error) {

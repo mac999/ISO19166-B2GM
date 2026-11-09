@@ -428,6 +428,26 @@ ul.tree ul { padding-left: 13px; }
   background: color-mix(in srgb, var(--panel) 72%, transparent);
   font-size: 12px;
 }
+/* folder loads keep the canvas usable, so they report in a strip, not the overlay */
+.progress {
+  position: absolute;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%);
+  width: min(420px, calc(100% - 32px));
+  padding: 7px 10px 8px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+  box-shadow: var(--shadow);
+  font-size: 11px;
+}
+.progress-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.progress-row span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.progress-row button { padding: 2px 9px; font-size: 11px; }
+.progress-track { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
+.progress-bar { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+
 .spinner {
   width: 15px; height: 15px;
   border: 2px solid var(--border);
