@@ -141,7 +141,7 @@ dependencies.
   chips, which open a stage and show its output on the canvas. A folder in the
   input tree runs as a district and shows the merged model. The folder button
   in the output tree reads every run below it one after another into one
-  scene, each from its newest CityGML, so buildings placed by CM appear where
+  scene, each from the CityGML its run record names, so buildings placed by CM appear where
   CM put them. A progress strip shows the file being read, and Stop keeps
   what has landed.
 - Canvas toolbar: rendering mode, opacity, reset view, a ground grid whose
@@ -262,6 +262,7 @@ after the fact from the module headers and the commit history.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.3.3 | 2026-11-10 | Every run writes `b2gm_run.json` with its stage outputs and final CityGML. The folder view picks each building from it instead of the newest file, which failed on the server because the container image keeps file times to the second. |
 | 0.3.2 | 2026-11-09 | The `teheran-ro` buildings stand in two rows across a 20 m road with half a frontage between neighbours instead of 130 m slots. The canvas gets a ground grid and a full-size view; `?grid=1` and `?max=1` preset them. `?lod=` holds until a folder load finishes. |
 | 0.3.1 | 2026-11-09 | A folder in the output tree opens as one scene: each run's newest CityGML is read in turn, in its own coordinates, so a district can be checked building by building without the merged file. A progress strip under the canvas shows which file is loading, and Stop keeps what has been read. `?folder=` presets it. |
 | 0.3.0 | 2026-11-09 | `--input` takes a folder of building folders, each with its own pipeline; the results are merged into one city model with unique `gml:id`s. CM rules take a `rotation`. The shipped `teheran-ro` district: twenty buildings along Teheran-ro in EPSG:5186 across four LoD profiles, one placed by its own `IfcMapConversion`. The web view runs a folder from the input tree. |
