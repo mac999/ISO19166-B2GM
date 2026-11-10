@@ -16,7 +16,7 @@ without a tool, which makes them hard to try out; this repository is meant to
 close that gap. If you are interested, fork and join.
 
 <p align="center">
-  <img src="./doc/webview.png" width="900" alt="B2GM web view: the source IFC selected in the input tree and drawn translucent with edges in the middle, so the furniture and windows show through the walls; pipeline stages on the left, output tree and file preview on the right"></img>
+  <img src="./doc/webview_district.png" width="900" alt="B2GM web view: the merged teheran-ro.gml district open in x-ray from street level, one wall picked in magenta; input files and pipeline stages on the left, the output tree with the wall's gml:id, attributes and property sets on the right"></img>
 </p>
 
 ## Contents
