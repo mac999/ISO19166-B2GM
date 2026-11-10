@@ -68,7 +68,9 @@ Batch conversion from BIM to GIS. The source IFC below is opened in x-ray with
 its spatial structure listed under the output tree. A batch run applies one
 pipeline per building folder under `input_data/teheran-ro` and writes each
 result to a matching output folder with its own `b2gm_run.json` and final
-CityGML; the second capture shows the whole output folder after the run.
+CityGML. The second capture is the output folder opened as one scene: twenty
+buildings along Teheran-ro in Seoul, mapped from LOD1 block to LOD4 interior
+and placed in EPSG:5186 by the CM stage or by the IFC's own `IfcMapConversion`.
 
 <p align="center">
   <img src="./doc/highlight_batch_source.png" width="900" alt="The source duplex_apartment.ifc in x-ray with its IFC classes in the legend and the IfcProject to IfcSpace tree in the lower right panel"></img>
@@ -76,16 +78,6 @@ CityGML; the second capture shows the whole output folder after the run.
 
 <p align="center">
   <img src="./doc/highlight_batch_output.png" width="900" alt="The teheran-ro output folder after the batch run: twenty converted buildings in EPSG:5186 with the per-building output folders and the folder metadata on the right"></img>
-</p>
-
-A district of twenty buildings along Teheran-ro in Seoul, each mapped by its
-own pipeline (LOD1 block to LOD4 interior) and placed in EPSG:5186 by the CM
-stage or by the IFC's own `IfcMapConversion`. Clicking the output folder reads
-every building's final CityGML into one scene over a ground grid; the panel
-below the output tree shows the folder's metadata.
-
-<p align="center">
-  <img src="./doc/highlight_district.png" width="900" alt="The teheran-ro output folder open as one scene: twenty buildings in two rows along the road, a 50 m ground grid, LoD chips LOD1 to LOD4 and the folder metadata in the lower right panel"></img>
 </p>
 
 An IFC opens as its spatial structure in the lower right panel. Picking an
