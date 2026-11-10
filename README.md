@@ -19,6 +19,49 @@ close that gap. If you are interested, fork and join.
   <img src="./doc/webview.png" width="900" alt="B2GM web view: the source IFC selected in the input tree and drawn translucent with edges in the middle, so the furniture and windows show through the walls; pipeline stages on the left, output tree and file preview on the right"></img>
 </p>
 
+## Contents
+
+1. [How the mapping works](#how-the-mapping-works)
+2. [Highlights](#highlights)
+3. [Quick start](#quick-start)
+4. [What comes out](#what-comes-out)
+5. [Web view](#web-view)
+6. [Configuring the mapping](#configuring-the-mapping)
+7. [Scope](#scope)
+8. [Documentation](#documentation)
+9. [For developers](#for-developers)
+10. [Revision history](#revision-history)
+11. [Citation and author](#citation-and-author)
+
+## How the mapping works
+
+```
+ IFC (BIM)  ──►  PD  ──►  CM  ──►  EM  ──►  LM  ──►  CityGML (GIS)
+                 │        │        │        │
+        Perspective  Coordinate  Element    LoD
+        Definition   Mapping     Mapping    Mapping
+```
+
+| Stage | Name                    | Purpose                                                        |
+|-------|-------------------------|----------------------------------------------------------------|
+| PD    | Perspective Definition  | Select the required subset of the BIM dataset (data/logic/style views) |
+| CM    | Coordinate Mapping      | Transform source CRS → destination CRS (e.g. EPSG:4326 → EPSG:3857) |
+| EM    | Element Mapping         | Map an IFC class to its GIS/CityGML class (e.g. `IfcBuilding` → `CityModel.Building`) |
+| LM    | LoD Mapping             | Assign a GIS Level-of-Detail (LOD0…LOD4) and regenerate the geometry with the Table 8 operators |
+
+Each stage reads its rules from the pipeline file and writes an intermediate
+file, so a run can be inspected stage by stage. The concept figures below are
+from the standard's development.
+
+<p align="center">
+<img src="./doc/fig6.png" height="150"></img> </br>
+<img src="./doc/fig1.JPG" height="240"> </img>  </br>
+<img src="./doc/fig5.png" height="150"> </img>
+<img src="./doc/fig4.png" height="150"> </img>  </br>
+<img src="./doc/fig7.png" height="205"> </img> </br>
+<img src="./doc/fig2.JPG" height="270"> </img>
+</p>
+
 ## Highlights
 
 Batch conversion from BIM to GIS. The source IFC below is opened in x-ray with
@@ -59,48 +102,6 @@ generic attributes are grouped back into the IFC property sets they came from.
 
 <p align="center">
   <img src="./doc/highlight_citygml_inspector.png" width="900" alt="A LOD3 CityGML building with one exterior WallSurface and its four windows picked and drawn in magenta; the feature's class, gml:id and attributes are listed below the feature tree"></img>
-</p>
-
-## Contents
-
-1. [How the mapping works](#how-the-mapping-works)
-2. [Quick start](#quick-start)
-3. [What comes out](#what-comes-out)
-4. [Web view](#web-view)
-5. [Configuring the mapping](#configuring-the-mapping)
-6. [Scope](#scope)
-7. [Documentation](#documentation)
-8. [For developers](#for-developers)
-9. [Revision history](#revision-history)
-10. [Citation and author](#citation-and-author)
-
-## How the mapping works
-
-```
- IFC (BIM)  ──►  PD  ──►  CM  ──►  EM  ──►  LM  ──►  CityGML (GIS)
-                 │        │        │        │
-        Perspective  Coordinate  Element    LoD
-        Definition   Mapping     Mapping    Mapping
-```
-
-| Stage | Name                    | Purpose                                                        |
-|-------|-------------------------|----------------------------------------------------------------|
-| PD    | Perspective Definition  | Select the required subset of the BIM dataset (data/logic/style views) |
-| CM    | Coordinate Mapping      | Transform source CRS → destination CRS (e.g. EPSG:4326 → EPSG:3857) |
-| EM    | Element Mapping         | Map an IFC class to its GIS/CityGML class (e.g. `IfcBuilding` → `CityModel.Building`) |
-| LM    | LoD Mapping             | Assign a GIS Level-of-Detail (LOD0…LOD4) and regenerate the geometry with the Table 8 operators |
-
-Each stage reads its rules from the pipeline file and writes an intermediate
-file, so a run can be inspected stage by stage. The concept figures below are
-from the standard's development.
-
-<p align="center">
-<img src="./doc/fig6.png" height="150"></img> </br>
-<img src="./doc/fig1.JPG" height="240"> </img>  </br>
-<img src="./doc/fig5.png" height="150"> </img>
-<img src="./doc/fig4.png" height="150"> </img>  </br>
-<img src="./doc/fig7.png" height="205"> </img> </br>
-<img src="./doc/fig2.JPG" height="270"> </img>
 </p>
 
 ## Quick start
