@@ -249,8 +249,10 @@ def assign_lod(
             if brep:
                 if matched.semantic_surfaces:
                     derived.extend(_semantic_surfaces(tagged, brep))
-                if placement is not None and (obj.get("geometry") or {}).get("local_verts"):
-                    # built in local metres; place it like CM placed the model
+                if placement is not None:
+                    # the chain ran on local metres (an aggregate source has no
+                    # geometry of its own, so the owner's dict cannot be the
+                    # test); place the result like CM placed the model
                     brep["local_verts"] = brep["verts"]
                     brep["verts"] = placement.points(brep["verts"])
                 tagged["_lod_geometry"] = brep
