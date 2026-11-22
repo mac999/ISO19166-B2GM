@@ -359,7 +359,9 @@ def store(fname: str, resolved: List[Tuple[Dict[str, Any], str]],
         if role not in _empty_bucket():
             top.append((obj, destination))
             continue
-        container = inside.get(obj.get("GUID", ""))
+        # thematic surfaces stay on the building, the CityGML convention:
+        # a storey keeps the rooms and installations it contains
+        container = None if role == "boundary" else inside.get(obj.get("GUID", ""))
         buckets.setdefault(container, _empty_bucket())[role].append((obj, destination))
 
     # a storey that contains nothing we kept still gets written, just empty

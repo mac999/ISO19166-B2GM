@@ -239,20 +239,21 @@ def storeyed(tmp_path):
     return build
 
 
-def test_storey_holds_the_elements_it_contains(storeyed):
+def test_storey_holds_the_spaces_it_contains(storeyed):
     root = storeyed(True)
     storey = root.find(f".//{BLDG}Storey")
-    assert storey.find(f"{CORE}boundary/{CON}WallSurface") is not None
     assert storey.find(f"{BLDG}buildingRoom/{BLDG}BuildingRoom") is not None
     assert storey.find(f"{BLDG}buildingInstallation/{BLDG}BuildingInstallation") is not None
 
 
-def test_uncontained_elements_stay_on_the_building(storeyed):
+def test_boundary_surfaces_stay_on_the_building(storeyed):
+    # the CityGML convention: walls hang off the building, not the storey
     root = storeyed(True)
+    storey = root.find(f".//{BLDG}Storey")
+    assert storey.find(f"{CORE}boundary/{CON}WallSurface") is None
     building = root.find(f".//{BLDG}Building")
-    direct = [w for w in building.findall(f"{CORE}boundary/{CON}WallSurface")]
-    assert len(direct) == 1
-    assert direct[0].find(f"{GML}name").text == "Loose wall"
+    direct = building.findall(f"{CORE}boundary/{CON}WallSurface")
+    assert len(direct) == 2
 
 
 def test_nesting_can_be_switched_off(storeyed):
