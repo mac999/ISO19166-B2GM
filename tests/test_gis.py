@@ -27,10 +27,10 @@ def _local(tag):
 
 
 def _generic_attrs(root):
-    """Return {name: value} for every gen:stringAttribute in the document."""
+    """Return {name: value} for every gen:*Attribute in the document."""
     out = {}
     for sa in root.iter():
-        if _local(sa.tag) == "stringAttribute":
+        if _local(sa.tag).endswith("Attribute") and sa.get("name"):
             vals = [v.text for v in sa if _local(v.tag) == "value"]
             out.setdefault(sa.get("name"), []).append(vals[0] if vals else None)
     return out

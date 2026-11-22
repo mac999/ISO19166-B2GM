@@ -204,7 +204,9 @@ def _citygml_props(element) -> Tuple[str, Groups, int]:
                 general.append(["gml:description", (child.text or "").strip()])
             continue
         if local in ("stringAttribute", "intAttribute", "doubleAttribute",
+                     "dateAttribute", "uriAttribute", "measureAttribute",
                      "StringAttribute", "IntAttribute", "DoubleAttribute",
+                     "DateAttribute", "UriAttribute", "MeasureAttribute",
                      "genericAttribute"):
             target = child
             if local == "genericAttribute" and len(child):

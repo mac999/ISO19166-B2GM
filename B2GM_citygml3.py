@@ -215,13 +215,20 @@ class Writer:
 
     # -- attributes --------------------------------------------------------
     def _write_generic_attrs(self, f, obj, destination, indent):
-        """core:genericAttribute -> gen:StringAttribute (name/value are elements)."""
+        """core:genericAttribute -> gen:*Attribute (name/value are elements).
+
+        The element is picked from the value's type (gen:IntAttribute,
+        gen:DoubleAttribute, gen:DateAttribute, else gen:StringAttribute).
+        """
+        import B2GM_GIS
+
         def attr(name, value):
+            element = f"gen:{B2GM_GIS.attribute_kind(value).capitalize()}Attribute"
             f.write(f"{indent}<core:genericAttribute>\n")
-            f.write(f"{indent}  <gen:StringAttribute>\n")
+            f.write(f"{indent}  <{element}>\n")
             f.write(f"{indent}    <gen:name>{escape(str(name))}</gen:name>\n")
-            f.write(f"{indent}    <gen:value>{escape(str(value))}</gen:value>\n")
-            f.write(f"{indent}  </gen:StringAttribute>\n")
+            f.write(f"{indent}    <gen:value>{escape(B2GM_GIS.attribute_text(value))}</gen:value>\n")
+            f.write(f"{indent}  </{element}>\n")
             f.write(f"{indent}</core:genericAttribute>\n")
 
         if obj.get("ifc_type"):

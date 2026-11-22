@@ -431,7 +431,10 @@ def read_citygml(path: str) -> List[Dict[str, Any]]:
         current = stack[-1]
         if element.tag in (GML_NAME, GML32_NAME) and not current["name"]:
             current["name"] = (element.text or "").strip()
-        elif name in ("stringAttribute", "StringAttribute"):
+        elif name in ("stringAttribute", "intAttribute", "doubleAttribute",
+                      "dateAttribute", "uriAttribute", "measureAttribute",
+                      "StringAttribute", "IntAttribute", "DoubleAttribute",
+                      "DateAttribute", "UriAttribute", "MeasureAttribute"):
             # 2.0 puts the key in a name attribute, 3.0 in a child element
             key = element.get("name") or next(
                 (c.text for c in element if _tag(c) == "name"), "")

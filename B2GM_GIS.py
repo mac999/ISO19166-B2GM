@@ -24,6 +24,7 @@ Author:
 
 from __future__ import annotations
 
+import datetime
 import json
 import logging
 import re
@@ -120,6 +121,42 @@ BUILDING_DESTINATIONS = {"CityModel.Building", "Building", "bldg:Building"}
 # keys that are internal book-keeping rather than payload properties
 _META_KEYS = {"pset", "ifc_type", "geometry", "_destination", "_lod", "_pset_operation",
               "_lod_geometry", "_lod_operation", "_style"}
+
+
+# a bare ISO date; datetimes from IFC property sets arrive as such strings
+_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def attribute_kind(value: Any) -> str:
+    """CityGML generic-attribute kind for a property value.
+
+    The generics module has int / double / date attributes beside string, so a
+    numeric or date value keeps its type instead of collapsing to a string.
+    bool stays a string ("true"/"false"): generics define no boolean attribute.
+    A string of digits is *not* reinterpreted - only native numbers are typed.
+    """
+    if isinstance(value, bool):
+        return "string"
+    if isinstance(value, int):
+        return "int"
+    if isinstance(value, float):
+        return "double"
+    if isinstance(value, (datetime.date, datetime.datetime)):
+        return "date"
+    if isinstance(value, str) and _DATE_RE.match(value.strip()):
+        return "date"
+    return "string"
+
+
+def attribute_text(value: Any) -> str:
+    """The lexical form of a generic-attribute value (xs:boolean/date spelling)."""
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, datetime.datetime):
+        return value.date().isoformat()
+    if isinstance(value, datetime.date):
+        return value.isoformat()
+    return str(value)
 
 
 def sanitize_tag(name: str) -> str:
@@ -541,11 +578,17 @@ class GIS(B2GM_model.model):
 
     @staticmethod
     def _write_generic_attrs(f, obj, destination, indent="  "):
-        """Emit IFC type / GUID / LoD / property-set values as gen:stringAttribute."""
-        def attr(name: str, value: Any):
-            f.write(f"{indent}<gen:stringAttribute name={quoteattr(str(name))}>\n")
-            f.write(f"{indent}  <gen:value>{escape(str(value))}</gen:value>\n")
-            f.write(f"{indent}</gen:stringAttribute>\n")
+        """Emit IFC type / GUID / LoD / property-set values as gen:*Attribute.
+
+        The attribute element follows the value's type (gen:intAttribute,
+        gen:doubleAttribute, gen:dateAttribute), so numbers and dates survive
+        the round trip; identification values are forced to strings.
+        """
+        def attr(name: str, value: Any, kind: Optional[str] = None):
+            kind = kind or attribute_kind(value)
+            f.write(f"{indent}<gen:{kind}Attribute name={quoteattr(str(name))}>\n")
+            f.write(f"{indent}  <gen:value>{escape(attribute_text(value))}</gen:value>\n")
+            f.write(f"{indent}</gen:{kind}Attribute>\n")
 
         if obj.get("ifc_type"):
             attr("ifc_type", obj["ifc_type"])
