@@ -40,6 +40,9 @@ NS = {
     "con": "http://www.opengis.net/citygml/construction/3.0",
     "gen": "http://www.opengis.net/citygml/generics/3.0",
     "luse": "http://www.opengis.net/citygml/landuse/3.0",
+    "brid": "http://www.opengis.net/citygml/bridge/3.0",
+    "tun": "http://www.opengis.net/citygml/tunnel/3.0",
+    "tran": "http://www.opengis.net/citygml/transportation/3.0",
     "gml": "http://www.opengis.net/gml/3.2",
     "xsi": "http://www.w3.org/2001/XMLSchema-instance",
 }
@@ -55,6 +58,12 @@ SCHEMA_LOCATION = " ".join([
     "http://schemas.opengis.net/citygml/generics/3.0/generics.xsd",
     "http://www.opengis.net/citygml/landuse/3.0",
     "http://schemas.opengis.net/citygml/landuse/3.0/landUse.xsd",
+    "http://www.opengis.net/citygml/bridge/3.0",
+    "http://schemas.opengis.net/citygml/bridge/3.0/bridge.xsd",
+    "http://www.opengis.net/citygml/tunnel/3.0",
+    "http://schemas.opengis.net/citygml/tunnel/3.0/tunnel.xsd",
+    "http://www.opengis.net/citygml/transportation/3.0",
+    "http://schemas.opengis.net/citygml/transportation/3.0/transportation.xsd",
 ])
 
 # EM destination -> (role, feature element, containing property).
@@ -88,6 +97,12 @@ PLACEMENT: Dict[str, Tuple[str, str, str]] = {
                                     "bldg:buildingConstructiveElement"),
     "BuildingPart": ("part", "bldg:BuildingPart", "bldg:buildingPart"),
     "LandUse": ("top", "luse:LandUse", "core:cityObjectMember"),
+    # IFC 4.3 infrastructure: bridge / tunnel / transportation modules
+    "Bridge": ("top", "brid:Bridge", "core:cityObjectMember"),
+    "Tunnel": ("top", "tun:Tunnel", "core:cityObjectMember"),
+    "Road": ("top", "tran:Road", "core:cityObjectMember"),
+    "Railway": ("top", "tran:Railway", "core:cityObjectMember"),
+    "Square": ("top", "tran:Square", "core:cityObjectMember"),
     "GenericCityObject": ("top", "gen:GenericOccupiedSpace", "core:cityObjectMember"),
     "GenericOccupiedSpace": ("top", "gen:GenericOccupiedSpace", "core:cityObjectMember"),
     "GenericThematicSurface": ("top", "gen:GenericThematicSurface", "core:cityObjectMember"),

@@ -79,6 +79,10 @@ CLASS_COLORS = {
     "BuildingInstallation": [0.64, 0.42, 0.88],
     "BuildingStorey": [0.44, 0.56, 0.68],
     "LandUse": [0.34, 0.66, 0.28],
+    "Bridge": [0.72, 0.45, 0.20],
+    "Tunnel": [0.42, 0.46, 0.52],
+    "Road": [0.35, 0.35, 0.38],
+    "Railway": [0.55, 0.30, 0.58],
     "GenericCityObject": [0.62, 0.62, 0.62],
 }
 DEFAULT_COLOR = [0.62, 0.62, 0.62]
@@ -395,6 +399,7 @@ FEATURE_TAGS = {
     "Room", "BuildingRoom",
     "BuildingInstallation", "IntBuildingInstallation",
     "LandUse", "GenericCityObject",
+    "Bridge", "Tunnel", "Road", "Railway", "Square", "TransportationComplex",
     # CityGML 3.0 additions. WindowSurface/DoorSurface are what con:fillingSurface
     # holds; without them an opening is absorbed into the wall that hosts it.
     "Storey", "BuildingUnit", "BuildingConstructiveElement",

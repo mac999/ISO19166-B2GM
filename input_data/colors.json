@@ -14,7 +14,11 @@
     "BuildingInstallation": "#a36be0",
     "BuildingStorey": "#708fad",
     "LandUse": "#57a847",
-    "GenericCityObject": "#9e9e9e"
+    "GenericCityObject": "#9e9e9e",
+    "Bridge": "#b87333",
+    "Tunnel": "#6b7585",
+    "Road": "#595961",
+    "Railway": "#8c4d94"
   },
   "ifc": {
     "IfcWall": "#edcc8f",
@@ -32,7 +36,12 @@
     "IfcRailing": "#859ebd",
     "IfcMember": "#8f7abd",
     "IfcFurnishingElement": "#e0669e",
-    "IfcFooting": "#755c42"
+    "IfcFooting": "#755c42",
+    "IfcBridge": "#b87333",
+    "IfcRoad": "#595961",
+    "IfcRailway": "#8c4d94",
+    "IfcPavement": "#595961",
+    "IfcRail": "#8c4d94"
   },
   "default": "#9e9e9e"
 }

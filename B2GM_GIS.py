@@ -41,6 +41,9 @@ NS = {
     "bldg": "http://www.opengis.net/citygml/building/2.0",
     "gen": "http://www.opengis.net/citygml/generics/2.0",
     "luse": "http://www.opengis.net/citygml/landuse/2.0",
+    "brid": "http://www.opengis.net/citygml/bridge/2.0",
+    "tun": "http://www.opengis.net/citygml/tunnel/2.0",
+    "tran": "http://www.opengis.net/citygml/transportation/2.0",
     "gml": "http://www.opengis.net/gml",
     "xsi": "http://www.w3.org/2001/XMLSchema-instance",
 }
@@ -54,6 +57,12 @@ SCHEMA_LOCATION = " ".join([
     "http://schemas.opengis.net/citygml/generics/2.0/generics.xsd",
     "http://www.opengis.net/citygml/landuse/2.0",
     "http://schemas.opengis.net/citygml/landuse/2.0/landUse.xsd",
+    "http://www.opengis.net/citygml/bridge/2.0",
+    "http://schemas.opengis.net/citygml/bridge/2.0/bridge.xsd",
+    "http://www.opengis.net/citygml/tunnel/2.0",
+    "http://schemas.opengis.net/citygml/tunnel/2.0/tunnel.xsd",
+    "http://www.opengis.net/citygml/transportation/2.0",
+    "http://schemas.opengis.net/citygml/transportation/2.0/transportation.xsd",
 ])
 
 # EM destinations that are CityGML 2.0 thematic boundary surfaces.
@@ -89,6 +98,14 @@ PLACEMENT: Dict[str, Tuple[str, str, str, str]] = {
     "LandUse": ("top", "luse:LandUse", "core:cityObjectMember", "luse:lod1MultiSurface"),
     "GenericCityObject": ("top", "gen:GenericCityObject", "core:cityObjectMember",
                           "gen:lod1Geometry"),
+    # IFC 4.3 infrastructure: bridge / tunnel / transportation modules
+    "Bridge": ("top", "brid:Bridge", "core:cityObjectMember", "brid:lod2MultiSurface"),
+    "Tunnel": ("top", "tun:Tunnel", "core:cityObjectMember", "tun:lod2MultiSurface"),
+    "Road": ("top", "tran:Road", "core:cityObjectMember", "tran:lod2MultiSurface"),
+    "Railway": ("top", "tran:Railway", "core:cityObjectMember", "tran:lod2MultiSurface"),
+    "Square": ("top", "tran:Square", "core:cityObjectMember", "tran:lod2MultiSurface"),
+    "TransportationComplex": ("top", "tran:TransportationComplex",
+                              "core:cityObjectMember", "tran:lod2MultiSurface"),
 }
 
 # A boundary surface may only carry bldg:opening from LOD3 up.
