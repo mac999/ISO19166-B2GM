@@ -105,6 +105,11 @@ IFC_COLORS = {
     "IfcMember": [0.56, 0.48, 0.74],
     "IfcFurnishingElement": [0.88, 0.40, 0.62],
     "IfcFooting": [0.46, 0.36, 0.26],
+    "IfcBridge": [0.72, 0.45, 0.20],
+    "IfcRoad": [0.35, 0.35, 0.38],
+    "IfcRailway": [0.55, 0.30, 0.58],
+    "IfcPavement": [0.35, 0.35, 0.38],
+    "IfcRail": [0.55, 0.30, 0.58],
 }
 
 PALETTE_FILE = "colors.json"
