@@ -76,6 +76,15 @@ used.
   ] }
 ```
 
+A `vertical_crs` key on a rule names the height datum; the horizontal
+transform is untouched (heights pass through as given) and the envelope's
+`srsName` becomes the OGC compound form, e.g. `EPSG:5186+5773`:
+
+```json
+{ "rule": [ { "source": "EPSG:4326", "destination": "EPSG:5186",
+              "vertical_crs": "EPSG:5773" } ] }
+```
+
 The placement chain is: the site placement inverse when needed, the stage's
 4×4 `transform_matrix`, then either the IFC's map conversion or the true-north
 rotation (IFC `+Y` is project north) followed by a transverse-Mercator CRS
@@ -84,11 +93,11 @@ usable as projected coordinates — and finally pyproj into `destination`. Any
 CRS pyproj knows works, so `EPSG:3857`, a UTM zone or a national grid such as
 `EPSG:5186` are all valid destinations.
 
-**Where CM sits in the sequence matters.** The shipped example runs
-PD → CM → EM → LM, so the LM operators measure in projected coordinates; in
-`EPSG:3857` at the sample's latitude that inflates areas by k² = 1.80 while
-heights stay in metres. Put the CM stage last instead and the operators work
-in the IFC's own metres; CM then projects the finished LoD geometry and, when
+**Where CM sits in the sequence no longer distorts the operators.** When CM
+runs before LM, the placement keeps the pre-projection vertices and the LM
+operators compute on those local metres; only the operator result is
+projected. Areas, extents and volumes are therefore metric in either order.
+Put the CM stage last and CM projects the finished LoD geometry and, when
 its `output` ends in `.gml`, writes the final CityGML itself:
 
 ```json
@@ -217,6 +226,7 @@ is represented with `shapely` polygons (2D) and a lightweight `Solid` (vertices
 | `boundary` | `boundary(g, base)` | outline of the projected area |
 | `extrude` | `extrude(g, v, height)` | plus `base_z`; MultiPolygon input yields one merged solid |
 | `exterior` / `interior` | `exterior(g)` / `interior(g)` | outer shell / inner shells |
+| `envelope` | `envelope(g)` | extension beyond Table 8: boolean-unions every closed shell of the (usually aggregated) geometry into one watertight outer shell, drops interior cavities; shells that do not close are merged back unchanged |
 | `VOID` | `VOID(e)` | window/door/opening sub-elements |
 | `union` / `subtract` / `intersect` | `union(g1, g2)` … | 2D via shapely; 3D via `manifold3d` when installed (`pip install ".[mesh]"`), otherwise on vertical prisms (the LOD1 case) |
 
@@ -272,6 +282,8 @@ CityGML output:
 |----------|---------|
 | `operation` | operator chain (`{"op": name, "args": {...}}`; a bare string is the operator name) |
 | `aggregate` | regex over IFC types — run the chain on the merged geometry of every match instead of the element's own. An `IfcBuilding` carries no geometry, so its LOD1 block comes from its walls and slabs |
+| `semantic_surfaces` | `true` splits the chain result by face orientation into derived `RoofSurface` / `WallSurface` / `GroundSurface` features (up to 60° off vertical is roof or ground), each written as a thematic boundary surface of the building |
+| `consume` | regex over IFC types — elements that only fed the chain (via `aggregate`) are dropped from the output, so an envelope does not coexist with the raw meshes it replaced |
 
 Argument values may reference the element instead of being literals:
 

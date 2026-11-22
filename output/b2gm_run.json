@@ -1,0 +1,24 @@
+{
+  "input": "duplex_apartment.ifc",
+  "pipeline": "B2GM_example.json",
+  "citygml_version": "2.0",
+  "stages": [
+    {
+      "type": "PD",
+      "output": "intermediate.ifc"
+    },
+    {
+      "type": "CM",
+      "output": "intermediate_CM.ifc"
+    },
+    {
+      "type": "EM",
+      "output": "city.gml"
+    },
+    {
+      "type": "LM",
+      "output": "city_LoD.gml"
+    }
+  ],
+  "final_output": "city_LoD.gml"
+}

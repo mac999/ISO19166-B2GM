@@ -392,7 +392,32 @@
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNtn"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNqI"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNr2"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNhv"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
       "GUID": "2O2Fr$t4X7Zf8NOew3FNld"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FNau"
     },
     {
       "name": "IfcWallStandardCase",
@@ -408,6 +433,11 @@
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
       "GUID": "2O2Fr$t4X7Zf8NOew3FKRH"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FKST"
     },
     {
       "name": "IfcWallStandardCase",
@@ -457,6 +487,41 @@
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLQD"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLR9"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLOH"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLPP"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLTF"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLIE"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLJd"
+    },
+    {
+      "name": "IfcWallStandardCase",
+      "ifc_type": "IfcWallStandardCase",
       "GUID": "2O2Fr$t4X7Zf8NOew3FLMr"
     },
     {
@@ -467,67 +532,7 @@
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLEJ"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLCm"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FNqI"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FNhv"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLQD"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLOH"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FKST"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FNau"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLTF"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
       "GUID": "2O2Fr$t4X7Zf8NOew3FL8v"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLJd"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FL96"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLIE"
     },
     {
       "name": "IfcWallStandardCase",
@@ -537,22 +542,17 @@
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FNtn"
+      "GUID": "2O2Fr$t4X7Zf8NOew3FL96"
     },
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FNr2"
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLEJ"
     },
     {
       "name": "IfcWallStandardCase",
       "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLR9"
-    },
-    {
-      "name": "IfcWallStandardCase",
-      "ifc_type": "IfcWallStandardCase",
-      "GUID": "2O2Fr$t4X7Zf8NOew3FLPP"
+      "GUID": "2O2Fr$t4X7Zf8NOew3FLCm"
     },
     {
       "name": "IfcWallStandardCase",
@@ -1125,6 +1125,21 @@
       "GUID": "1xS3BCk291UvhgP2a6eflN"
     },
     {
+      "name": "Living Room",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXr2"
+    },
+    {
+      "name": "Kitchen",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXr$"
+    },
+    {
+      "name": "Bathroom 1",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXru"
+    },
+    {
       "name": "Foyer",
       "ifc_type": "IfcSpace",
       "GUID": "0BTBFw6f90Nfh9rP1dlXrr"
@@ -1133,6 +1148,31 @@
       "name": "Hallway",
       "ifc_type": "IfcSpace",
       "GUID": "0BTBFw6f90Nfh9rP1dlXri"
+    },
+    {
+      "name": "Bathroom 2",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXre"
+    },
+    {
+      "name": "Bedroom 2",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXrb"
+    },
+    {
+      "name": "Bedroom 1",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dlXrc"
+    },
+    {
+      "name": "Living Room",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_CZ"
+    },
+    {
+      "name": "Kitchen",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_3S"
     },
     {
       "name": "Bathroom 1",
@@ -1148,6 +1188,21 @@
       "name": "Hallway",
       "ifc_type": "IfcSpace",
       "GUID": "0BTBFw6f90Nfh9rP1dl_3G"
+    },
+    {
+      "name": "Bathroom 2",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_3C"
+    },
+    {
+      "name": "Bedroom 2",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_39"
+    },
+    {
+      "name": "Bedroom 1",
+      "ifc_type": "IfcSpace",
+      "GUID": "0BTBFw6f90Nfh9rP1dl_3A"
     },
     {
       "name": "Utility",
@@ -1173,61 +1228,6 @@
       "name": "Roof",
       "ifc_type": "IfcSpace",
       "GUID": "0pNy6pOyf7JPmXRLgxs3sW"
-    },
-    {
-      "name": "Living Room",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dl_CZ"
-    },
-    {
-      "name": "Living Room",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dlXr2"
-    },
-    {
-      "name": "Kitchen",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dlXr$"
-    },
-    {
-      "name": "Kitchen",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dl_3S"
-    },
-    {
-      "name": "Bathroom 2",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dl_3C"
-    },
-    {
-      "name": "Bathroom 2",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dlXre"
-    },
-    {
-      "name": "Bathroom 1",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dlXru"
-    },
-    {
-      "name": "Bedroom 2",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dl_39"
-    },
-    {
-      "name": "Bedroom 1",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dlXrc"
-    },
-    {
-      "name": "Bedroom 1",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dl_3A"
-    },
-    {
-      "name": "Bedroom 2",
-      "ifc_type": "IfcSpace",
-      "GUID": "0BTBFw6f90Nfh9rP1dlXrb"
     }
   ]
 }

@@ -236,6 +236,9 @@ What this implementation does, stated so it can be checked:
   `IfcMapConversion` / `IfcProjectedCRS` (and the IFC2x3 `ePSet_MapConversion`
   sets), else the `IfcSite` latitude and longitude with the site placement
   undone, and can run after LM so the operators work in the IFC's own metres.
+  When it runs before LM instead, the operators still compute on the kept
+  local metres and only their result is projected. A `vertical_crs` rule key
+  writes the compound `srsName` (`EPSG:5186+5773`).
 - EM rules can filter on properties, so `Pset_WallCommon.IsExternal` separates
   `WallSurface` from `InteriorWallSurface` in the output.
 - Output validates against the official OGC CityGML schemas, in 2.0 and in 3.0,
@@ -302,6 +305,7 @@ after the fact from the module headers and the commit history.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.5.0 | 2026-11-23 | Generic attributes keep their type (`gen:intAttribute` / `doubleAttribute` / `dateAttribute`). CM takes a `vertical_crs` and writes a compound `srsName`. LM operators run on local metres when CM placed the model first. New `envelope` operator unions the aggregated elements into a watertight shell, with `semantic_surfaces` splitting it into roof, wall and ground features and `consume` dropping the fed elements. `B2GM_validate` checks solid closure, orientation and degeneracy (with a val3dity hook) and `conformance/traceability.md` traces the standard to code and tests. IFC 4.3 bridges, roads and railways map to the CityGML bridge / tunnel / transportation modules. CityGML 3.0 boundary surfaces moved from the storey to the building, the CityGML convention. |
 | 0.4.0 | 2026-11-10 | Object tree and properties below the output tree: IFC spatial structure with attributes, relations and property sets; CityGML features with their generic attributes grouped by property set and a geometry summary; metadata for folders and other files. A picked object is highlighted in the 3D view. Output folders open as one scene by clicking their name. |
 | 0.3.3 | 2026-11-10 | Every run writes `b2gm_run.json` with its stage outputs and final CityGML. The folder view picks each building from it instead of the newest file, which failed on the server because the container image keeps file times to the second. |
 | 0.3.2 | 2026-11-09 | The `teheran-ro` buildings stand in two rows across a 20 m road with half a frontage between neighbours instead of 130 m slots. The canvas gets a ground grid and a full-size view; `?grid=1` and `?max=1` preset them. `?lod=` holds until a folder load finishes. |

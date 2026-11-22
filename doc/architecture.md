@@ -17,6 +17,7 @@
 | `B2GM_LM_op_extrude.py`   | Side utility: bulk GeoJSON footprint → LOD1 extrusion, outside the B2GM stages |
 | `B2GM_simple_mapping.py`  | Optional: strongly-typed CityGML output via xsdata dataclasses |
 | `B2GM_citygml3.py`        | CityGML **3.0** writer — restructured building model (real `bldg:Storey`, `con:fillingSurface` openings, GML 3.2), element names read from `citygml_parser.py` |
+| `B2GM_validate.py`        | Solid validity checks (closure, orientation, degeneracy) over meshes and written CityGML; optional val3dity hook |
 | `B2GM_web.py` + `web/`    | Web view — input tree + stage properties, WebGL 3D canvas, output tree (stdlib HTTP server, no extra dependency) |
 
 Optional heavy dependencies (`xsdata`, `geopandas`, `pyvista`, `pydeck`,
