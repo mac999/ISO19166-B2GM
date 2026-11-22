@@ -51,18 +51,24 @@ class LoDRule:
     """
 
     def __init__(self, source: str = ".*", lod: str = DEFAULT_LOD, name: str = "",
-                 operation: Any = None, aggregate: str = ""):
+                 operation: Any = None, aggregate: str = "",
+                 semantic_surfaces: bool = False, consume: str = ""):
         self.source = source
         self.lod = lod
         self.operation = operation
         self.aggregate = aggregate
+        # split a closed operator result into Roof/Wall/Ground surface features
+        self.semantic_surfaces = bool(semantic_surfaces)
+        # regex over IFC types whose elements fed the result and are dropped
+        self.consume = consume
         self.name = name or f"{source}->{lod}"
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> "LoDRule":
         lod = d.get("lod") or d.get("destination") or DEFAULT_LOD
         return cls(d.get("source", ".*"), lod, d.get("name", ""), d.get("operation"),
-                   d.get("aggregate", ""))
+                   d.get("aggregate", ""), d.get("semantic_surfaces", False),
+                   d.get("consume", ""))
 
     def to_dict(self) -> Dict[str, Any]:
         out = {"name": self.name, "source": self.source, "lod": self.lod}
@@ -70,6 +76,10 @@ class LoDRule:
             out["operation"] = self.operation
         if self.aggregate:
             out["aggregate"] = self.aggregate
+        if self.semantic_surfaces:
+            out["semantic_surfaces"] = True
+        if self.consume:
+            out["consume"] = self.consume
         return out
 
     def matches(self, obj: Dict[str, Any]) -> bool:
@@ -222,6 +232,8 @@ def assign_lod(
     projected, so areas, extents and volumes are computed in metres.
     """
     out: List[Dict[str, Any]] = []
+    derived: List[Dict[str, Any]] = []
+    consume_patterns: List[str] = []
     applied = 0
     for obj in objects:
         matched: Optional[LoDRule] = next((r for r in rules if r.matches(obj)), None)
@@ -235,6 +247,8 @@ def assign_lod(
                                 matched.name, obj.get("name", "?"), exc)
                 brep = None
             if brep:
+                if matched.semantic_surfaces:
+                    derived.extend(_semantic_surfaces(tagged, brep))
                 if placement is not None and (obj.get("geometry") or {}).get("local_verts"):
                     # built in local metres; place it like CM placed the model
                     brep["local_verts"] = brep["verts"]
@@ -242,10 +256,57 @@ def assign_lod(
                 tagged["_lod_geometry"] = brep
                 tagged["_lod_operation"] = matched.operation
                 applied += 1
+        if matched is not None and matched.consume:
+            consume_patterns.append(matched.consume)
         out.append(tagged)
+    if consume_patterns:
+        # elements that only fed an envelope are dropped from the output
+        def consumed(o: Dict[str, Any]) -> bool:
+            return any(re.fullmatch(p, str(o.get("ifc_type", ""))) for p in consume_patterns)
+
+        out = [o for o in out if not consumed(o)]
+    if derived:
+        if placement is not None:
+            for o in derived:
+                geometry = o["_lod_geometry"]
+                geometry["local_verts"] = geometry["verts"]
+                geometry["verts"] = placement.points(geometry["verts"])
+        out.extend(derived)
     if applied:
         logging.info("LM operators rebuilt geometry for %d elements", applied)
     return out
+
+
+def _semantic_surfaces(owner: Dict[str, Any], brep: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Derive Roof/Wall/Ground surface elements from an envelope B-rep.
+
+    The surfaces carry the owner's LoD, reference it in ``_derived_from`` and
+    get their own destinations, so the CityGML writers place them as thematic
+    boundary surfaces of the building.
+    """
+    import B2GM_LM_operators as OP
+
+    surfaces: List[Dict[str, Any]] = []
+    try:
+        parts = OP.classify_faces(brep)
+    except Exception as exc:
+        logging.warning("semantic surface split failed: %s", exc)
+        return surfaces
+    labels = {"RoofSurface": "roof", "WallSurface": "walls", "GroundSurface": "ground"}
+    for destination, solid in parts.items():
+        geometry = OP.to_brep(solid)
+        if not geometry:
+            continue
+        surfaces.append({
+            "name": f"{owner.get('name', 'Envelope')} {labels.get(destination, destination)}",
+            "ifc_type": "", "GUID": "",
+            "_destination": destination,
+            "_lod": owner.get("_lod"),
+            "_derived_from": owner.get("GUID", ""),
+            "_lod_geometry": geometry,
+            "pset": {},
+        })
+    return surfaces
 
 
 def lod1_from_footprint(footprint, height, base_z: float = 0.0):

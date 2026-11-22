@@ -312,6 +312,92 @@ def extrude(
     return Solid(vertices, faces)
 
 
+def envelope(geometry: Any) -> Solid:
+    """The building's outer shell: the boolean union of every closed shell.
+
+    ``exterior`` only picks the largest existing shell; this operator *builds*
+    the envelope by unioning the element solids (walls, slabs, roof) with
+    manifold3d, so overlapping elements fuse and internal faces disappear.
+    Shells that do not close (raw IFC triangulation often does not) are left
+    out of the union and merged back as-is; with no unionable shell at all the
+    merged input mesh is returned unchanged.  Interior cavities (a room's
+    shell inside the union) are dropped from the result.
+    """
+    solid = _as_solid(_geometry_of(geometry))
+    shells = _split_shells(solid)
+    manifolds = []
+    leftovers: List[Solid] = []
+    for shell in shells:
+        try:
+            m = _as_manifold(shell)
+            if m.is_empty():
+                raise ValueError("empty")
+            manifolds.append(m)
+        except Exception:
+            leftovers.append(shell)
+    if not manifolds:
+        return solid
+    try:
+        import manifold3d
+
+        merged = manifold3d.Manifold.batch_boolean(manifolds, manifold3d.OpType.Add)
+        mesh = merged.to_mesh64()
+    except Exception:
+        return solid
+    vertices = np.asarray(mesh.vert_properties, dtype=float)[:, :3]
+    faces = [list(map(int, tri)) for tri in np.asarray(mesh.tri_verts)]
+    result = Solid(vertices, faces)
+    outer_shells = _split_shells(result)
+    if len(outer_shells) > 1:
+        # keep the outermost shell of each disjoint part, drop cavities: a
+        # cavity's bounding box sits inside another shell's box
+        def contains(a: Solid, b: Solid) -> bool:
+            alo, ahi = a.bounds()
+            blo, bhi = b.bounds()
+            return bool(np.all(alo <= blo) and np.all(bhi <= ahi))
+
+        kept = [sh for sh in outer_shells
+                if not any(other is not sh and contains(other, sh) for other in outer_shells)]
+        result = _merge_solids(kept)
+    if leftovers:
+        result = _merge_solids([result] + leftovers)
+    return result
+
+
+# face classes of a semantic envelope, by the face normal's z component
+_CLASSIFY_COS = 0.5  # 60 degrees off vertical
+
+
+def classify_faces(geometry: Any) -> Dict[str, Solid]:
+    """Split a shell into Roof / Wall / Ground surfaces by face orientation.
+
+    A face whose normal points up more than 60 degrees is roof, down is
+    ground, anything else is wall - the usual LOD2 semantic rule.  Returns
+    ``{destination: Solid}`` with only the classes that occur.
+    """
+    solid = _as_solid(_geometry_of(geometry))
+    buckets: Dict[str, List[List[int]]] = {}
+    for face in solid.faces:
+        if len(face) < 3:
+            continue
+        pts = solid.vertices[list(face)]
+        normal = np.cross(pts[1] - pts[0], pts[2] - pts[0])
+        length = np.linalg.norm(normal)
+        if length == 0:
+            continue
+        nz = normal[2] / length
+        name = ("RoofSurface" if nz >= _CLASSIFY_COS
+                else "GroundSurface" if nz <= -_CLASSIFY_COS
+                else "WallSurface")
+        buckets.setdefault(name, []).append(list(face))
+    out: Dict[str, Solid] = {}
+    for name, faces in buckets.items():
+        used = sorted({vi for f in faces for vi in f})
+        remap = {vi: i for i, vi in enumerate(used)}
+        out[name] = Solid(solid.vertices[used], [[remap[vi] for vi in f] for f in faces])
+    return out
+
+
 def exterior(geometry: Any) -> Solid:
     """Return the outer shell of a solid.
 
@@ -491,6 +577,7 @@ OPERATORS = {
     "boundary": boundary,
     "extrude": extrude,
     "exterior": exterior,
+    "envelope": envelope,
     "interior": interior,
     "VOID": void,
     "void": void,
