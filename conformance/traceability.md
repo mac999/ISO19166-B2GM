@@ -23,7 +23,7 @@ on its implementation class, so a renamed or missing member fails the suite.
 | `BIM_model`, `BIM_element` | `B2GM_BIM_model.XSD` | `B2GM_model.model`, `B2GM_model.element`; parsed from IFC by `B2GM_BIM.BIM.parse` | `test_xsd_conformance.py`, `test_bim.py`, `test_model.py` |
 | `GIS_model`, `GIS_element`, `LOD` | `B2GM_GIS_model.XSD` | `B2GM_model` classes; serialised by `B2GM_GIS.GIS.store`/`save` | `test_xsd_conformance.py`, `test_gis.py`, `test_model_json_save.py` |
 | `property`, `property_set` (system property set: name + GUID, Table 1) | both model XSDs | `B2GM_model.property`, `property_set`, `system_property_set_json` | `test_model.py`, `test_model_json_save.py` |
-| `relationship` (BM5/GM5 inter-element relations) | both model XSDs | `B2GM_BIM.BIM._read_relationships` (`IfcRel*` to UML relationship types) | `test_bim.py`, `test_citygml3.py` (storey containment) |
+| `relationship` (BM5/GM5 inter-element relations) | both model XSDs | `B2GM_BIM.BIM._attach_relationships` (`IfcRel*` to UML relationship types) | `test_bim.py`, `test_citygml3.py` (storey containment) |
 | `geometry`, `geometry2D`, `geometry3D`, `B-rep` | both model XSDs | `B2GM_model.geometry*`, `brep`; tessellation in `B2GM_BIM` | `test_xsd_conformance.py`, `test_model_json_save.py` |
 | `runtime` | both model XSDs | `B2GM_model.runtime` (carries the IFC type / mapped GIS class) | `test_xsd_conformance.py` |
 | JSON serialisation in the exact XSD shape | both model XSDs | `BIM.save/load`, `GIS.save/load` (`save -> load -> save` is byte-identical) | `test_model_json_save.py` |
