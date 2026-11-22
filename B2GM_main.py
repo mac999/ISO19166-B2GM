@@ -139,7 +139,7 @@ def mapping_CM(input_file: str, output_file: str, stage: Dict[str, Any], context
         for key in ("em_mapped", "lm_mapped"):
             if context.get(key):
                 B2GM_CM.apply_placement(context[key], placement, seen)
-        context["srs_name"] = placement.dest_crs
+        context["srs_name"] = placement.srs_name
         summary["placement"] = placement.to_dict()
         summary["elements_transformed"] = moved
         logger.info("CM %s -> %s, %d elements placed at %s",

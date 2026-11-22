@@ -81,6 +81,19 @@ def transform_coordinate(
     return transformer.transform(x, y)
 
 
+def compound_srs(dest_crs: str, vertical_crs: Optional[str]) -> str:
+    """srsName with the vertical CRS appended: ``EPSG:5186+5773``.
+
+    The OGC compound notation keeps the horizontal authority prefix and adds
+    the vertical EPSG code after ``+``; pyproj transforms keep using the
+    horizontal CRS alone, the compound name is only written on the envelope.
+    """
+    if not vertical_crs:
+        return dest_crs
+    code = str(vertical_crs).upper().replace("EPSG:", "").strip()
+    return f"{dest_crs}+{code}" if code else dest_crs
+
+
 class CoordinateMapping:
     """Coordinate mapping rule (source/destination CRS + optional matrix)."""
 
@@ -91,6 +104,7 @@ class CoordinateMapping:
         transform_matrix: Optional[List[List[float]]] = None,
         origin: Optional[Tuple[float, float, float]] = None,
         georeference: bool = True,
+        vertical_crs: Optional[str] = None,
     ):
         self.source_crs = source_crs
         self.dest_crs = dest_crs
@@ -98,6 +112,8 @@ class CoordinateMapping:
         # explicit origin for an IFC without IfcSite georeferencing
         self.origin = origin
         self.georeference = georeference
+        # vertical datum for the compound srsName (heights stay as given)
+        self.vertical_crs = vertical_crs
 
     @classmethod
     def from_stage(cls, stage: Dict[str, Any]) -> "CoordinateMapping":
@@ -105,10 +121,13 @@ class CoordinateMapping:
         dest = "EPSG:3857"
         matrix = None
         origin = None
+        vertical = None
         for rule in stage.get("rule", []):
             if "source" in rule and "destination" in rule:
                 source = rule["source"]
                 dest = rule["destination"]
+            if rule.get("vertical_crs") or rule.get("vertical"):
+                vertical = rule.get("vertical_crs") or rule.get("vertical")
             # note: original sample data misspells the key as "tranform_matrix"
             if "transform_matrix" in rule:
                 matrix = rule["transform_matrix"]
@@ -123,7 +142,8 @@ class CoordinateMapping:
                 spot = rule["origin"]
                 origin = (float(spot["lon"]), float(spot["lat"]),
                           float(spot.get("elevation", 0.0)))
-        return cls(source, dest, matrix, origin, stage.get("georeference", True))
+        return cls(source, dest, matrix, origin, stage.get("georeference", True),
+                   vertical_crs=vertical)
 
     def transform(self, x: float, y: float) -> Tuple[float, float]:
         return transform_coordinate(x, y, self.source_crs, self.dest_crs)
@@ -188,11 +208,13 @@ class Placement:
                  true_north: Tuple[float, float] = (0.0, 1.0),
                  transform_matrix: Optional[List[List[float]]] = None,
                  pre_matrix: Optional[List[List[float]]] = None,
-                 map_conversion: Optional[Dict[str, Any]] = None):
+                 map_conversion: Optional[Dict[str, Any]] = None,
+                 vertical_crs: Optional[str] = None):
         if not _HAVE_PYPROJ:
             raise RuntimeError("pyproj is required to georeference the model")
         self.origin = origin
         self.dest_crs = dest_crs
+        self.vertical_crs = vertical_crs
         self.transform_matrix = transform_matrix
         self.pre_matrix = None if is_identity(pre_matrix) else pre_matrix
         self.map_conversion = map_conversion
@@ -206,6 +228,11 @@ class Placement:
             self.local_crs = (f"+proj=tmerc +lat_0={lat} +lon_0={lon} +k=1 "
                               "+x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs")
         self._transformer = Transformer.from_crs(self.local_crs, dest_crs, always_xy=True)
+
+    @property
+    def srs_name(self) -> str:
+        """What the output names as its CRS: compound when a vertical CRS is set."""
+        return compound_srs(self.dest_crs, self.vertical_crs)
 
     def _matrix(self, x: float, y: float, z: float) -> Tuple[float, float, float]:
         x, y, z = _apply_matrix(self.pre_matrix, x, y, z)
@@ -241,6 +268,9 @@ class Placement:
             "dest_crs": self.dest_crs,
             "transform_matrix": self.transform_matrix,
         }
+        if self.vertical_crs:
+            out["vertical_crs"] = self.vertical_crs
+            out["srs_name"] = self.srs_name
         if self.map_conversion:
             out["map_conversion"] = self.map_conversion
         if self.pre_matrix:
@@ -468,7 +498,7 @@ def apply_to_ifc(ifc_file, mapping: CoordinateMapping) -> Dict[str, Any]:
         if mapping.georeference:
             summary["placement"] = Placement(origin, mapping.dest_crs, true_north,
                                              mapping.transform_matrix, pre_matrix,
-                                             map_conversion)
+                                             map_conversion, mapping.vertical_crs)
     except Exception as exc:  # pragma: no cover - defensive
         summary["error"] = str(exc)
     return summary

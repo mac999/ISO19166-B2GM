@@ -540,7 +540,8 @@ def ground_scale(srs: Optional[str], bounds: Dict[str, List[float]]) -> float:
     building drawn straight from EPSG:3857 looks too wide for its height.  The
     model is shown at true proportions instead, and the viewer says so.
     """
-    if not srs or not srs.strip().upper().endswith(("3857", "900913", "102100")):
+    horizontal = (srs or "").split("+")[0]  # EPSG:3857+5773 -> EPSG:3857
+    if not horizontal.strip().upper().endswith(("3857", "900913", "102100")):
         return 1.0
     try:
         from pyproj import Transformer
