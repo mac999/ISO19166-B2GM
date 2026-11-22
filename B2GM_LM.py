@@ -92,12 +92,12 @@ class LoDRule:
             return None
         import B2GM_LM_operators as OP
 
-        source = obj
+        source = _localised(obj)
         if self.aggregate:
-            merged = aggregate_geometry(model or [], self.aggregate)
+            merged = aggregate_geometry([_localised(o) for o in model or []], self.aggregate)
             if not merged:
                 raise ValueError(f"aggregate {self.aggregate!r} matched no geometry")
-            source = {**obj, "geometry": merged}
+            source = {**source, "geometry": merged}
         result = OP.run_chain(source, self.operation, resolver=lambda v: resolve_arg(v, source))
         # a 2D result (footprint, projection, boolean) carries no elevation, so it
         # stays at the element's own base rather than dropping to z = 0
@@ -131,6 +131,21 @@ def ruleset_from_stage(stage: Dict[str, Any]) -> LM_ruleset:
 
 
 _AXIS = {"x": 0, "y": 1, "z": 2}
+
+
+def _localised(obj: Dict[str, Any]) -> Dict[str, Any]:
+    """The element with its geometry in local metres.
+
+    When a CM stage has already placed the model, ``apply_placement`` kept the
+    pre-projection vertices as ``local_verts``; operators must compute on those
+    (areas, volumes and extents are only metric there) and the caller projects
+    the operator result afterwards.
+    """
+    geometry = obj.get("geometry") or {}
+    local = geometry.get("local_verts")
+    if not local:
+        return obj
+    return {**obj, "geometry": {"verts": local, "faces": geometry.get("faces") or []}}
 
 
 def element_bounds(obj: Dict[str, Any]):
@@ -197,9 +212,15 @@ def assign_lod(
     objects: List[Dict[str, Any]],
     rules: List[LoDRule],
     default_lod: str = DEFAULT_LOD,
+    placement=None,
 ) -> List[Dict[str, Any]]:
     """Annotate objects with ``_lod`` and, when a rule has an operator chain,
-    the geometry it produces (``_lod_geometry``)."""
+    the geometry it produces (``_lod_geometry``).
+
+    ``placement`` is the CM placement when CM already projected the model: the
+    operator chain then runs on the kept local vertices and only its result is
+    projected, so areas, extents and volumes are computed in metres.
+    """
     out: List[Dict[str, Any]] = []
     applied = 0
     for obj in objects:
@@ -214,6 +235,10 @@ def assign_lod(
                                 matched.name, obj.get("name", "?"), exc)
                 brep = None
             if brep:
+                if placement is not None and (obj.get("geometry") or {}).get("local_verts"):
+                    # built in local metres; place it like CM placed the model
+                    brep["local_verts"] = brep["verts"]
+                    brep["verts"] = placement.points(brep["verts"])
                 tagged["_lod_geometry"] = brep
                 tagged["_lod_operation"] = matched.operation
                 applied += 1

@@ -140,6 +140,7 @@ def mapping_CM(input_file: str, output_file: str, stage: Dict[str, Any], context
             if context.get(key):
                 B2GM_CM.apply_placement(context[key], placement, seen)
         context["srs_name"] = placement.srs_name
+        context["placement"] = placement
         summary["placement"] = placement.to_dict()
         summary["elements_transformed"] = moved
         logger.info("CM %s -> %s, %d elements placed at %s",
@@ -211,7 +212,7 @@ def mapping_LM(input_file: str, output_file: str, stage: Dict[str, Any], context
                 shutil.copy(input_file, output_file)
             return output_file
 
-    tagged = B2GM_LM.assign_lod(mapped, rules)
+    tagged = B2GM_LM.assign_lod(mapped, rules, placement=context.get("placement"))
     context["lm_mapped"] = tagged
     lods = sorted({o.get("_lod") for o in tagged})
     logger.info("LM assigned LoD to %d elements: %s", len(tagged), lods)

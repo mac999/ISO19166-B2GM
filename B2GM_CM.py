@@ -295,6 +295,9 @@ def apply_placement(objects: Iterable[Dict[str, Any]], placement: Placement,
             verts = geometry.get("verts")
             if not verts or id(geometry) in seen:
                 continue
+            # the local metres stay available so an LM stage that runs after
+            # this placement can compute on them and project only its result
+            geometry["local_verts"] = verts
             geometry["verts"] = placement.points(verts)
             seen.add(id(geometry))
             counted = True
